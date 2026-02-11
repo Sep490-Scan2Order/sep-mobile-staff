@@ -10,18 +10,21 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../type/types';
 
 export default function LoginScreen() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <SafeAreaView className="flex-1 bg-[#226B5D] justify-center">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
+      <KeyboardAvoidingView behavior={'height'} className="flex-1">
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
@@ -72,21 +75,18 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity className="mb-6">
+                <TouchableOpacity
+                  className="mb-6"
+                  onPress={() => navigation.navigate('EmailForOTPScreen')}
+                >
                   <Text className="text-right text-gray-700 font-medium">
-                    Quên mật khẩu ?
+                    Reset mật khẩu ?
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity className="bg-[#226B5D] rounded-2xl py-3 mb-4">
                   <Text className="text-white text-center font-bold text-lg">
                     Đăng nhập
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity className="bg-gray-300 rounded-2xl py-3">
-                  <Text className="text-gray-800 text-center font-bold text-lg">
-                    Đăng ký
                   </Text>
                 </TouchableOpacity>
               </View>
