@@ -7,6 +7,7 @@ interface Order {
   phone: string;
   orderCode: string;
   date: string;
+  time: string;
   amount: string;
 }
 
@@ -16,6 +17,7 @@ const mockOrders: Order[] = [
     phone: '0909123456',
     orderCode: 'ORD-2026001',
     date: '13/02/2026',
+    time: '14:30',
     amount: '450,000 VNĐ',
   },
   {
@@ -23,6 +25,7 @@ const mockOrders: Order[] = [
     phone: '0988777666',
     orderCode: 'ORD-2026002',
     date: '13/02/2026',
+    time: '16:10',
     amount: '780,000 VNĐ',
   },
   {
@@ -30,6 +33,7 @@ const mockOrders: Order[] = [
     phone: '0911222333',
     orderCode: 'ORD-2026003',
     date: '12/02/2026',
+    time: '09:45',
     amount: '1,200,000 VNĐ',
   },
 ];
@@ -64,7 +68,9 @@ export const SDKTable: React.FC = () => {
             <View className="flex-1">
               <View className="flex-row items-center px-3 py-3 border-b border-gray-300">
                 <Calendar size={16} color="#777" />
-                <Text className="ml-2 text-sm text-gray-600">{item.date}</Text>
+                <Text className="ml-2 text-sm text-gray-600">
+                  {item.date} - {item.time}
+                </Text>
               </View>
 
               <View className="flex-row items-center px-3 py-3">
