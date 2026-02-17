@@ -3,4 +3,5 @@ export type AuthStackParamList = {
   EmailForOTPScreen: undefined;
   KDSScreen: undefined;
   DetailOrderSreen: undefined;
+  DetailPaymentScreen: undefined;
 };
