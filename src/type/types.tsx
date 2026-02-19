@@ -5,4 +5,7 @@ export type AuthStackParamList = {
   DetailOrderSreen: undefined;
   DetailPaymentScreen: undefined;
   FoodManagementScreen: undefined;
+  CashReportScreen: undefined;
+  ReportHistoryScreen: undefined;
+  OrderStatusScreen: undefined;
 };
