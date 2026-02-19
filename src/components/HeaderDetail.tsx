@@ -1,19 +1,23 @@
-import { ArrowLeft, CheckCircle } from 'lucide-react-native'; // Thêm CheckCircle
+import { ArrowLeft, CheckCircle } from 'lucide-react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface HeaderDetailProps {
   onBack?: () => void;
   title?: string;
-  isSuccess?: boolean; // Prop mới để xác định trạng thái thành công
+  isSuccess?: boolean;
+  heightClass?: string; // 👈 thêm prop
 }
 
 export const HeaderDetail: React.FC<HeaderDetailProps> = ({
   onBack,
   title = 'Chi tiết thanh toán',
-  isSuccess = false, // Mặc định là false
+  isSuccess = false,
+  heightClass = 'h-2/4', // 👈 mặc định như cũ
 }) => {
   return (
-    <View className="bg-[#226B5D] pt-14 px-4 rounded-b-2xl h-2/4 -mb-10">
+    <View
+      className={`bg-[#226B5D] pt-14 px-4 rounded-b-2xl -mb-10 ${heightClass}`}
+    >
       <View className="flex-row items-center mb-4">
         <TouchableOpacity onPress={onBack} activeOpacity={0.7}>
           <ArrowLeft color="white" size={22} />
@@ -24,7 +28,6 @@ export const HeaderDetail: React.FC<HeaderDetailProps> = ({
         </Text>
       </View>
 
-      {/* Hiển thị Icon Success lớn nếu isSuccess = true */}
       {isSuccess && (
         <View className="items-center -mt-6">
           <CheckCircle color="white" size={70} strokeWidth={1.5} />

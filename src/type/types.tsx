@@ -4,4 +4,5 @@ export type AuthStackParamList = {
   KDSScreen: undefined;
   DetailOrderSreen: undefined;
   DetailPaymentScreen: undefined;
+  FoodManagementScreen: undefined;
 };
