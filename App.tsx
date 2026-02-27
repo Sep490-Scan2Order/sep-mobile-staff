@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
-import './global.css';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from './src/store';
 import MainApp from './src/MainApp';
 
 export default function App() {
- 
   return (
-          <MainApp />
+    <Provider store={store}>
+      <MainApp />
+    </Provider>
   );
 }

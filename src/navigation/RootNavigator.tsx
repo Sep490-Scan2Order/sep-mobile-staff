@@ -13,6 +13,7 @@ export default function RootNavigator() {
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
   );
+  console.log('RootNavigator - isAuthenticated:', isAuthenticated);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
