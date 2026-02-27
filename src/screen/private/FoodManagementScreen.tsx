@@ -5,7 +5,7 @@ import { StatCard } from '../../components/StatCard';
 import { TabBar } from '../../components/TabBar';
 import { FoodItemCard } from '../../components/FoodItemCard';
 
-export const FoodManagementScreen = () => {
+const FoodManagementScreen = () => {
   const [activeTab, setActiveTab] = useState('Tất cả');
 
   return (
@@ -29,3 +29,4 @@ export const FoodManagementScreen = () => {
     </View>
   );
 };
+export default FoodManagementScreen;

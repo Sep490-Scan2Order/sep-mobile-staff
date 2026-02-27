@@ -26,3 +26,4 @@ export const OrderStatusScreen = () => {
     </View>
   );
 };
+export default OrderStatusScreen;
