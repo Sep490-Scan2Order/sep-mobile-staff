@@ -12,7 +12,7 @@ export const authService = {
 
       console.log('Raw Axios Response:', axiosResponse);
 
-      const response = axiosResponse.data; // 👈 lấy data đúng cách
+      const response = axiosResponse.data; 
 
       console.log('API Response Data:', response);
 
@@ -25,17 +25,15 @@ export const authService = {
         };
       }
 
-      // ✅ Thành công
-      const { accessToken, refreshToken } = response.data;
+      const { accessToken, refreshToken, userInfo } = response.data;
 
-      // 1️⃣ Lưu token
       await tokenStorage.setTokens(accessToken, refreshToken);
 
-      // 2️⃣ Dispatch vào Redux (KHÔNG dùng userInfo vì backend trả null)
       store.dispatch(
         setUser({
           accessToken,
           refreshToken,
+          userInfo,
         }),
       );
 
