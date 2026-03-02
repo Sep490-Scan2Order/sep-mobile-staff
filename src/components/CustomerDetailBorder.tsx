@@ -2,7 +2,21 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Phone, Hash, Calendar, MapPin } from 'lucide-react-native';
 
-export const CustomerDetailBorder = () => {
+interface Props {
+  order: {
+    phone: string;
+    orderCode: string;
+    createdAt: string;
+    tableName: string;
+  };
+}
+
+export const CustomerDetailBorder = ({ order }: Props) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('vi-VN');
+  };
+
   return (
     <View className="bg-white/20 border border-white/30 rounded-3xl p-6 mb-5">
       {/* Row title */}
@@ -24,9 +38,13 @@ export const CustomerDetailBorder = () => {
 
       {/* Row value */}
       <View className="flex-row justify-between mb-4">
-        <Text className="text-lg font-bold text-white">0123456789</Text>
+        <Text className="text-lg font-bold text-white">
+          {order?.phone || '---'}
+        </Text>
 
-        <Text className="text-lg font-bold text-white">ORD-2026-001</Text>
+        <Text className="text-lg font-bold text-white">
+          {order?.orderCode || '---'}
+        </Text>
       </View>
 
       {/* Divider */}
@@ -34,7 +52,7 @@ export const CustomerDetailBorder = () => {
         <View className="flex-row items-center">
           <Calendar size={18} color="#FFFFFF" />
           <Text className="ml-3 text-base text-white">
-            Ngày tạo: 13/02/2026 - 14:30
+            Ngày tạo: {formatDate(order?.createdAt) || '---'}
           </Text>
         </View>
       </View>
@@ -42,7 +60,9 @@ export const CustomerDetailBorder = () => {
       {/* Table */}
       <View className="flex-row items-center">
         <MapPin size={18} color="#FFFFFF" />
-        <Text className="ml-3 text-base text-white">Tại bàn: Bàn 05</Text>
+        <Text className="ml-3 text-base text-white">
+          Tại bàn: {order?.tableName || '---'}
+        </Text>
       </View>
     </View>
   );

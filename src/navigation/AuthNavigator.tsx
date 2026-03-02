@@ -2,9 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screen/public/LoginScreen';
 import EmailForOTPScreen from '../screen/public/EmailForOTPScreen';
-import { AuthStackParamList } from '../type/types'; // Đảm bảo type đã khai báo Login
-import MenuScreen from '../screen/private/MenuManagementScreen';
-import ProfileScreen from '../screen/private/ProfileScreen';
+import { AuthStackParamList } from '../type/types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 

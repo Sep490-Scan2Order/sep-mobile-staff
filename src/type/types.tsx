@@ -10,4 +10,5 @@ export type AuthStackParamList = {
   OrderStatusScreen: undefined;
   MenuManagementScreen: undefined;
   ProfileScreen: undefined;
+  DetailOrderScreen: undefined;
 };

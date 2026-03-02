@@ -6,12 +6,20 @@ import { Border } from './Border';
 import { HeaderDetail } from './HeaderDetail';
 
 interface PaymentSuccessProps {
+  order: Order;
+  cashReceived: number; // tiền khách đưa
   onComplete: () => void;
 }
-
 export const CashPaymentSuccessComponent: React.FC<PaymentSuccessProps> = ({
+  order,
+  cashReceived = 0,
   onComplete,
 }) => {
+  const subtotal = Number(order?.amount) || 0;
+  const discount = Number(order?.discount) || 0;
+  const total = subtotal - discount;
+  const change = Number(cashReceived) - total;
+
   return (
     <View className="flex-1 bg-gray-100">
       <HeaderDetail
@@ -20,12 +28,9 @@ export const CashPaymentSuccessComponent: React.FC<PaymentSuccessProps> = ({
         onBack={onComplete}
       />
 
-      {/* 2. ScrollView bao quát nội dung ở giữa */}
       <ScrollView className="px-7 -mt-60">
-        {/* Component hiển thị thông tin khách hàng */}
-        <CustomerDetailBorder />
+        <CustomerDetailBorder order={order} />
 
-        {/* Khung hóa đơn trắng sử dụng Border component */}
         <View className="mb-10">
           <Border>
             <View className="py-2">
@@ -34,55 +39,66 @@ export const CashPaymentSuccessComponent: React.FC<PaymentSuccessProps> = ({
                   HÓA ĐƠN THANH TOÁN
                 </Text>
                 <Text className="text-xs text-gray-400 mt-1">
-                  Mã đơn: ORD-2026-001 | Bàn 5
+                  Mã đơn: {order.id} | {order.tableName}
                 </Text>
               </View>
 
-              {/* Danh sách món ăn */}
-              {[1, 2, 3, 4].map(item => (
-                <View key={item} className="flex-row justify-between mb-3">
+              {/* Danh sách món */}
+              {order.items.map((item, index) => (
+                <View key={item.id} className="flex-row justify-between mb-3">
                   <Text className="text-gray-600 text-sm">
-                    {item}. Combo 1 người x1
+                    {index + 1}. {item.name} x{item.quantity}
                   </Text>
-                  <Text className="font-medium text-sm">100.000 VND</Text>
+                  <Text className="font-medium text-sm">
+                    {(item.price * item.quantity).toLocaleString('vi-VN')} VND
+                  </Text>
                 </View>
               ))}
 
               <View className="border-t border-dashed border-gray-300 my-4" />
 
-              {/* Chi tiết tính toán tiền */}
+              {/* Tính toán tiền */}
               <View className="space-y-2">
                 <View className="flex-row justify-between">
                   <Text className="text-gray-500 text-sm">Tạm tính:</Text>
-                  <Text className="font-medium text-sm">400.000 VND</Text>
+                  <Text className="font-medium text-sm">
+                    {subtotal.toLocaleString('vi-VN')} VND
+                  </Text>
                 </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-500 text-sm">Giảm giá (10%):</Text>
-                  <Text className="text-red-500 text-sm">-40.000 VND</Text>
-                </View>
+
+                {discount > 0 && (
+                  <View className="flex-row justify-between">
+                    <Text className="text-gray-500 text-sm">Giảm giá:</Text>
+                    <Text className="text-red-500 text-sm">
+                      -{discount.toLocaleString('vi-VN')} VND
+                    </Text>
+                  </View>
+                )}
+
                 <View className="flex-row justify-between mt-2">
                   <Text className="font-bold text-[#226B5D] text-base">
                     Tổng cộng:
                   </Text>
                   <Text className="font-bold text-[#226B5D] text-xl">
-                    360.000 VND
+                    {total.toLocaleString('vi-VN')} VND
                   </Text>
                 </View>
               </View>
 
               <View className="border-t border-gray-100 my-4" />
 
-              {/* Thông tin tiền mặt */}
+              {/* Tiền mặt */}
               <View className="flex-row justify-between mb-1">
                 <Text className="text-gray-500 text-sm">Tiền khách đưa:</Text>
                 <Text className="font-bold text-sm text-gray-800">
-                  500.000 VND
+                  {cashReceived.toLocaleString('vi-VN')} VND
                 </Text>
               </View>
+
               <View className="flex-row justify-between">
                 <Text className="text-gray-500 text-sm">Tiền thối lại:</Text>
                 <Text className="font-bold text-[#226B5D] text-base">
-                  140.000 VND
+                  {change.toLocaleString('vi-VN')} VND
                 </Text>
               </View>
             </View>
@@ -90,7 +106,6 @@ export const CashPaymentSuccessComponent: React.FC<PaymentSuccessProps> = ({
         </View>
       </ScrollView>
 
-      {/* 3. Nút Hoàn tất cố định phía dưới */}
       <View className="bg-white px-6 pb-10 pt-4 shadow-2xl">
         <TouchableOpacity
           onPress={onComplete}

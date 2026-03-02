@@ -1,14 +1,36 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { View, Text, Image, Switch } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../store';
+import { toggleSoldOutThunk } from '../store/slices/dishSlice';
 
 interface Props {
+  id: number;
   name: string;
   price: string;
-  active: boolean;
+  image: string;
+  active: boolean; // true = đang bán
 }
 
-export const FoodItemCard: React.FC<Props> = ({ name, price, active }) => {
+export const FoodItemCard: React.FC<Props> = ({
+  id,
+  name,
+  price,
+  image,
+  active,
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleToggle = () => {
+    dispatch(
+      toggleSoldOutThunk({
+        id,
+        isSoldOut: active,
+      }),
+    );
+  };
+
   return (
     <View
       className="mx-6 mt-4 rounded-xl overflow-hidden border"
@@ -20,7 +42,7 @@ export const FoodItemCard: React.FC<Props> = ({ name, price, active }) => {
       <View className="flex-row items-center p-3">
         <Image
           source={{
-            uri: 'https://i.imgur.com/0y0y0y0.jpg',
+            uri: image,
           }}
           className="w-14 h-14 rounded-lg"
         />
@@ -30,7 +52,7 @@ export const FoodItemCard: React.FC<Props> = ({ name, price, active }) => {
           <Text className="text-sm text-gray-700">{price}</Text>
         </View>
 
-        <Switch value={active} />
+        <Switch value={active} onValueChange={handleToggle} />
       </View>
 
       {!active && (

@@ -6,6 +6,8 @@ import { RootState } from '../store';
 import BottomTabs from './BottomTabs';
 import AuthNavigator from './AuthNavigator';
 import ProfileScreen from '../screen/private/ProfileScreen';
+import DetailOrderScreen from '../screen/private/DetailOrderScreen';
+import DetailPaymentScreen from '../screen/private/DetailPaymentScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +24,14 @@ export default function RootNavigator() {
         <>
           <Stack.Screen name="MainApp" component={BottomTabs} />
           <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+          <Stack.Screen
+            name="DetailOrderScreen"
+            component={DetailOrderScreen}
+          />
+          <Stack.Screen
+            name="DetailPaymentScreen"
+            component={DetailPaymentScreen}
+          />
         </>
       ) : (
         <Stack.Screen name="Auth" component={AuthNavigator} />

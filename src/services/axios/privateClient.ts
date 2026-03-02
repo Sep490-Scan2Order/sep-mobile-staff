@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { tokenStorage } from '../../utils/tokenStorage';
 import { setUser } from '../../store/slices/authSlice';
 import { store } from '../../store';
-import { authApi } from '../../api/services/authApi'; /
+import { authApi } from '../../services/apiEndpoints/authApi'; 
 import { API_BASE_URL } from '../../config/apiConfig';
 
 const axiosPrivate = axios.create({

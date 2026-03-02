@@ -18,10 +18,8 @@ export default function MainApp() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        {!isWelcomeFinished ? <WelcomeScreen /> : <RootNavigator />}
-        <Toast />
-      </NavigationContainer>
+      {!isWelcomeFinished ? <WelcomeScreen /> : <RootNavigator />}
+      <Toast />
     </SafeAreaProvider>
   );
 }
