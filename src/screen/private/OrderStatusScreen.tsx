@@ -1,11 +1,63 @@
-import React, { useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, ScrollView, ActivityIndicator, Text } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
+import {
+  fetchRestaurantById,
+  toggleReceivingOrders,
+} from '../../store/slices/restaurantSlice';
 import { HeaderDetail } from '../../components/HeaderDetail';
 import { RestaurantCard } from '../../components/RestaurantCard';
 import { OrderStatusCard } from '../../components/OrderStatusCard';
 
+const RESTAURANT_ID = 58;
+
 export const OrderStatusScreen = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { restaurant, loading, error } = useSelector(
+    (state: RootState) => state.restaurant,
+  );
+
+  useEffect(() => {
+    // Fetch restaurant data when component mounts
+    dispatch(fetchRestaurantById(RESTAURANT_ID));
+  }, [dispatch]);
+
+  const handleToggle = () => {
+    if (restaurant) {
+      dispatch(
+        toggleReceivingOrders({
+          restaurantId: restaurant.id,
+          isReceiving: !restaurant.isReceivingOrders,
+        }),
+      );
+    }
+  };
+  console.log('toggleReceivingOrders:', toggleReceivingOrders);
+
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 bg-gray-100 justify-center items-center">
+  //       <ActivityIndicator size="large" color="#226B5D" />
+  //     </View>
+  //   );
+  // }
+
+  if (error) {
+    return (
+      <View className="flex-1 bg-gray-100 justify-center items-center p-4">
+        <Text className="text-red-600 text-center">Lỗi: {error}</Text>
+      </View>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+      <View className="flex-1 bg-gray-100 justify-center items-center">
+        <Text className="text-gray-600">Không tìm thấy thông tin nhà hàng</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -13,13 +65,17 @@ export const OrderStatusScreen = () => {
 
       <ScrollView className="flex-1" style={{ marginTop: -120 }}>
         <RestaurantCard
-          name="Tava Restaurant"
-          address="kazi Deiry, Taiger Pass,Chittagong"
-          openTime="10:00 AM - 12:00 PM"
-          image="https://images.unsplash.com/photo-1555396273-367ea4eb4db5"
+          name={restaurant.restaurantName}
+          address={restaurant.address}
+          openTime={restaurant.isOpened ? 'Đang mở' : 'Đang đóng'}
+          image={restaurant.image}
         />
 
-        <OrderStatusCard isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
+        <OrderStatusCard
+          isOpen={restaurant.isReceivingOrders}
+          isLoading={loading}
+          onToggle={handleToggle}
+        />
 
         <View className="h-28" />
       </ScrollView>

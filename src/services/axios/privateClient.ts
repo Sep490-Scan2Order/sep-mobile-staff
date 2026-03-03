@@ -11,9 +11,6 @@ const axiosPrivate = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ==========================
-// Refresh Queue Handaxiling
-// ==========================
 let isRefreshing = false;
 let failedQueue: {
   resolve: (value?: unknown) => void;
@@ -28,9 +25,6 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// ==========================
-// 1️⃣ Request Interceptor
-// ==========================
 axiosPrivate.interceptors.request.use(
   async config => {
     const { accessToken } = await tokenStorage.getTokens();
@@ -42,9 +36,7 @@ axiosPrivate.interceptors.request.use(
   error => Promise.reject(error),
 );
 
-// ==========================
-// 2️⃣ Response Interceptor
-// ==========================
+
 axiosPrivate.interceptors.response.use(
   response => response,
   async error => {
@@ -53,7 +45,6 @@ axiosPrivate.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Nếu đang refresh token, đợi queue
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -72,7 +63,6 @@ axiosPrivate.interceptors.response.use(
         const { refreshToken } = await tokenStorage.getTokens();
         if (!refreshToken) throw new Error('No refresh token');
 
-        // ✅ Gọi refresh token thông qua authApi
         const res = await authApi.refreshToken(refreshToken);
 
         const { access_token: newAccessToken, refresh_token: newRefreshToken } =
@@ -81,16 +71,13 @@ axiosPrivate.interceptors.response.use(
         if (!newAccessToken || !newRefreshToken)
           throw new Error('Invalid refresh token response');
 
-        // ✅ Lưu lại token mới
         await tokenStorage.setTokens(newAccessToken, newRefreshToken);
 
-        // ✅ Cập nhật headers
         axiosPrivate.defaults.headers[
           'Authorization'
         ] = `Bearer ${newAccessToken}`;
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
 
-        // ✅ Giải phóng queue
         processQueue(null, newAccessToken);
 
         return axiosPrivate(originalRequest);
