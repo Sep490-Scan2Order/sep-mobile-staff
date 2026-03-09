@@ -4,13 +4,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 
 export default function ProfileScreen() {
-  const user = useSelector((state: RootState) => state.auth.user);
-  const userInfo = user?.userInfo;
-
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+  console.log('ProfileScreen - userInfo:', userInfo);
   if (!userInfo) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text>Chưa đăng nhập</Text>
+        <Text>Chưa đăng nhập123</Text>
       </View>
     );
   }

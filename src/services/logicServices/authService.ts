@@ -1,23 +1,19 @@
 import { authApi } from '../apiEndpoints/authApi';
 import { tokenStorage } from '../../utils/tokenStorage';
 import { store } from '../../store';
-import { setUser } from '../../store/slices/authSlice';
+import { setUser, logout } from '../../store/slices/authSlice';
+import { Alert } from 'react-native';
 
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
-    console.log('=== VÀO authService.login ===');
 
     try {
       const axiosResponse = await authApi.staffLogin(credentials);
 
-      console.log('Raw Axios Response:', axiosResponse);
-
       const response = axiosResponse.data; 
 
-      console.log('API Response Data:', response);
 
       if (!response?.isSuccess) {
-        console.log('Login FAILED:', response?.message);
 
         return {
           success: false,
@@ -37,13 +33,11 @@ export const authService = {
         }),
       );
 
-      console.log('✅ Login SUCCESS & Redux updated');
 
       return {
         success: true,
       };
     } catch (error: any) {
-      console.log('❌ LOGIN SERVICE ERROR FULL:', error);
 
       return {
         success: false,
@@ -52,6 +46,39 @@ export const authService = {
           error?.message ||
           'Không thể kết nối server',
       };
+    }
+  },
+
+  logout: async () => {
+    try {
+      await tokenStorage.clearTokens();
+      store.dispatch(logout());
+      return {
+        success: true,
+      };
+    } catch (error: any) {
+      console.error('❌ LOGOUT ERROR:', error);
+      store.dispatch(logout());
+      
+      return {
+        success: false,
+        message: error?.message || 'Lỗi khi đăng xuất',
+      };
+    }
+  },
+
+  forceLogout: async () => {
+    
+    try {
+      await authService.logout();
+      
+      Alert.alert(
+        'Phiên hết hạn',
+        'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
+        [{ text: 'OK' }],
+      );
+    } catch (error) {
+      console.error('❌ Error forcing logout:', error);
     }
   },
 };

@@ -4,7 +4,7 @@ export const dishService = {
   async getBranchDishes(restaurantId: number) {
     const axiosResponse =
       await dishApi.getBranchDishesByRestaurant(restaurantId);
-
+console.log('API Response for getBranchDishes:', axiosResponse);
     const response = axiosResponse.data;
     console.log('API Response Data for Dishes:', response);
 

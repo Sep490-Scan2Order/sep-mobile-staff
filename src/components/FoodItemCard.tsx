@@ -22,6 +22,7 @@ export const FoodItemCard: React.FC<Props> = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
+  console.log('FoodItemCard Props:', { id, name, price, image, active });
   const handleToggle = () => {
     dispatch(
       toggleSoldOutThunk({

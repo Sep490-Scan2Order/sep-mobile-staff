@@ -13,7 +13,7 @@ const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.isAuthenticated,
+    (state: RootState) => state.auth.accessToken,
   );
 
   console.log('RootNavigator - isAuthenticated:', isAuthenticated);

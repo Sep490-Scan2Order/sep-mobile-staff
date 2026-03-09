@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { Alert } from 'react-native';
 import { tokenStorage } from '../../utils/tokenStorage';
-import { setUser } from '../../store/slices/authSlice';
+import { logout } from '../../store/slices/authSlice';
 import { store } from '../../store';
 import { authApi } from '../../services/apiEndpoints/authApi'; 
 import { API_BASE_URL } from '../../config/apiConfig';
+import { isTokenExpired } from '../../utils/jwtHelper';
 
 const axiosPrivate = axios.create({
   baseURL: API_BASE_URL,
@@ -28,7 +29,28 @@ const processQueue = (error: any, token: string | null = null) => {
 axiosPrivate.interceptors.request.use(
   async config => {
     const { accessToken } = await tokenStorage.getTokens();
+    
     if (accessToken) {
+      // ✅ CHECK: Token đã hết hạn hay chưa?
+      if (isTokenExpired(accessToken, 60)) { // Buffer 60 giây
+        console.log('⚠️ Access token expired - clearing tokens and logging out');
+        
+        // Clear tokens
+        await tokenStorage.clearTokens();
+        
+        // Reset Redux state
+        store.dispatch(logout());
+        
+        // Show alert
+        Alert.alert(
+          'Phiên đã hết hạn',
+          'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
+          [{ text: 'OK' }],
+        );
+        
+        return Promise.reject(new Error('Token expired'));
+      }
+      
       config.headers['Authorization'] = `Bearer ${accessToken}`;
     }
     return config;
@@ -84,7 +106,7 @@ axiosPrivate.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         await tokenStorage.clearTokens();
-        store.dispatch(setUser(null));
+        store.dispatch(logout());
         Alert.alert(
           'Đăng nhập lại',
           'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',

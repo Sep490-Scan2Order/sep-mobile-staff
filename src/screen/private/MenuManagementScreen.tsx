@@ -50,8 +50,7 @@ export default function MenuScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const user = useSelector((state: RootState) => state.auth.user);
-  const userInfo = user?.userInfo;
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
   if (!userInfo) {
     return (
