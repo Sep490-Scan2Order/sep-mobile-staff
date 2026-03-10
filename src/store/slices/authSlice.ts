@@ -8,6 +8,7 @@ interface UserInfo {
   restaurantName: string;
   name: string;
   email: string;
+  role : string;
   avatar: string | null;
   isActive: boolean;
   createdAt: string;
