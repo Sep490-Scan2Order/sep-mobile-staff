@@ -134,16 +134,6 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                  className="mb-6"
-                  onPress={() => navigation.navigate('EmailForOTPScreen')}
-                  disabled={isLoading}
-                >
-                  <Text className="text-right text-gray-700 font-medium">
-                    Reset mật khẩu ?
-                  </Text>
-                </TouchableOpacity>
-
                 {/* NÚT ĐĂNG NHẬP ĐÃ GẮN LOGIC */}
                 <TouchableOpacity
                   onPress={handleLogin}

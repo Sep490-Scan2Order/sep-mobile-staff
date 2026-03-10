@@ -15,4 +15,16 @@ export const authApi = {
       { refreshToken }
     );
   },
+   
+  sendEmail: (to: string, subject: string, htmlContent: string) => {
+  return publicClient.post(`${API_BASE_URL}/Email/send`, {
+    to,
+    subject,
+    htmlContent
+  });
+  },
+  resetPassword: (data: { email: string; newPassword: string; resetToken: string }) => {
+    return publicClient.post(`${API_BASE_URL}/Auth/reset-password-staff`, data);
+  }
+
 };

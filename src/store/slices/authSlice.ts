@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+
 interface UserInfo {
   id: string;
   accountId: string;
   restaurantId: number;
   restaurantName: string;
   name: string;
+  email: string;
   avatar: string | null;
   isActive: boolean;
   createdAt: string;
@@ -25,9 +27,11 @@ const initialState: AuthState = {
   isAuthenticated: false,
 };
 
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
+
   reducers: {
     setUser: (
       state,
@@ -50,6 +54,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
     },
   },
+
+  
 });
 
 export const { setUser, logout } = authSlice.actions;

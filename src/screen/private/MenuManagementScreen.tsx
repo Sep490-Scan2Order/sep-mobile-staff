@@ -3,13 +3,15 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
-import { User, LogOut, ChevronRight } from 'lucide-react-native';
+import { User, LogOut, ChevronRight, Lock } from 'lucide-react-native';
 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { authService } from '../../services/logicServices/authService';
 
 type RootStackParamList = {
   MenuMain: undefined;
   ProfileScreen: undefined;
+  ChangePasswordScreen: { email: string };
 };
 
 const MenuItem = ({
@@ -51,7 +53,7 @@ export default function MenuScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-
+  console.log('MenuScreen - userInfo:', userInfo);
   if (!userInfo) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -91,7 +93,21 @@ export default function MenuScreen() {
           subtitle="Avatar, tên, gmail..."
           onPress={() => navigation.navigate('ProfileScreen')}
         />
-
+        <MenuItem
+          icon={Lock}
+          title="Đổi mật khẩu"
+          subtitle="Cập nhật mật khẩu tài khoản"
+          onPress={async () => {
+            try {
+              await authService.sendEmailOtp(userInfo.email); // gửi OTP
+              navigation.navigate('ChangePasswordScreen', {
+                email: userInfo.email,
+              });
+            } catch (error) {
+              console.log('Send OTP error:', error);
+            }
+          }}
+        />
         {/* Logout */}
         <TouchableOpacity
           onPress={() => dispatch(logout())}

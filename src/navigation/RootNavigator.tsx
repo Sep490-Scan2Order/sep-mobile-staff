@@ -8,6 +8,7 @@ import AuthNavigator from './AuthNavigator';
 import ProfileScreen from '../screen/private/ProfileScreen';
 import DetailOrderScreen from '../screen/private/DetailOrderScreen';
 import DetailPaymentScreen from '../screen/private/DetailPaymentScreen';
+import ChangePasswordScreen from '../screen/private/ChangePasswordScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,10 @@ export default function RootNavigator() {
           <Stack.Screen
             name="DetailPaymentScreen"
             component={DetailPaymentScreen}
+          />
+          <Stack.Screen
+            name="ChangePasswordScreen"
+            component={ChangePasswordScreen}
           />
         </>
       ) : (
