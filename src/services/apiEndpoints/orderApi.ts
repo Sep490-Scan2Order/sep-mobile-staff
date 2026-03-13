@@ -15,5 +15,13 @@ export const orderApi = {
     return axiosPrivate.get(
       `/Order/cart/${cartId}`
     );
-  }
+  },
+   getPendingCashOrders: () => {
+    return axiosPrivate.get(`/Order/cash/pending-confirm`);
+  },
+  confirmCashOrder: (orderId: string) => {
+  return axiosPrivate.post(
+    `/Order/cash/${orderId}/confirm`
+  );
+},
 };

@@ -24,7 +24,7 @@ interface SDKTableProps {
 }
 
 type RootStackParamList = {
-  DetailOrderScreen: { order: Order };
+  DetailOrderScreen: null;
 };
 
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
@@ -32,7 +32,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { orders } = useSelector((state: RootState) => state.order);
-
+  console.log('KDSTable - orders from store:', orders);
   const [searchText, setSearchText] = useState('');
 
   const ORDER_STATUS_LABEL: Record<number, string> = {
@@ -174,11 +174,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
                 </Text>
 
                 <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('DetailOrderScreen', {
-                      order: order,
-                    })
-                  }
+                  onPress={() => navigation.navigate('DetailOrderScreen')}
                 >
                   <MoreVertical size={18} color="#226B5D" />
                 </TouchableOpacity>

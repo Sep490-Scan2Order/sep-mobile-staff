@@ -6,7 +6,13 @@ export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
-  image: string;
+
+  originalPrice?: number;
+  discountAmount?: number;
+  promotionName?: string;
+  subTotal?: number;
+
+  image?: string;
 }
 
 export interface Order {
@@ -59,6 +65,38 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
   }
 );
 
+export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
+  'order/fetchPendingCashOrders',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await orderService.getPendingCashOrders();
+
+      const mapped = data.map((order: any) => ({
+        id: order.id,
+        phone: order.phone,
+        orderCode: order.orderCode,
+        createdAt: order.createdAt,
+        amount: order.amount,
+        status: order.status,
+        items: order.items.map((item: any) => ({
+          id: item.dishId.toString(),
+          name: item.dishName,
+          price: item.price,
+          quantity: item.quantity,
+          originalPrice: item.originalPrice,
+          discountAmount: item.discountAmount,
+          promotionName: item.promotionName,
+          subTotal: item.subTotal,
+        })),
+      }));
+console.log('Mapped Pending Cash Orders:', mapped); // Debug log để kiểm tra dữ liệu sau khi map
+      return mapped;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const updateOrderStatus = createAsyncThunk(
   'order/updateOrderStatus',
   async (
@@ -66,7 +104,7 @@ export const updateOrderStatus = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      var result =  await orderService.updateOrderStatus(orderId, newStatus);
+      const result = await orderService.updateOrderStatus(orderId, newStatus);
       console.log('updateOrderStatus - result:', result);
       return { orderId, newStatus };
     } catch (error: any) {
@@ -74,7 +112,17 @@ export const updateOrderStatus = createAsyncThunk(
     }
   }
 );
-
+export const confirmCashOrder = createAsyncThunk(
+  'order/confirmCashOrder',
+  async (orderId: string, { rejectWithValue }) => {
+    try {
+      await orderService.confirmCashOrder(orderId);
+      return orderId;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 const orderSlice = createSlice({
   name: 'order',
   initialState,
@@ -145,6 +193,23 @@ const orderSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
+      .addCase(fetchPendingCashOrders.pending, state => {
+        state.loading = true;
+      })
+      .addCase(fetchPendingCashOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload;
+      })
+      .addCase(fetchPendingCashOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+.addCase(confirmCashOrder.fulfilled, (state, action) => {
+  state.orders = state.orders.filter(
+    order => order.id !== action.payload
+  );
+})
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const index = state.orders.findIndex(
           o => o.id === action.payload.orderId
