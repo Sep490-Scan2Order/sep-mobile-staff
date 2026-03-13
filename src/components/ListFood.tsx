@@ -15,7 +15,7 @@ interface ListFoodProps {
 
 export const ListFood: React.FC<ListFoodProps> = ({ item }) => {
   return (
-    <View className="flex-row items-center bg-[#E6EFEA] rounded-xl p-3 mb-3 shadow-sm">
+    <View className="flex-row items-center bg-[#E6EFEA] rounded-xl p-3 mb-3 shadow-sm ">
       <Image source={{ uri: item.image }} className="w-14 h-14 rounded-lg" />
 
       <View className="flex-1 ml-3">

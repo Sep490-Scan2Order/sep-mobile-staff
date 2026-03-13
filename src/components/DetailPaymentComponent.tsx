@@ -21,19 +21,17 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
   return (
     <View className="flex-1">
       <HeaderDetail />
-      <ScrollView className="px-7 -mt-80">
+      <ScrollView className="px-7 -mt-90" style={{ marginTop: -175 }}>
         <CustomerDetailBorder order={order} />
 
-        <View className="bg-white/20 border border-white/30 rounded-3xl p-6 mb-5">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-base text-white font-semibold">
-              Phương thức:
-            </Text>
-            <Text className="text-base text-white font-semibold">
+        <Border>
+          <View className="flex-row justify-between mb-3">
+            <Text className="text-lg font-medium">Phương thức:</Text>
+            <Text className="text-lg font-medium">
               {paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}
             </Text>
           </View>
-        </View>
+        </Border>
 
         <Border>
           <View className="mt-4">

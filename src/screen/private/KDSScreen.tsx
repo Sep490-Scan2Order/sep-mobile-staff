@@ -10,8 +10,8 @@ import {
   fetchActiveOrders,
   clearUnreadByStatus,
 } from '../../store/slices/orderSlice';
-import { AppDispatch } from '../../store';
-import { useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
+import { useDispatch, useSelector } from 'react-redux';
 import { useSignalR } from '../../hook/useSignalR';
 import { playNotificationSound } from '../../utils/notificationSound';
 
@@ -19,10 +19,10 @@ const KDSScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [activeSidebarIndex, setActiveSidebarIndex] = useState(-1);
-  const [activeBottomIndex, setActiveBottomIndex] = useState(0);
-
-  const restaurantId = 58;
-
+  const restaurantId = useSelector(
+    (state: RootState) => state.auth.userInfo?.restaurantId,
+  );
+  console.log('KDSScreen - restaurantId:', restaurantId);
   // fetch orders
   useEffect(() => {
     dispatch(fetchActiveOrders(restaurantId));
@@ -72,11 +72,6 @@ const KDSScreen: React.FC = () => {
           </View>
         </View>
       </SafeAreaView>
-
-      <BottomNavbar
-        activeIndex={activeBottomIndex}
-        onItemPress={setActiveBottomIndex}
-      />
     </View>
   );
 };

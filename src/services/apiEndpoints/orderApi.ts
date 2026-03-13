@@ -7,8 +7,13 @@ export const orderApi = {
     );
   },
   updateOrderStatus: (orderId: string, newStatus: number) => {
-    return axiosPrivate.patch(
+    return axiosPrivate.put(
       `/Order/update-status/${orderId}?newStatus=${newStatus}`
     );
   },
+  listOrders: (cartId: string) => {
+    return axiosPrivate.get(
+      `/Order/cart/${cartId}`
+    );
+  }
 };

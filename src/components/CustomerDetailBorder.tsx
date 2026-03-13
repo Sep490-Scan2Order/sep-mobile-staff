@@ -18,7 +18,10 @@ export const CustomerDetailBorder = ({ order }: Props) => {
   };
 
   return (
-    <View className="bg-white/20 border border-white/30 rounded-3xl p-6 mb-5">
+    <View
+      className="bg-white/20 border border-white/30 rounded-3xl p-6 "
+      style={{ marginBottom: '70' }}
+    >
       {/* Row title */}
       <View className="flex-row justify-between mb-4">
         <View className="flex-row items-center">

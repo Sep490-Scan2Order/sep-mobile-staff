@@ -1,22 +1,31 @@
 import { ArrowLeft, CheckCircle } from 'lucide-react-native';
-import { Text, TouchableOpacity, View } from 'react-native';
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 
 interface HeaderDetailProps {
   onBack?: () => void;
   title?: string;
   isSuccess?: boolean;
-  heightClass?: string; // 👈 thêm prop
+  height?: number; // 👈 dùng style height
+  style?: StyleProp<ViewStyle>; // 👈 cho phép custom thêm style
 }
 
 export const HeaderDetail: React.FC<HeaderDetailProps> = ({
   onBack,
   title = 'Chi tiết thanh toán',
   isSuccess = false,
-  heightClass = 'h-2/4', // 👈 mặc định như cũ
+  height = 340,
+  style,
 }) => {
   return (
     <View
-      className={`bg-[#226B5D] pt-14 px-4 rounded-b-2xl -mb-10 ${heightClass}`}
+      style={[{ height }, style]}
+      className="bg-[#226B5D] pt-14 px-4 rounded-b-2xl -mb-10"
     >
       <View className="flex-row items-center mb-4">
         <TouchableOpacity onPress={onBack} activeOpacity={0.7}>

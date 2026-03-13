@@ -29,6 +29,7 @@ interface OrderState {
     1: number;
     2: number;
     3: number;
+    4: number;
   };
 }
 
@@ -42,6 +43,7 @@ const initialState: OrderState = {
     1: 0,
     2: 0,
     3: 0,
+    4: 0,
   },
 };
 
@@ -64,7 +66,8 @@ export const updateOrderStatus = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      await orderService.updateOrderStatus(orderId, newStatus);
+      var result =  await orderService.updateOrderStatus(orderId, newStatus);
+      console.log('updateOrderStatus - result:', result);
       return { orderId, newStatus };
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -82,7 +85,10 @@ const orderSlice = createSlice({
       state.orders.unshift(order);
 
       state.unread.all += 1;
-      state.unread[order.status as 1 | 2 | 3] += 1;
+
+      if (state.unread[order.status as 1 | 2 | 3 | 4] !== undefined) {
+        state.unread[order.status as 1 | 2 | 3 | 4] += 1;
+      }
     },
 
     updateOrderStatusLocal: (
@@ -99,7 +105,10 @@ const orderSlice = createSlice({
           state.orders[index].status = newStatus;
 
           state.unread.all += 1;
-          state.unread[newStatus as 1 | 2 | 3] += 1;
+
+          if (state.unread[newStatus as 1 | 2 | 3 | 4] !== undefined) {
+            state.unread[newStatus as 1 | 2 | 3 | 4] += 1;
+          }
         }
       }
     },
@@ -108,9 +117,17 @@ const orderSlice = createSlice({
       const status = action.payload;
 
       if (status === -1) {
-        state.unread = { all: 0, 1: 0, 2: 0, 3: 0 };
+        state.unread = {
+          all: 0,
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0,
+        };
       } else {
-        state.unread[status as 1 | 2 | 3] = 0;
+        if (state.unread[status as 1 | 2 | 3 | 4] !== undefined) {
+          state.unread[status as 1 | 2 | 3 | 4] = 0;
+        }
       }
     },
   },

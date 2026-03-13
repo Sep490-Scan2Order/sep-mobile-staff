@@ -23,4 +23,15 @@ console.log('Axios Response:', axiosResponse); // Debug log để kiểm tra d�
 
     return response.data; // Thường trả về true/false hoặc object order đã update
   },
+
+  async listOrders(cartId: string) {
+    const axiosResponse = await orderApi.listOrders(cartId);
+    const response = axiosResponse.data;
+
+    if (!response?.isSuccess) {
+      throw new Error(response?.message || 'Không lấy được danh sách order');
+    }
+
+    return response.data;
+  },
 };

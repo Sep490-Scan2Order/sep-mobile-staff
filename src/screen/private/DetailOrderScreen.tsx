@@ -12,6 +12,7 @@ import { ListFood } from '../../components/ListFood';
 import { Border } from '../../components/Border';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Order } from '../../store/slices/orderSlice';
 
 type RootStackParamList = {
   DetailOrderScreen: { order: Order };
@@ -24,21 +25,24 @@ type NavigationProp = NativeStackNavigationProp<
 >;
 
 type DetailRouteProp = RouteProp<RootStackParamList, 'DetailOrderScreen'>;
+
 export default function DetailOrderScreen() {
   const route = useRoute<DetailRouteProp>();
   const navigation = useNavigation<NavigationProp>();
+
   const { order } = route.params;
+
   return (
     <View className="flex-1 bg-gray-100">
       <HeaderDetail />
 
-      <ScrollView className="px-7 -mt-80">
+      <ScrollView className="px-7 -mt-90" style={{ marginTop: -175 }}>
         <CustomerDetailBorder order={order} />
 
-        <Border>
+        <Border className="mt-5">
           <FlatList
-            data={order.items}
-            keyExtractor={item => item.id}
+            data={order?.items ?? []}
+            keyExtractor={item => item.id.toString()}
             scrollEnabled={false}
             renderItem={({ item }) => <ListFood item={item} />}
           />

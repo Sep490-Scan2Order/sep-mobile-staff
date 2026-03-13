@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import {
-  LayoutDashboard,
+  ClipboardList,
   CookingPot,
-  ClipboardCheck,
   CheckCircle2,
+  Truck,
+  CreditCard,
+  LayoutDashboard,
 } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
@@ -12,7 +14,7 @@ import { RootState } from '../store';
 interface NavItem {
   icon: React.ReactNode;
   label: string;
-  status?: number;
+  status: number;
 }
 
 interface SidebarProps {
@@ -28,19 +30,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems: NavItem[] = [
     {
-      icon: <CookingPot size={22} color="#226B5D" />,
-      label: 'Đang làm',
+      icon: <ClipboardList size={22} color="#226B5D" />,
+      label: 'Chờ nhận',
       status: 1,
     },
     {
-      icon: <ClipboardCheck size={22} color="#226B5D" />,
-      label: 'Đã xong',
+      icon: <CookingPot size={22} color="#226B5D" />,
+      label: 'Đang làm',
       status: 2,
     },
     {
       icon: <CheckCircle2 size={22} color="#226B5D" />,
-      label: 'Đã giao',
+      label: 'Hoàn thành',
       status: 3,
+    },
+    {
+      icon: <Truck size={22} color="#226B5D" />,
+      label: 'Đã giao',
+      status: 4,
+    },
+    {
+      icon: <CreditCard size={22} color="#226B5D" />,
+      label: 'Chưa thanh toán',
+      status: 0,
     },
   ];
 
@@ -64,22 +76,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         <LayoutDashboard size={22} color="#226B5D" />
+
         <Badge count={unread.all} />
+
         <Text className="font-bold text-base">Tất cả</Text>
       </TouchableOpacity>
 
+      {/* STATUS LIST */}
       <View className="bg-white border h-full border-[#226B5DCC] rounded-lg py-2 shadow-sm">
         {navItems.map((item, index) => (
           <TouchableOpacity
             key={index}
-            onPress={() => onItemPress?.(item.status!)}
+            onPress={() => onItemPress?.(item.status)}
             className={`items-center py-4 relative ${
               activeIndex === item.status ? 'bg-gray-100' : ''
             }`}
           >
             {item.icon}
 
-            <Badge count={unread[item.status as 1 | 2 | 3]} />
+            <Badge count={unread[item.status as 0 | 1 | 2 | 3 | 4]} />
 
             <Text className="text-xs mt-1 text-gray-700 text-center">
               {item.label}
