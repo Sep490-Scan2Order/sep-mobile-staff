@@ -11,4 +11,5 @@ export const dishApi = {
       `/BranchDishConfig/toggle-sold-out/${id}?isSoldOut=${isSoldOut}`
     );
   },
+  
 };

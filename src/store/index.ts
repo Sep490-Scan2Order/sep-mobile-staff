@@ -6,6 +6,7 @@ import authReducer from '../store/slices/authSlice';
 import dishReducer from '../store/slices/dishSlice';
 import restaurantReducer from '../store/slices/restaurantSlice';
 import shiftReducer from '../store/slices/shiftSlice';
+import orderReducer from '../store/slices/orderSlice';
 import {
   FLUSH,
   REHYDRATE,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   dish: dishReducer,
   restaurant: restaurantReducer,
   shift: shiftReducer,
+  order: orderReducer
 });
 
 const persistConfig = {

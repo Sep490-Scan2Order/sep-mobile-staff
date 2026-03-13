@@ -9,21 +9,55 @@ import OrderStatusScreen from '../screen/private/OrderStatusScreen';
 import MenuManagementScreen from '../screen/private/MenuManagementScreen';
 import CheckInScreen from '../screen/private/CheckInScreen';
 
+import {
+  ClipboardList,
+  Utensils,
+  ShoppingCart,
+  Menu,
+  QrCode,
+} from 'lucide-react-native';
+
 const Tab = createBottomTabNavigator();
 
 export default function BottomTabs() {
   const user = useSelector((state: RootState) => state.auth.userInfo);
   const role = user?.role;
-  console.log('BottomTabs - user role:', role);
+
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      {/* chỉ cashier mới có */}
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: '#226B5D',
+        tabBarInactiveTintColor: 'gray',
+
+        tabBarIcon: ({ color, size }) => {
+          switch (route.name) {
+            case 'KDS':
+              return <ClipboardList size={size} color={color} />;
+
+            case 'Foods':
+              return <Utensils size={size} color={color} />;
+
+            case 'Orders':
+              return <ShoppingCart size={size} color={color} />;
+
+            case 'Menu':
+              return <Menu size={size} color={color} />;
+
+            case 'CheckIn':
+              return <QrCode size={size} color={color} />;
+
+            default:
+              return null;
+          }
+        },
+      })}
+    >
+      <Tab.Screen name="KDS" component={KDSScreen} />
+      <Tab.Screen name="Foods" component={FoodManagementScreen} />
       {role === 'Cashier' && (
         <Tab.Screen name="CheckIn" component={CheckInScreen} />
       )}
-
-      <Tab.Screen name="KDS" component={KDSScreen} />
-      <Tab.Screen name="Foods" component={FoodManagementScreen} />
       <Tab.Screen name="Orders" component={OrderStatusScreen} />
       <Tab.Screen name="Menu" component={MenuManagementScreen} />
     </Tab.Navigator>

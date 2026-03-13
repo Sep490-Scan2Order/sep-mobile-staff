@@ -1,0 +1,26 @@
+import { orderApi } from '../apiEndpoints/orderApi';
+
+export const orderService = {
+  async getActiveOrders(restaurantId: number) {
+    const axiosResponse = await orderApi.getActiveOrders(restaurantId);
+console.log('Axios Response:', axiosResponse); // Debug log để kiểm tra dữ liệu trả về từ API
+    const response = axiosResponse.data;
+
+    if (!response?.isSuccess) {
+      throw new Error(response?.message || 'Không lấy được danh sách order');
+    }
+
+    return response.data;
+  },
+
+  async updateOrderStatus(orderId: string, newStatus: number) {
+    const axiosResponse = await orderApi.updateOrderStatus(orderId, newStatus);
+    const response = axiosResponse.data;
+
+    if (!response?.isSuccess) {
+      throw new Error(response?.message || 'Cập nhật trạng thái thất bại');
+    }
+
+    return response.data; // Thường trả về true/false hoặc object order đã update
+  },
+};

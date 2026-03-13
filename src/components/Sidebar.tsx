@@ -2,15 +2,17 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import {
   LayoutDashboard,
-  ClockFading,
   CookingPot,
   ClipboardCheck,
+  CheckCircle2,
 } from 'lucide-react-native';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 interface NavItem {
   icon: React.ReactNode;
   label: string;
-  badge?: number;
+  status?: number;
 }
 
 interface SidebarProps {
@@ -19,50 +21,65 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  activeIndex = 0,
+  activeIndex = -1,
   onItemPress,
 }) => {
+  const { unread } = useSelector((state: RootState) => state.order);
+
   const navItems: NavItem[] = [
     {
-      icon: <ClockFading />,
-      label: 'Đang chờ ',
-      badge: 1,
+      icon: <CookingPot size={22} color="#226B5D" />,
+      label: 'Đang làm',
+      status: 1,
     },
-    { icon: <CookingPot />, label: 'Đang làm' },
-    { icon: <ClipboardCheck />, label: 'Đã xong' },
+    {
+      icon: <ClipboardCheck size={22} color="#226B5D" />,
+      label: 'Đã xong',
+      status: 2,
+    },
+    {
+      icon: <CheckCircle2 size={22} color="#226B5D" />,
+      label: 'Đã giao',
+      status: 3,
+    },
   ];
+
+  const Badge = ({ count }: { count: number }) => {
+    if (!count) return null;
+
+    return (
+      <View className="absolute -top-2 -right-2 bg-red-500 rounded-full w-5 h-5 items-center justify-center">
+        <Text className="text-white text-xs font-bold">{count}</Text>
+      </View>
+    );
+  };
 
   return (
     <View className="w-24 flex-col gap-5 p-2">
-      {/* Hàng 1 - Tất cả */}
+      {/* ALL */}
       <TouchableOpacity
         onPress={() => onItemPress?.(-1)}
-        className="bg-white  border border-[#226B5DCC] rounded-lg py-4 items-center justify-center shadow-sm"
+        className={`border rounded-lg py-4 items-center justify-center shadow-sm relative ${
+          activeIndex === -1 ? 'bg-gray-100' : 'bg-white'
+        }`}
       >
-        <LayoutDashboard />
+        <LayoutDashboard size={22} color="#226B5D" />
+        <Badge count={unread.all} />
         <Text className="font-bold text-base">Tất cả</Text>
       </TouchableOpacity>
 
-      {/* Hàng 2 - Danh sách item */}
       <View className="bg-white border h-full border-[#226B5DCC] rounded-lg py-2 shadow-sm">
         {navItems.map((item, index) => (
           <TouchableOpacity
             key={index}
-            onPress={() => onItemPress?.(index)}
+            onPress={() => onItemPress?.(item.status!)}
             className={`items-center py-4 relative ${
-              activeIndex === index ? 'bg-gray-100' : ''
+              activeIndex === item.status ? 'bg-gray-100' : ''
             }`}
           >
-            <View className="relative">
-              {item.icon}
-              {item.badge && (
-                <View className="absolute -top-2 -right-2 bg-red-500 rounded-full w-5 h-5 items-center justify-center">
-                  <Text className="text-white text-xs font-bold">
-                    {item.badge}
-                  </Text>
-                </View>
-              )}
-            </View>
+            {item.icon}
+
+            <Badge count={unread[item.status as 1 | 2 | 3]} />
 
             <Text className="text-xs mt-1 text-gray-700 text-center">
               {item.label}

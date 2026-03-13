@@ -105,6 +105,13 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    // Ensure raw resources are included
+    sourceSets {
+        main {
+            res.srcDirs = ['src/main/res']
+        }
+    }
 }
 
 dependencies {
