@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../components/Header';
@@ -9,6 +9,7 @@ import {
   updateOrderStatusLocal,
   fetchActiveOrders,
   clearUnreadByStatus,
+  addOrder,
 } from '../../store/slices/orderSlice';
 import { AppDispatch, RootState } from '../../store';
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,7 +26,9 @@ const KDSScreen: React.FC = () => {
   console.log('KDSScreen - restaurantId:', restaurantId);
   // fetch orders
   useEffect(() => {
-    dispatch(fetchActiveOrders(restaurantId));
+    if (restaurantId) {
+      dispatch(fetchActiveOrders(restaurantId));
+    }
   }, [dispatch, restaurantId]);
 
   // khi user click sidebar
@@ -36,23 +39,47 @@ const KDSScreen: React.FC = () => {
     dispatch(clearUnreadByStatus(status));
   };
 
-  const kdsEvents = [
-    {
-      name: 'UpdateStatus',
-      handler: (data: any) => {
-        console.log('SignalR Event Received: UpdateStatus');
+  const kdsEvents = useMemo(
+    () => [
+      {
+        name: 'UpdateStatus',
+        handler: (data: any) => {
+          console.log('SignalR Event Received: UpdateStatus', data);
 
-        playNotificationSound();
+          playNotificationSound();
 
-        dispatch(
-          updateOrderStatusLocal({
-            id: data.orderId || data.OrderId,
-            status: data.status || data.Status,
-          }),
-        );
+          dispatch(
+            updateOrderStatusLocal({
+              id: data.orderId ?? data.OrderId,
+              status: data.status ?? data.Status,
+            }),
+          );
+        },
       },
-    },
-  ];
+      {
+        name: 'ReceiveOrder',
+        handler: (order: any) => {
+          console.log('SignalR ReceiveOrder data:', order);
+
+          playNotificationSound();
+
+          const mappedOrder = {
+            id: order.id ?? order.Id,
+            phone: order.phone ?? order.Phone ?? '',
+            orderCode: order.orderCode ?? order.OrderCode ?? 0,
+            createdAt:
+              order.createdAt ?? order.CreatedAt ?? new Date().toISOString(),
+            amount: order.amount ?? order.TotalAmount ?? order.finalAmount ?? 0,
+            status: order.status ?? order.Status ?? 0,
+            items: order.items ?? order.Items ?? [],
+          };
+
+          dispatch(addOrder(mappedOrder));
+        },
+      },
+    ],
+    [dispatch],
+  );
 
   useSignalR(restaurantId, kdsEvents);
 

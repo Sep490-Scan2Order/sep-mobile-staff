@@ -43,7 +43,7 @@ export const ListFood: React.FC<ListFoodProps> = ({ item }) => {
         {/* Price */}
         <View className="flex-row items-center mt-1">
           <Text className="text-[#226B5D] font-semibold text-sm">
-            {item.price.toLocaleString()} đ
+            {item.price} đ
           </Text>
 
           {item.originalPrice && item.originalPrice > item.price && (
