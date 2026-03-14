@@ -18,7 +18,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Order, updateOrderStatus } from '../store/slices/orderSlice';
-
+import { generateOrderVoice } from '../services/logicServices/voiceService';
+import { playVoiceFile } from '../services/logicServices/playVoice';
+import { playNotificationSound } from '../utils/notificationSound';
 interface SDKTableProps {
   statusFilter: number;
 }
@@ -212,7 +214,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
 
               <TouchableOpacity
                 className="py-4 items-center border-t border-dashed border-gray-400"
-                onPress={() => {
+                onPress={async () => {
                   const newStatus = getNextStatus(order.status);
 
                   dispatch(
@@ -221,6 +223,33 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
                       newStatus,
                     }),
                   );
+
+                  try {
+                    // 🔔 Chờ nhận
+                    if (newStatus === 1) {
+                      playNotificationSound();
+                    }
+
+                    // 🔊 Hoàn thành → đọc voice
+                    if (newStatus === 4) {
+                      console.log('Start generating voice...');
+
+                      const path = await generateOrderVoice(order.orderCode);
+
+                      console.log('Voice file:', path);
+
+                      await playVoiceFile(path);
+
+                      console.log('Voice played');
+                    }
+
+                    // 🔔 Đã giao
+                    if (newStatus === 3) {
+                      playNotificationSound();
+                    }
+                  } catch (err) {
+                    console.log('Voice error:', err);
+                  }
                 }}
               >
                 <Text className="text-[#226B5D] text-base font-semibold">

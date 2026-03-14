@@ -46,8 +46,6 @@ const KDSScreen: React.FC = () => {
         handler: (data: any) => {
           console.log('SignalR Event Received: UpdateStatus', data);
 
-          playNotificationSound();
-
           dispatch(
             updateOrderStatusLocal({
               id: data.orderId ?? data.OrderId,
