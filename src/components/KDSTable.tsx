@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   TextInput,
+  FlatList,
 } from 'react-native';
 import {
   Calendar,
@@ -18,23 +18,24 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Order, updateOrderStatus } from '../store/slices/orderSlice';
-import { generateOrderVoice } from '../services/logicServices/voiceService';
-import { playVoiceFile } from '../services/logicServices/playVoice';
 import { playNotificationSound } from '../utils/notificationSound';
+import { getOrderAudio } from '../services/logicServices/orderAudioService';
+import { playAudioUrl } from '../services/logicServices/playAudioUrl';
+
 interface SDKTableProps {
   statusFilter: number;
 }
 
 type RootStackParamList = {
-  DetailOrderScreen: null;
+  DetailOrderScreen: undefined;
 };
 
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { orders } = useSelector((state: RootState) => state.order);
-  console.log('KDSTable - orders from store:', orders);
+  const orders = useSelector((state: RootState) => state.order.orders);
+
   const [searchText, setSearchText] = useState('');
 
   const ORDER_STATUS_LABEL: Record<number, string> = {
@@ -89,47 +90,152 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   };
 
   const isToday = (dateString: string) => {
-    const today = new Date();
-    const date = new Date(dateString);
+    const today = new Date().toDateString();
+    const date = new Date(dateString).toDateString();
+
+    return today === date;
+  };
+
+  /**
+   * FILTER ORDERS
+   */
+  const filteredOrders = useMemo(() => {
+    return orders
+      .filter(order => isToday(order.createdAt))
+      .filter(order =>
+        statusFilter === -1 ? true : order.status === statusFilter,
+      )
+      .filter(order => {
+        if (!searchText.trim()) return true;
+
+        const keyword = searchText.toLowerCase();
+        const orderCodeFull = `ord-${order.orderCode}`;
+
+        return (
+          order.phone?.toLowerCase().includes(keyword) ||
+          order.orderCode?.toString().includes(keyword) ||
+          orderCodeFull.includes(keyword) ||
+          order.items?.some(item => item.name?.toLowerCase().includes(keyword))
+        );
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+  }, [orders, statusFilter, searchText]);
+
+  /**
+   * HANDLE STATUS CHANGE
+   */
+  const handleUpdateStatus = async (order: Order) => {
+    const newStatus = getNextStatus(order.status);
+
+    dispatch(
+      updateOrderStatus({
+        orderId: order.id,
+        newStatus,
+      }),
+    );
+
+    try {
+      if (newStatus === 1) {
+        playNotificationSound();
+      }
+
+      if (newStatus === 3) {
+        playNotificationSound();
+      }
+
+      if (newStatus === 4) {
+        try {
+          const audioUrl = await getOrderAudio(order.orderCode);
+          await playAudioUrl(audioUrl);
+        } catch (err) {
+          console.log('Audio error:', err);
+        }
+      }
+    } catch (err) {
+      console.log('Voice error:', err);
+    }
+  };
+
+  /**
+   * RENDER ITEM
+   */
+  const renderItem = ({ item }: { item: Order }) => {
+    const badge = getStatusBadge(item.status);
 
     return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
+      <View className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6">
+        <View className="flex-row items-center px-4 py-4 border-b border-dashed border-gray-400">
+          <Phone size={20} color="#226B5D" />
+
+          <Text className="flex-1 ml-3 text-base text-gray-700">
+            {item.phone || 'Không có SĐT'}
+
+            {badge.text !== '' && (
+              <Text
+                className={`text-white px-2 py-1 ml-2 rounded ${badge.color}`}
+              >
+                {badge.text}
+              </Text>
+            )}
+          </Text>
+
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('DetailOrderScreen', { orderId: item.id })
+            }
+          >
+            <MoreVertical size={18} color="#226B5D" />
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex-row">
+          <View className="flex-1 justify-center px-3 py-4 border-r border-gray-300">
+            <Text className="text-lg text-gray-700 font-semibold">
+              ORD-{item.orderCode}
+            </Text>
+          </View>
+
+          <View className="flex-1">
+            <View className="flex-row items-center px-3 py-3 border-b border-gray-300">
+              <Calendar size={16} color="#777" />
+
+              <Text className="ml-2 text-sm text-gray-600">
+                {formatDate(item.createdAt)}
+              </Text>
+            </View>
+
+            <View className="flex-row items-center px-3 py-3">
+              <DollarSign size={16} color="#777" />
+
+              <Text className="ml-2 text-sm text-gray-600">
+                {item.amount.toLocaleString()} đ
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          className="py-4 items-center border-t border-dashed border-gray-400"
+          onPress={() => handleUpdateStatus(item)}
+        >
+          <Text className="text-[#226B5D] text-base font-semibold">
+            {ORDER_STATUS_LABEL[item.status]}
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
-  const filteredOrders = orders
-    .filter(order => isToday(order.createdAt))
-    .filter(order =>
-      statusFilter === -1 ? true : order.status === statusFilter,
-    )
-    .filter(order => {
-      if (!searchText.trim()) return true;
-
-      const keyword = searchText.toLowerCase();
-      const orderCodeFull = `ord-${order.orderCode}`;
-
-      return (
-        order.phone?.toLowerCase().includes(keyword) ||
-        order.orderCode?.toString().includes(keyword) ||
-        orderCodeFull.includes(keyword) ||
-        order.items?.some(item => item.name?.toLowerCase().includes(keyword))
-      );
-    })
-    .sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    );
-  console.log('Filtered Orders:', filteredOrders);
-
   return (
     <View className="flex-1">
-      {/* SEARCH BAR */}
+      {/* SEARCH */}
 
       <View className="px-4 pt-4">
         <View className="flex-row items-center bg-[#E8F3F0] border border-[#226B5D] rounded-xl px-3 py-2">
-          <Search size={18} style={{ color: '#226B5D' }} />
+          <Search size={18} color="#226B5D" />
 
           <TextInput
             placeholder="Tìm món ăn / SĐT / mã đơn..."
@@ -141,133 +247,27 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
 
           {searchText.length > 0 && (
             <TouchableOpacity onPress={() => setSearchText('')}>
-              <X size={18} style={{ color: '#226B5D' }} />
+              <X size={18} color="#226B5D" />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      {/* ORDER LIST */}
+      {/* LIST */}
 
-      <ScrollView className="flex-1 px-4 py-4">
-        {filteredOrders.map(order => {
-          const badge = getStatusBadge(order.status);
-
-          return (
-            <View
-              key={order.id}
-              className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6"
-            >
-              {/* HEADER */}
-
-              <View className="flex-row items-center px-4 py-4 border-b border-dashed border-gray-400">
-                <Phone size={20} color="#226B5D" />
-
-                <Text className="flex-1 ml-3 text-base text-gray-700">
-                  {order.phone || 'Không có SĐT'}
-
-                  {badge.text !== '' && (
-                    <Text
-                      className={`text-white px-2 py-1 ml-2 rounded ${badge.color}`}
-                    >
-                      {badge.text}
-                    </Text>
-                  )}
-                </Text>
-
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('DetailOrderScreen')}
-                >
-                  <MoreVertical size={18} color="#226B5D" />
-                </TouchableOpacity>
-              </View>
-
-              {/* BODY */}
-
-              <View className="flex-row">
-                <View className="flex-1 justify-center px-3 py-4 border-r border-gray-300">
-                  <Text className="text-lg text-gray-700 font-semibold">
-                    ORD-{order.orderCode}
-                  </Text>
-                </View>
-
-                <View className="flex-1">
-                  <View className="flex-row items-center px-3 py-3 border-b border-gray-300">
-                    <Calendar size={16} color="#777" />
-
-                    <Text className="ml-2 text-sm text-gray-600">
-                      {formatDate(order.createdAt)}
-                    </Text>
-                  </View>
-
-                  <View className="flex-row items-center px-3 py-3">
-                    <DollarSign size={16} color="#777" />
-
-                    <Text className="ml-2 text-sm text-gray-600">
-                      {order.amount.toLocaleString()} đ
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* BUTTON */}
-
-              <TouchableOpacity
-                className="py-4 items-center border-t border-dashed border-gray-400"
-                onPress={async () => {
-                  const newStatus = getNextStatus(order.status);
-
-                  dispatch(
-                    updateOrderStatus({
-                      orderId: order.id,
-                      newStatus,
-                    }),
-                  );
-
-                  try {
-                    // 🔔 Chờ nhận
-                    if (newStatus === 1) {
-                      playNotificationSound();
-                    }
-
-                    // 🔊 Hoàn thành → đọc voice
-                    if (newStatus === 4) {
-                      console.log('Start generating voice...');
-
-                      const path = await generateOrderVoice(order.orderCode);
-
-                      console.log('Voice file:', path);
-
-                      await playVoiceFile(path);
-
-                      console.log('Voice played');
-                    }
-
-                    // 🔔 Đã giao
-                    if (newStatus === 3) {
-                      playNotificationSound();
-                    }
-                  } catch (err) {
-                    console.log('Voice error:', err);
-                  }
-                }}
-              >
-                <Text className="text-[#226B5D] text-base font-semibold">
-                  {ORDER_STATUS_LABEL[order.status]}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
-
-        {filteredOrders.length === 0 && (
+      <FlatList
+        data={filteredOrders}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={{ padding: 16 }}
+        ListEmptyComponent={
           <View className="items-center mt-20">
             <Text className="text-gray-400 text-base">
               Không tìm thấy kết quả
             </Text>
           </View>
-        )}
-      </ScrollView>
+        }
+      />
     </View>
   );
 };

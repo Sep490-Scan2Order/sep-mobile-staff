@@ -2,10 +2,9 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { orderService } from '../../services/logicServices/orderService';
 
 /* ================================
-   TYPES
+TYPES
 ================================ */
 
-/** Item trong một order */
 export interface OrderItem {
   id: string;
   name: string;
@@ -19,7 +18,6 @@ export interface OrderItem {
   image?: string;
 }
 
-/** Order hiển thị trong KDS */
 export interface Order {
   id: string;
   phone: string;
@@ -30,13 +28,12 @@ export interface Order {
   items: OrderItem[];
 }
 
-/** State quản lý orders trong Redux */
 interface OrderState {
   orders: Order[];
   loading: boolean;
   error: string | null;
+  refreshCount: number;
 
-  /** badge unread cho từng trạng thái */
   unread: {
     all: number;
     0: number;
@@ -48,13 +45,14 @@ interface OrderState {
 }
 
 /* ================================
-   INITIAL STATE
+INITIAL STATE
 ================================ */
 
 const initialState: OrderState = {
   orders: [],
   loading: false,
   error: null,
+  refreshCount: 0,
 
   unread: {
     all: 0,
@@ -67,10 +65,9 @@ const initialState: OrderState = {
 };
 
 /* ================================
-   HELPER FUNCTIONS
+HELPER
 ================================ */
 
-/** tăng badge unread */
 const increaseUnread = (state: OrderState, status: number) => {
   state.unread.all += 1;
 
@@ -80,12 +77,9 @@ const increaseUnread = (state: OrderState, status: number) => {
 };
 
 /* ================================
-   ASYNC THUNKS
+THUNKS
 ================================ */
 
-/**
- * Lấy danh sách order active của nhà hàng
- */
 export const fetchActiveOrders = createAsyncThunk<Order[], number>(
   'order/fetchActiveOrders',
   async (restaurantId, { rejectWithValue }) => {
@@ -97,16 +91,12 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
   }
 );
 
-/**
- * Lấy danh sách order tiền mặt chưa thanh toán
- */
 export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
   'order/fetchPendingCashOrders',
   async (_, { rejectWithValue }) => {
     try {
       const data = await orderService.getPendingCashOrders();
 
-      /** map dữ liệu API sang format Redux */
       return data.map((order: any) => ({
         id: order.id,
         phone: order.phone,
@@ -131,9 +121,6 @@ export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
   }
 );
 
-/**
- * Update trạng thái order (call API)
- */
 export const updateOrderStatus = createAsyncThunk(
   'order/updateOrderStatus',
   async (
@@ -149,9 +136,6 @@ export const updateOrderStatus = createAsyncThunk(
   }
 );
 
-/**
- * Xác nhận thanh toán tiền mặt
- */
 export const confirmCashOrder = createAsyncThunk(
   'order/confirmCashOrder',
   async (orderId: string, { rejectWithValue }) => {
@@ -165,7 +149,7 @@ export const confirmCashOrder = createAsyncThunk(
 );
 
 /* ================================
-   SLICE
+SLICE
 ================================ */
 
 const orderSlice = createSlice({
@@ -173,52 +157,56 @@ const orderSlice = createSlice({
   initialState,
 
   reducers: {
-    /**
-     * Thêm order mới vào state
-     * (dùng khi nhận realtime từ SignalR)
-     */
-   addOrder: (state, action: PayloadAction<Order>) => {
-  const order = action.payload;
 
-  const index = state.orders.findIndex(o => o.id === order.id);
+    /* =========================
+    RECEIVE ORDER REALTIME
+    ========================= */
 
-  if (index !== -1) {
-    // update order nếu đã tồn tại
-    state.orders[index] = order;
-    return;
-  }
+    addOrder: (state, action: PayloadAction<Order>) => {
+      const order = action.payload;
 
-  // thêm order mới
-  state.orders.unshift(order);
+      const exists = state.orders.some(o => o.id === order.id);
+      if (exists) return;
 
-  increaseUnread(state, order.status);
-},
+      state.orders = [...state.orders, order];
 
-    /**
-     * Update status order realtime (SignalR)
-     */
+      increaseUnread(state, order.status);
+    },
+
+    /* =========================
+    UPDATE STATUS REALTIME
+    ========================= */
+
     updateOrderStatusLocal: (
       state,
       action: PayloadAction<{ id: string; status: number }>
     ) => {
-      const order = state.orders.find(o => o.id === action.payload.id);
-      if (!order) return;
+      const { id, status } = action.payload;
 
-      if (order.status !== action.payload.status) {
-        order.status = action.payload.status;
+      state.orders = state.orders.map(order => {
+        if (order.id === id) {
+          if (order.status !== status) {
+            increaseUnread(state, status);
+          }
+console.log("OLD:", order.status, "NEW:", status);
+          return {
+            ...order,
+            status,
+          };
+        }
 
-        increaseUnread(state, action.payload.status);
-      }
+        return order;
+      });
     },
 
-    /**
-     * Clear badge unread khi user click tab
-     */
+    /* =========================
+    CLEAR BADGE
+    ========================= */
+
     clearUnreadByStatus: (state, action: PayloadAction<number>) => {
       const status = action.payload;
 
       if (status === -1) {
-        // reset tất cả
         state.unread = { all: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
       } else {
         if (state.unread[status as 0 | 1 | 2 | 3 | 4] !== undefined) {
@@ -226,82 +214,80 @@ const orderSlice = createSlice({
         }
       }
     },
+
+    /* =========================
+    FORCE REFRESH WITHOUT API
+    ========================= */
+
+    forceRefresh: (state) => {
+      // Increment counter để trigger re-render
+      state.refreshCount = (state.refreshCount + 1) % 1000000;
+    },
   },
 
   extraReducers: builder => {
     builder
 
-      /**
-       * fetchActiveOrders - loading
-       */
       .addCase(fetchActiveOrders.pending, state => {
         state.loading = true;
       })
 
-      /**
-       * fetchActiveOrders - success
-       */
       .addCase(fetchActiveOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload;
 
-        // reset unread
+        const existingIds = new Set(state.orders.map(o => o.id));
+
+        const merged = [
+          ...state.orders,
+          ...action.payload.filter(o => !existingIds.has(o.id)),
+        ];
+
+        state.orders = merged;
+
         state.unread = { all: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
 
-        // tính lại unread
-        action.payload.forEach(order => {
+        merged.forEach(order => {
           increaseUnread(state, order.status);
         });
       })
 
-      /**
-       * fetchActiveOrders - error
-       */
       .addCase(fetchActiveOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
 
-      /**
-       * fetchPendingCashOrders - success
-       */
       .addCase(fetchPendingCashOrders.fulfilled, (state, action) => {
         state.loading = false;
         state.orders = action.payload;
       })
 
-      /**
-       * confirmCashOrder - remove order khỏi list
-       */
       .addCase(confirmCashOrder.fulfilled, (state, action) => {
-        state.orders = state.orders.filter(
-          order => order.id !== action.payload
-        );
+        const orderId = action.payload;
+
+        state.orders = state.orders.filter(order => order.id !== orderId);
       })
 
-      /**
-       * updateOrderStatus API success
-       */
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
-        const order = state.orders.find(
-          o => o.id === action.payload.orderId
-        );
+        const { orderId, newStatus } = action.payload;
 
-        if (order) {
-          order.status = action.payload.newStatus;
-        }
+        state.orders = state.orders.map(order =>
+          order.id === orderId
+            ? { ...order, status: newStatus }
+            : order
+        );
       });
   },
 });
 
 /* ================================
-   EXPORTS
+EXPORTS
 ================================ */
 
 export const {
   addOrder,
   updateOrderStatusLocal,
   clearUnreadByStatus,
+  forceRefresh,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

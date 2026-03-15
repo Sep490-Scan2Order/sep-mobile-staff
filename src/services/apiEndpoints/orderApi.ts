@@ -24,4 +24,7 @@ export const orderApi = {
     `/Order/cash/${orderId}/confirm`
   );
 },
+readyForPickup: (orderCode: number) => {
+    return axiosPrivate.post(`/Order/ready-for-pickup/${orderCode}`);
+  }
 };

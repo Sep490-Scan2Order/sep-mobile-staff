@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Header } from '../../components/Header';
 import { Sidebar } from '../../components/Sidebar';
 import { SDKTable } from '../../components/KDSTable';
-import { BottomNavbar } from '../../components/BottomNavbar';
+
 import {
   updateOrderStatusLocal,
   fetchActiveOrders,
   clearUnreadByStatus,
   addOrder,
+  forceRefresh,
 } from '../../store/slices/orderSlice';
+
 import { AppDispatch, RootState } from '../../store';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSignalR } from '../../hook/useSignalR';
@@ -19,45 +22,117 @@ import { playNotificationSound } from '../../utils/notificationSound';
 const KDSScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const [activeSidebarIndex, setActiveSidebarIndex] = useState(-1);
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
-  console.log('KDSScreen - restaurantId:', restaurantId);
-  // fetch orders
+
+  const [activeSidebarIndex, setActiveSidebarIndex] = useState(-1);
+
+  /**
+   * FETCH ORDERS
+   */
   useEffect(() => {
-    if (restaurantId) {
+    if (!restaurantId) return;
+
+    dispatch(fetchActiveOrders(restaurantId));
+  }, [restaurantId, dispatch]);
+
+  /**
+   * REFETCH ORDERS WHEN SCREEN FOCUS
+   */
+  useFocusEffect(
+    useCallback(() => {
+      if (!restaurantId) return;
+
       dispatch(fetchActiveOrders(restaurantId));
-    }
-  }, [dispatch, restaurantId]);
+    }, [restaurantId, dispatch]),
+  );
 
-  // khi user click sidebar
-  const handleSidebarPress = (status: number) => {
-    setActiveSidebarIndex(status);
+  /**
+   * SIDEBAR CLICK
+   */
+  const handleSidebarPress = useCallback(
+    (status: number) => {
+      setActiveSidebarIndex(status);
 
-    // clear badge của tab đó
-    dispatch(clearUnreadByStatus(status));
-  };
+      dispatch(clearUnreadByStatus(status));
+    },
+    [dispatch],
+  );
 
-  const kdsEvents = useMemo(
-    () => [
+  /**
+   * SIGNALR EVENTS
+   */
+  const kdsEvents = useMemo(() => {
+    return [
       {
         name: 'UpdateStatus',
         handler: (data: any) => {
-          console.log('SignalR Event Received: UpdateStatus', data);
+          if (!data) return;
+
+          console.log('SignalR RAW UpdateStatus:', data);
+
+          const orderId =
+            data.orderId ?? data.OrderId ?? data.id ?? data.Id ?? null;
+
+          const status =
+            data.status ??
+            data.Status ??
+            data.newStatus ??
+            data.NewStatus ??
+            null;
+
+          if (!orderId || status === null) {
+            console.log('Invalid UpdateStatus payload');
+            return;
+          }
+
+          console.log('Parsed UpdateStatus:', {
+            orderId,
+            status,
+          });
 
           dispatch(
             updateOrderStatusLocal({
-              id: data.orderId ?? data.OrderId,
-              status: data.status ?? data.Status,
+              id: orderId,
+              status,
             }),
           );
         },
       },
+
+      {
+        name: 'OrderConfirmed',
+        handler: (order: any) => {
+          if (!order) return;
+
+          console.log('SignalR RAW OrderConfirmed:', order);
+
+          // Order vừa được thanh toán (chuyển từ pending → active)
+          // Thêm vào active list để hiển thị ở KDS
+          const mappedOrder = {
+            id: order.id ?? order.Id,
+            phone: order.phone ?? order.Phone ?? '',
+            orderCode: order.orderCode ?? order.OrderCode ?? 0,
+            createdAt:
+              order.createdAt ?? order.CreatedAt ?? new Date().toISOString(),
+            amount: order.amount ?? order.TotalAmount ?? order.finalAmount ?? 0,
+            status: order.status ?? order.Status ?? 1,
+            items: order.items ?? order.Items ?? [],
+          };
+
+          console.log('Mapped Confirmed Order:', mappedOrder);
+
+          dispatch(addOrder(mappedOrder));
+        },
+      },
+
       {
         name: 'ReceiveOrder',
         handler: (order: any) => {
-          console.log('SignalR ReceiveOrder data:', order);
+          if (!order) return;
+
+          console.log('SignalR RAW ReceiveOrder:', order);
 
           playNotificationSound();
 
@@ -72,13 +147,17 @@ const KDSScreen: React.FC = () => {
             items: order.items ?? order.Items ?? [],
           };
 
+          console.log('Mapped Order:', mappedOrder);
+
           dispatch(addOrder(mappedOrder));
         },
       },
-    ],
-    [dispatch],
-  );
+    ];
+  }, [dispatch]);
 
+  /**
+   * CONNECT SIGNALR
+   */
   useSignalR(restaurantId, kdsEvents);
 
   return (

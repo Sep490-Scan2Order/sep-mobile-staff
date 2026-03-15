@@ -2,10 +2,10 @@ import Sound from "react-native-sound";
 
 Sound.setCategory("Playback");
 
-export const playVoiceFile = (path: string) => {
+export const playAudioUrl = (url: string) => {
   return new Promise((resolve, reject) => {
 
-    const sound = new Sound(path, "", (error) => {
+    const sound = new Sound(url, "", (error) => {
 
       if (error) {
         reject(error);

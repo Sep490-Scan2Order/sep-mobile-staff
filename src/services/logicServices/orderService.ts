@@ -58,4 +58,21 @@ console.log('Axios Response:', axiosResponse); // Debug log để kiểm tra d�
 
   return response.data;
 },
+
+async readyForPickup(orderCode: number) {
+
+    const axiosResponse = await orderApi.readyForPickup(orderCode);
+
+    console.log("Axios readyForPickup:", axiosResponse);
+
+    const response = axiosResponse.data;
+
+    if (!response?.success) {
+      throw new Error(response?.message || "Generate audio failed");
+    }
+
+    return response;
+
+  }
+
 };
