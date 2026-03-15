@@ -141,3 +141,52 @@ export const releaseSound = () => {
     loadPromise = null;
   }
 };
+
+// Play audio from URL (for payment received notifications, etc.)
+export const playAudioFromUrl = async (audioUrl: string) => {
+  if (!audioUrl) {
+    console.warn("[Sound] Audio URL is empty");
+    return;
+  }
+
+  try {
+    console.log("[Sound] Loading audio from URL:", audioUrl);
+    
+    const paymentSound = new Sound(audioUrl, undefined, (error) => {
+      if (error) {
+        console.error("[Sound] Failed to load audio from URL:", error?.what, error?.extra);
+        return;
+      }
+
+      console.log("[Sound] Successfully loaded audio from URL, playing...");
+      
+      try {
+        paymentSound.setVolume(1.0);
+        paymentSound.setNumberOfLoops(0);
+        
+        paymentSound.play((success) => {
+          if (success) {
+            console.log("[Sound] Successfully finished playing payment notification");
+          } else {
+            console.error("[Sound] Payment audio playback failed");
+          }
+          
+          try {
+            paymentSound.release();
+          } catch (err) {
+            console.error("[Sound] Error releasing payment sound:", err);
+          }
+        });
+      } catch (err) {
+        console.error("[Sound] Error setting up audio playback:", err);
+        try {
+          paymentSound.release();
+        } catch (releaseErr) {
+          console.error("[Sound] Error releasing sound after setup error:", releaseErr);
+        }
+      }
+    });
+  } catch (err) {
+    console.error("[Sound] Error playing audio from URL:", err);
+  }
+};

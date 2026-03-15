@@ -6,9 +6,19 @@ export const dishApi = {
       `/BranchDishConfig/restaurants/${restaurantId}/branch-dishes`
     );
   },
-    toggleSoldOut: (id: number, isSoldOut: boolean) => {
+  getRestaurantMenu: (restaurantId: number) => {
+    return axiosPrivate.get(
+      `/Restaurant/${restaurantId}/menu`
+    );
+  },
+toggleSoldOut: (
+    restaurantId: number,
+    id: number,
+    isSoldOut: boolean,
+    quantity: number
+  ) => {
     return axiosPrivate.put(
-      `/BranchDishConfig/toggle-sold-out/${id}?isSoldOut=${isSoldOut}`
+      `/BranchDishConfig/toggle-sold-out/${restaurantId}/${id}?isSoldOut=${isSoldOut}&quantity=${quantity}`
     );
   },
   

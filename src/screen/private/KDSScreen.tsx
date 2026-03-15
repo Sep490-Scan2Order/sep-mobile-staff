@@ -17,7 +17,10 @@ import {
 import { AppDispatch, RootState } from '../../store';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSignalR } from '../../hook/useSignalR';
-import { playNotificationSound } from '../../utils/notificationSound';
+import {
+  playNotificationSound,
+  playAudioFromUrl,
+} from '../../utils/notificationSound';
 
 const KDSScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -110,15 +113,22 @@ const KDSScreen: React.FC = () => {
 
           // Order vừa được thanh toán (chuyển từ pending → active)
           // Thêm vào active list để hiển thị ở KDS
+          const items = order.items ?? order.Items ?? [];
+
           const mappedOrder = {
             id: order.id ?? order.Id,
             phone: order.phone ?? order.Phone ?? '',
             orderCode: order.orderCode ?? order.OrderCode ?? 0,
             createdAt:
               order.createdAt ?? order.CreatedAt ?? new Date().toISOString(),
-            amount: order.amount ?? order.TotalAmount ?? order.finalAmount ?? 0,
+            amount:
+              order.amount ??
+              order.totalAmount ??
+              order.TotalAmount ??
+              order.finalAmount ??
+              0,
             status: order.status ?? order.Status ?? 1,
-            items: order.items ?? order.Items ?? [],
+            items: items,
           };
 
           console.log('Mapped Confirmed Order:', mappedOrder);
@@ -136,20 +146,56 @@ const KDSScreen: React.FC = () => {
 
           playNotificationSound();
 
+          const items = order.items ?? order.Items ?? [];
+
           const mappedOrder = {
             id: order.id ?? order.Id,
             phone: order.phone ?? order.Phone ?? '',
             orderCode: order.orderCode ?? order.OrderCode ?? 0,
             createdAt:
               order.createdAt ?? order.CreatedAt ?? new Date().toISOString(),
-            amount: order.amount ?? order.TotalAmount ?? order.finalAmount ?? 0,
+            amount:
+              order.amount ??
+              order.totalAmount ??
+              order.TotalAmount ??
+              order.finalAmount ??
+              0,
             status: order.status ?? order.Status ?? 0,
-            items: order.items ?? order.Items ?? [],
+            items: items,
           };
 
           console.log('Mapped Order:', mappedOrder);
 
           dispatch(addOrder(mappedOrder));
+        },
+      },
+
+      {
+        name: 'PaymentReceived',
+        handler: (data: any) => {
+          if (!data) return;
+
+          console.log('SignalR RAW PaymentReceived:', data);
+
+          const orderCode = data.orderCode ?? data.OrderCode ?? null;
+          const amount = data.amount ?? data.Amount ?? 0;
+          const audioUrl = data.audioUrl ?? data.AudioUrl ?? null;
+
+          if (!orderCode) {
+            console.log('Invalid PaymentReceived payload: missing orderCode');
+            return;
+          }
+
+          console.log('Payment Received:', {
+            orderCode,
+            amount,
+            audioUrl,
+          });
+
+          // Play payment notification sound from URL
+          if (audioUrl) {
+            playAudioFromUrl(audioUrl);
+          }
         },
       },
     ];

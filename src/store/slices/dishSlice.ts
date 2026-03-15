@@ -5,10 +5,14 @@ export interface Dish {
   id: number;
   restaurantName: string;
   dishName: string;
-  dishImage: string;
+  dishImageUrl: string;
   isSelling: boolean;
   price: number;
   isSoldOut: boolean;
+  discountedPrice?: number;
+  promotionName?: string | null;
+  promotionLabel?: string | null;
+  hasPromotion?: boolean;
 }
 
 interface DishState {
@@ -24,16 +28,27 @@ const initialState: DishState = {
 };
 
 interface TogglePayload {
+  restaurantId: number;
   id: number;
   isSoldOut: boolean;
+  quantity: number;
 }
 
 
 export const toggleSoldOutThunk = createAsyncThunk(
   'dish/toggleSoldOut',
-  async ({ id, isSoldOut }: TogglePayload, { rejectWithValue }) => {
+  async (
+    { restaurantId, id, isSoldOut, quantity }: TogglePayload,
+    { rejectWithValue }
+  ) => {
     try {
-      await dishService.toggleSoldOut(id, isSoldOut);
+      await dishService.toggleSoldOut(
+        restaurantId,
+        id,
+        isSoldOut,
+        quantity
+      );
+
       return { id, isSoldOut };
     } catch (error: any) {
       return rejectWithValue(
@@ -42,7 +57,6 @@ export const toggleSoldOutThunk = createAsyncThunk(
     }
   }
 );
-
 
 export const fetchDishesByRestaurant = createAsyncThunk(
   'dish/fetchByRestaurant',

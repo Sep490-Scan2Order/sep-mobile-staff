@@ -15,7 +15,7 @@ const FoodManagementScreen = () => {
   const { dishes, loading, error } = useSelector(
     (state: RootState) => state.dish,
   );
-
+  console.log('check food ', dishes);
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
   const restaurantId = userInfo?.restaurantId;
@@ -103,9 +103,13 @@ const FoodManagementScreen = () => {
                   key={item.id}
                   name={item.dishName}
                   price={`${item.price.toLocaleString()} VND`}
-                  image={item.dishImage}
+                  image={item.dishImageUrl}
                   active={!item.isSoldOut}
                   id={item.id}
+                  originalPrice={item.price}
+                  discountedPrice={item.discountedPrice}
+                  promotionName={item.promotionName}
+                  hasPromotion={item.hasPromotion}
                 />
               ))}
             </ScrollView>

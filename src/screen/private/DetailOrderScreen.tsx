@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   confirmCashOrder,
   fetchPendingCashOrders,
+  fetchActiveOrders,
   forceRefresh,
   Order,
 } from '../../store/slices/orderSlice';
@@ -55,10 +56,14 @@ export default function DetailOrderScreen() {
   const dispatch = useDispatch<AppDispatch>();
 
   const { orders, loading } = useSelector((state: RootState) => state.order);
+  const restaurantId = useSelector(
+    (state: RootState) => state.auth.userInfo?.restaurantId,
+  );
 
   useEffect(() => {
-    dispatch(fetchPendingCashOrders());
-  }, [dispatch]);
+    if (!restaurantId) return;
+    dispatch(fetchActiveOrders(restaurantId));
+  }, [restaurantId, dispatch]);
 
   const order = orders.find(o => o.id === route.params.orderId);
 
@@ -123,12 +128,14 @@ export default function DetailOrderScreen() {
       </ScrollView>
 
       <View className="px-4 pb-6 bg-gray-100">
-        <TouchableOpacity
-          onPress={handlePayment}
-          className="bg-[#226B5D] py-4 rounded-2xl items-center shadow-lg"
-        >
-          <Text className="text-white text-lg font-semibold">Thanh toán</Text>
-        </TouchableOpacity>
+        {order.status === 0 && (
+          <TouchableOpacity
+            onPress={handlePayment}
+            className="bg-[#226B5D] py-4 rounded-2xl items-center shadow-lg"
+          >
+            <Text className="text-white text-lg font-semibold">Thanh toán</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

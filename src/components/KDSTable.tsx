@@ -136,9 +136,12 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         newStatus,
       }),
     );
-
+    console.log('Updated order status locally:', {
+      orderId: order.id,
+      newStatus,
+    });
     try {
-      if (newStatus === 1) {
+      if (newStatus === 2) {
         playNotificationSound();
       }
 
@@ -172,14 +175,6 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
 
           <Text className="flex-1 ml-3 text-base text-gray-700">
             {item.phone || 'Không có SĐT'}
-
-            {badge.text !== '' && (
-              <Text
-                className={`text-white px-2 py-1 ml-2 rounded ${badge.color}`}
-              >
-                {badge.text}
-              </Text>
-            )}
           </Text>
 
           <TouchableOpacity
