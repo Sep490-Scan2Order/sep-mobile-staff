@@ -77,3 +77,7 @@ yarn-error.log
 .env
 .env.*
 !.env.example
+
+debug.apk
+release.apk
+split apk
