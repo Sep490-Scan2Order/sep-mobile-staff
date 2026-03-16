@@ -1,4 +1,4 @@
-import { orderApi } from '../apiEndpoints/orderApi';
+import { orderApi, scanQrApi } from '../apiEndpoints/orderApi';
 
 export const orderService = {
   async getActiveOrders(restaurantId: number) {
@@ -73,6 +73,20 @@ async readyForPickup(orderCode: number) {
 
     return response;
 
-  }
+  },
+  
+ async scanOrderQr(qrContent: string): Promise<boolean> {
+    try {
+      const axiosResponse = await scanQrApi(qrContent);
 
+      console.log('Axios scanQrApi:', axiosResponse);
+
+      const response = axiosResponse.data;
+
+      return response === true;
+    } catch (error) {
+      console.log('Scan QR error:', error);
+      throw error;
+    }
+  },
 };

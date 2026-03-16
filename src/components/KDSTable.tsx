@@ -28,6 +28,7 @@ interface SDKTableProps {
 
 type RootStackParamList = {
   DetailOrderScreen: undefined;
+  ScanDeliveryScreen: undefined;
 };
 
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
@@ -130,32 +131,22 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const handleUpdateStatus = async (order: Order) => {
     const newStatus = getNextStatus(order.status);
 
+    // Nếu là bước giao hàng -> mở camera
+    if (newStatus === 4) {
+      navigation.navigate('ScanDeliveryScreen');
+      return;
+    }
+
     dispatch(
       updateOrderStatus({
         orderId: order.id,
         newStatus,
       }),
     );
-    console.log('Updated order status locally:', {
-      orderId: order.id,
-      newStatus,
-    });
+
     try {
-      if (newStatus === 2) {
+      if (newStatus === 2 || newStatus === 3) {
         playNotificationSound();
-      }
-
-      if (newStatus === 3) {
-        playNotificationSound();
-      }
-
-      if (newStatus === 4) {
-        try {
-          const audioUrl = await getOrderAudio(order.orderCode);
-          await playAudioUrl(audioUrl);
-        } catch (err) {
-          console.log('Audio error:', err);
-        }
       }
     } catch (err) {
       console.log('Voice error:', err);

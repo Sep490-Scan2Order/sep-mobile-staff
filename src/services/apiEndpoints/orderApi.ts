@@ -28,3 +28,10 @@ readyForPickup: (orderCode: number) => {
     return axiosPrivate.post(`/Order/ready-for-pickup/${orderCode}`);
   }
 };
+export const scanQrApi = async (qrContent: string): Promise<boolean> => {
+  const res = await axiosPrivate.post(`/Order/scan-qr`, {
+    qrContent,
+  });
+
+  return res.data;
+};

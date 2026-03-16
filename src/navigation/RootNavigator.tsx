@@ -9,6 +9,7 @@ import ProfileScreen from '../screen/private/ProfileScreen';
 import DetailOrderScreen from '../screen/private/DetailOrderScreen';
 import DetailPaymentScreen from '../screen/private/DetailPaymentScreen';
 import ChangePasswordScreen from '../screen/private/ChangePasswordScreen';
+import ScanDeliveryScreen from '../screen/private/ScanDeliveryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,10 @@ export default function RootNavigator() {
           <Stack.Screen
             name="ChangePasswordScreen"
             component={ChangePasswordScreen}
+          />
+          <Stack.Screen
+            name="ScanDeliveryScreen"
+            component={ScanDeliveryScreen}
           />
         </>
       ) : (

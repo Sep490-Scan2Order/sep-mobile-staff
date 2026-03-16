@@ -15,34 +15,38 @@ export const useSignalR = (restaurantId: number, events: SignalREvent[]) => {
   useEffect(() => {
     eventsRef.current = events;
   }, [events]);
+useEffect(() => {
+  console.log("Creating SignalR connection");
 
-  useEffect(() => {
-    const connection = createSignalRConnection();
+  const connection = createSignalRConnection();
 
-    // Đăng ký các sự kiện động dựa trên tham số truyền vào
-    eventsRef.current.forEach(event => {
-      connection.on(event.name, event.handler);
-    });
+  eventsRef.current.forEach(event => {
+    console.log("Register event:", event.name);
+    connection.on(event.name, event.handler);
+  });
 
-    connection.start()
-      .then(() => {
-        console.log('--- SignalR Connected ---');
-        connection.invoke('JoinRestaurantGroup', restaurantId.toString())
-          .catch(err => console.error('Join Group Error:', err));
-      })
-      .catch(err => console.error('Connection Error:', err));
+  console.log("Starting connection...");
 
-    connectionRef.current = connection;
+  connection.start()
+    .then(() => {
+      console.log("✅ SignalR Connected");
 
-    return () => {
-      if (connectionRef.current) {
-        // Hủy đăng ký các sự kiện đã đăng ký
-        eventsRef.current.forEach(event => connectionRef.current?.off(event.name));
-        connectionRef.current.stop();
-      }
-    };
-    // Chỉ chạy lại khi restaurantId thay đổi
-  }, [restaurantId]); 
+      connection.invoke("JoinRestaurantGroup", restaurantId.toString())
+        .then(() => console.log("Joined group:", restaurantId))
+        .catch(err => console.error("Join Group Error:", err));
+    })
+    .catch(err => console.error("❌ Connection Error:", err));
 
+  connectionRef.current = connection;
+
+  return () => {
+    if (connectionRef.current) {
+      eventsRef.current.forEach(event =>
+        connectionRef.current?.off(event.name)
+      );
+      connectionRef.current.stop();
+    }
+  };
+}, [restaurantId]);
   return connectionRef.current;
 };
