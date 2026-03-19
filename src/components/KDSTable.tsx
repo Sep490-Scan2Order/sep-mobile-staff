@@ -21,13 +21,15 @@ import { Order, updateOrderStatus } from '../store/slices/orderSlice';
 import { playNotificationSound } from '../utils/notificationSound';
 import { getOrderAudio } from '../services/logicServices/orderAudioService';
 import { playAudioUrl } from '../services/logicServices/playAudioUrl';
+import { RefundModal } from './RefundModal';
+import { Menu, Layout, Settings } from 'lucide-react-native';
 
 interface SDKTableProps {
   statusFilter: number;
 }
 
 type RootStackParamList = {
-  DetailOrderScreen: undefined;
+  DetailOrderScreen: { orderId: string };
   ScanDeliveryScreen: undefined;
 };
 
@@ -38,6 +40,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const orders = useSelector((state: RootState) => state.order.orders);
 
   const [searchText, setSearchText] = useState('');
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
   const ORDER_STATUS_LABEL: Record<number, string> = {
     0: 'Thanh toán',
@@ -168,13 +173,41 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
             {item.phone || 'Không có SĐT'}
           </Text>
 
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('DetailOrderScreen', { orderId: item.id })
-            }
-          >
-            <MoreVertical size={18} color="#226B5D" />
-          </TouchableOpacity>
+
+          <View className="relative">
+            <TouchableOpacity
+              onPress={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
+            >
+              <MoreVertical size={18} color="#226B5D" />
+            </TouchableOpacity>
+
+            {activeMenuId === item.id && (
+              <View className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-32 py-1">
+                <TouchableOpacity
+                  className="px-4 py-2 border-b border-gray-100"
+                  onPress={() => {
+                    setActiveMenuId(null);
+                    navigation.navigate('DetailOrderScreen', { orderId: item.id });
+                  }}
+                >
+                  <Text className="text-gray-700">Chi tiết</Text>
+                </TouchableOpacity>
+
+                {[1, 2, 3].includes(item.status) && (
+                  <TouchableOpacity
+                    className="px-4 py-2"
+                    onPress={() => {
+                      setActiveMenuId(null);
+                      setSelectedOrder(item);
+                      setShowRefundModal(true);
+                    }}
+                  >
+                    <Text className="text-red-500">Hoàn tiền</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
         </View>
 
         <View className="flex-row">
@@ -254,6 +287,18 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           </View>
         }
       />
+
+      {selectedOrder && (
+        <RefundModal
+          isVisible={showRefundModal}
+          onClose={() => {
+            setShowRefundModal(false);
+            setSelectedOrder(null);
+          }}
+          orderId={selectedOrder.id}
+          orderCode={selectedOrder.orderCode.toString()}
+        />
+      )}
     </View>
   );
 };

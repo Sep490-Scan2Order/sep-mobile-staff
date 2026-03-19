@@ -2,7 +2,7 @@ import * as signalR from '@microsoft/signalr';
 
 export const createSignalRConnection = () => {
   return new signalR.HubConnectionBuilder()
-    .withUrl('https://api.scan2order.io.vn/scan2order-hub')
+    .withUrl('http://10.0.2.2:5201/scan2order-hub')
     .withAutomaticReconnect()
     .configureLogging(signalR.LogLevel.Information)
     .build();
