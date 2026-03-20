@@ -128,6 +128,7 @@ const KDSScreen: React.FC = () => {
               order.finalAmount ??
               0,
             status: order.status ?? order.Status ?? 1,
+            type: order.type ?? order.Type ?? null,
             items: items,
           };
 
@@ -161,6 +162,7 @@ const KDSScreen: React.FC = () => {
               order.finalAmount ??
               0,
             status: order.status ?? order.Status ?? 0,
+            type: order.type ?? order.Type ?? null,
             items: items,
           };
 

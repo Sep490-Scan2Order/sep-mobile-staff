@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { orderService } from '../../services/logicServices/orderService';
+import { isToday } from '../../utils/dateUtils';
 
 /* ================================
 TYPES
@@ -26,6 +27,8 @@ export interface Order {
   amount: number;
   status: number;
   items: OrderItem[];
+  type?: string;
+  tableName?: string;
 }
 
 interface OrderState {
@@ -68,11 +71,13 @@ const initialState: OrderState = {
 HELPER
 ================================ */
 
-const increaseUnread = (state: OrderState, status: number) => {
+const increaseUnread = (state: OrderState, order: Order) => {
+  if (!isToday(order.createdAt)) return;
+
   state.unread.all += 1;
 
-  if (state.unread[status as 0 | 1 | 2 | 3 | 4] !== undefined) {
-    state.unread[status as 0 | 1 | 2 | 3 | 4] += 1;
+  if (state.unread[order.status as 0 | 1 | 2 | 3 | 4] !== undefined) {
+    state.unread[order.status as 0 | 1 | 2 | 3 | 4] += 1;
   }
 };
 
@@ -104,6 +109,8 @@ export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
         createdAt: order.createdAt,
         amount: order.amount,
         status: order.status,
+        type: order.type,
+        tableName: order.tableName,
         items: order.items.map((item: any) => ({
           id: item.dishId.toString(),
           name: item.dishName,
@@ -170,7 +177,7 @@ const orderSlice = createSlice({
 
       state.orders = [...state.orders, order];
 
-      increaseUnread(state, order.status);
+      increaseUnread(state, order);
     },
 
     /* =========================
@@ -186,7 +193,7 @@ const orderSlice = createSlice({
       state.orders = state.orders.map(order => {
         if (order.id === id) {
           if (order.status !== status) {
-            increaseUnread(state, status);
+            increaseUnread(state, { ...order, status });
           }
 console.log("OLD:", order.status, "NEW:", status);
           return {
@@ -235,19 +242,12 @@ console.log("OLD:", order.status, "NEW:", status);
       .addCase(fetchActiveOrders.fulfilled, (state, action) => {
         state.loading = false;
 
-        const existingIds = new Set(state.orders.map(o => o.id));
-
-        const merged = [
-          ...state.orders,
-          ...action.payload.filter(o => !existingIds.has(o.id)),
-        ];
-
-        state.orders = merged;
+        state.orders = action.payload;
 
         state.unread = { all: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
 
-        merged.forEach(order => {
-          increaseUnread(state, order.status);
+        action.payload.forEach(order => {
+          increaseUnread(state, order);
         });
       })
 

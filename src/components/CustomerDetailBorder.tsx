@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Phone, Hash, Calendar, MapPin } from 'lucide-react-native';
+import { Phone, Hash, Calendar, MapPin, CreditCard } from 'lucide-react-native';
 
 interface Props {
   order: {
     phone: string;
-    orderCode: string;
+    orderCode: string | number;
     createdAt: string;
-    tableName: string;
+    tableName?: string;
+    type?: string;
   };
 }
 
@@ -20,7 +21,7 @@ export const CustomerDetailBorder = ({ order }: Props) => {
   return (
     <View
       className="bg-white/20 border border-white/30 rounded-3xl p-6 "
-      style={{ marginBottom: '70' }}
+      style={{ marginBottom: 70 }}
     >
       {/* Row title */}
       <View className="flex-row justify-between mb-4">
@@ -60,11 +61,10 @@ export const CustomerDetailBorder = ({ order }: Props) => {
         </View>
       </View>
 
-      {/* Table */}
-      <View className="flex-row items-center">
-        <MapPin size={18} color="#FFFFFF" />
+      <View className="flex-row items-center mt-4">
+        <CreditCard size={18} color="#FFFFFF" />
         <Text className="ml-3 text-base text-white">
-          Tại bàn: {order?.tableName || '---'}
+          Thanh toán: {order?.type === 'Cash' ? 'Tiền mặt' : 'Chuyển khoản'}
         </Text>
       </View>
     </View>

@@ -104,7 +104,7 @@ export default function DetailOrderScreen() {
 
   return (
     <View className="flex-1 bg-gray-100">
-      <HeaderDetail />
+      <HeaderDetail onBack={() => navigation.goBack()} />
 
       <ScrollView className="px-7 -mt-90" style={{ marginTop: -165 }}>
         <CustomerDetailBorder order={order} />

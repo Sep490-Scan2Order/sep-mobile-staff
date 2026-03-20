@@ -23,6 +23,7 @@ import { getOrderAudio } from '../services/logicServices/orderAudioService';
 import { playAudioUrl } from '../services/logicServices/playAudioUrl';
 import { RefundModal } from './RefundModal';
 import { Menu, Layout, Settings } from 'lucide-react-native';
+import { isToday } from '../utils/dateUtils';
 
 interface SDKTableProps {
   statusFilter: number;
@@ -95,12 +96,6 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     return `${datePart} - ${timePart}`;
   };
 
-  const isToday = (dateString: string) => {
-    const today = new Date().toDateString();
-    const date = new Date(dateString).toDateString();
-
-    return today === date;
-  };
 
   /**
    * FILTER ORDERS
@@ -215,24 +210,24 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
             <Text className="text-lg text-gray-700 font-semibold">
               ORD-{item.orderCode}
             </Text>
+            {item.type && (
+              <Text className="text-sm text-black font-bold mt-1">
+                {item.type === 'Cash' ? 'Tiền mặt' : 'Chuyển khoản'}
+              </Text>
+            )}
           </View>
 
-          <View className="flex-1">
-            <View className="flex-row items-center px-3 py-3 border-b border-gray-300">
+          <View className="flex-1 justify-center px-3 py-4">
+            <View className="flex-row items-center mb-3">
               <Calendar size={16} color="#777" />
-
               <Text className="ml-2 text-sm text-gray-600">
                 {formatDate(item.createdAt)}
               </Text>
             </View>
 
-            <View className="flex-row items-center px-3 py-3">
-              <DollarSign size={16} color="#777" />
-
-              <Text className="ml-2 text-sm text-gray-600">
-                {item.amount.toLocaleString()} đ
-              </Text>
-            </View>
+            <Text className="text-sm text-gray-600">
+              {item.amount.toLocaleString()} đ
+            </Text>
           </View>
         </View>
 
