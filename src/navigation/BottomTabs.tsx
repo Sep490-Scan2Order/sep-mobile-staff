@@ -15,7 +15,9 @@ import {
   ShoppingCart,
   Menu,
   QrCode,
+  FileText,
 } from 'lucide-react-native';
+import CashReportScreen from '../screen/private/CashReportScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,6 +49,9 @@ export default function BottomTabs() {
             case 'CheckIn':
               return <QrCode size={size} color={color} />;
 
+            case 'CashReport':
+              return <FileText size={size} color={color} />;
+
             default:
               return null;
           }
@@ -57,6 +62,9 @@ export default function BottomTabs() {
       <Tab.Screen name="Foods" component={FoodManagementScreen} />
       {role === 'Cashier' && (
         <Tab.Screen name="CheckIn" component={CheckInScreen} />
+      )}
+      {role === 'Cashier' && (
+        <Tab.Screen name="CashReport" component={CashReportScreen} />
       )}
       <Tab.Screen name="Orders" component={OrderStatusScreen} />
       <Tab.Screen name="Menu" component={MenuManagementScreen} />

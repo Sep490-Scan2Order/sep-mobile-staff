@@ -7,14 +7,19 @@ import {
   Alert,
   TextInput,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { RootState } from '../../store';
 import { shiftService } from '../../services/logicServices/shiftService';
-import { checkInShift } from '../../store/slices/shiftSlice';
+import { checkInShift, clearShift } from '../../store/slices/shiftSlice';
+import { Header } from '../../components/Header';
 
 export default function CheckInScreen() {
   const dispatch = useDispatch<any>();
+  const navigation = useNavigation<any>();
 
   const user = useSelector((state: RootState) => state.auth.userInfo);
 
@@ -32,13 +37,18 @@ export default function CheckInScreen() {
       return;
     }
 
+    if (!user) {
+      Alert.alert('Lỗi', 'Thông tin người dùng không khả dụng. Vui lòng đăng nhập lại.');
+      return;
+    }
+
     try {
       setLoading(true);
 
       await dispatch(
         checkInShift({
-          restaurantId: user.restaurantId,
-          staffId: user.id,
+          restaurantId: user.restaurantId!,
+          staffId: user.id!,
           openingCashAmount: Number(cash),
           note: note,
         }),
@@ -66,13 +76,28 @@ export default function CheckInScreen() {
     try {
       setLoading(true);
 
+      const savedShiftId = currentShiftId;
+
       await shiftService.checkOut({
         shiftId: currentShiftId,
         cashAmount: Number(cash),
         note: note,
       });
 
-      Alert.alert('Thành công', 'Checkout ca làm thành công');
+      dispatch(clearShift());
+
+      Alert.alert(
+        'Thành công',
+        'Checkout ca làm thành công. Đang chuyển sang báo cáo chi tiết...',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate('CashReport', { shiftId: savedShiftId });
+            },
+          },
+        ]
+      );
     } catch (error: any) {
       Alert.alert('Lỗi', error?.message || 'Checkout thất bại');
     } finally {
@@ -81,127 +106,63 @@ export default function CheckInScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Quản Lý Ca Làm</Text>
+    <View className="flex-1 bg-teal-700">
+      <StatusBar barStyle="light-content" backgroundColor="#134e4a" /> {/* teal-900 roughly */}
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <Header />
 
-      <View style={styles.card}>
-        <Text style={styles.staff}>Nhân viên: {user?.name}</Text>
-        <Text style={styles.role}>Role: {user?.role}</Text>
+        <View className="flex-1 bg-white p-6">
+          <Text className="text-2xl font-black text-teal-700 text-center mb-6">QUẢN LÝ CA LÀM</Text>
 
-        <Text style={styles.label}>Số tiền</Text>
+          <View className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <Text className="text-lg font-bold text-gray-800">Nhân viên: {user?.name}</Text>
+            <Text className="mb-5 text-gray-500 text-sm italic">Vai trò: {user?.role}</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập số tiền"
-          value={cash}
-          onChangeText={setCash}
-          keyboardType="numeric"
-        />
+            <Text className="mt-3 mb-2 font-bold text-gray-700">Số tiền (VNĐ)</Text>
+            <TextInput
+              className="border border-gray-200 rounded-xl p-4 text-base bg-white"
+              placeholder="Nhập số tiền"
+              value={cash}
+              onChangeText={setCash}
+              keyboardType="numeric"
+            />
 
-        <Text style={styles.label}>Ghi chú</Text>
+            <Text className="mt-4 mb-2 font-bold text-gray-700">Ghi chú</Text>
+            <TextInput
+              className="border border-gray-200 rounded-xl p-4 text-base bg-white"
+              placeholder="Nhập ghi chú"
+              value={note}
+              onChangeText={setNote}
+              multiline
+              numberOfLines={3}
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập ghi chú"
-          value={note}
-          onChangeText={setNote}
-        />
+            <TouchableOpacity
+              className={`bg-teal-700 p-4 rounded-xl mt-6 items-center shadow-md ${!!currentShiftId ? 'opacity-50' : ''}`}
+              onPress={handleCheckIn}
+              disabled={loading || !!currentShiftId}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white font-bold text-base">Bắt đầu ca (Check-in)</Text>
+              )}
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.checkInButton, currentShiftId && { opacity: 0.5 }]}
-          onPress={handleCheckIn}
-          disabled={loading || !!currentShiftId}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Check In</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.checkOutButton, !currentShiftId && { opacity: 0.5 }]}
-          onPress={handleCheckOut}
-          disabled={loading || !currentShiftId}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Check Out</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity
+              className={`bg-red-600 p-4 rounded-xl mt-3 items-center shadow-md ${!currentShiftId ? 'opacity-50' : ''}`}
+              onPress={handleCheckOut}
+              disabled={loading || !currentShiftId}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white font-bold text-base">Kết thúc ca (Check-out)</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
-
-const PRIMARY = '#226B5D';
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: PRIMARY,
-    justifyContent: 'center',
-    padding: 20,
-  },
-
-  header: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-  },
-
-  staff: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
-  role: {
-    marginBottom: 15,
-    color: '#666',
-  },
-
-  label: {
-    marginTop: 10,
-    marginBottom: 5,
-    fontWeight: '600',
-  },
-
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 16,
-  },
-
-  checkInButton: {
-    backgroundColor: PRIMARY,
-    padding: 14,
-    borderRadius: 10,
-    marginTop: 20,
-    alignItems: 'center',
-  },
-
-  checkOutButton: {
-    backgroundColor: '#e74c3c',
-    padding: 14,
-    borderRadius: 10,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-});
