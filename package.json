@@ -7,7 +7,13 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "env:local": "copy /y .env.local .env",
+    "env:prod": "copy /y .env.production .env",
+    "android:local": "npm run env:local && npx react-native run-android",
+    "android:prod": "npm run env:prod && npx react-native run-android",
+    "ios:local": "npm run env:local && npx react-native run-ios",
+    "ios:prod": "npm run env:prod && npx react-native run-ios"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",

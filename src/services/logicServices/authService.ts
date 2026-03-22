@@ -6,15 +6,11 @@ import { Alert } from 'react-native';
 
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
-
     try {
       const axiosResponse = await authApi.staffLogin(credentials);
-
-      const response = axiosResponse.data; 
-
+      const response = axiosResponse.data;
 
       if (!response?.isSuccess) {
-
         return {
           success: false,
           message: response?.message || 'Sai tài khoản hoặc mật khẩu',
@@ -22,7 +18,6 @@ export const authService = {
       }
 
       const { accessToken, refreshToken, userInfo } = response.data;
-
       await tokenStorage.setTokens(accessToken, refreshToken);
 
       store.dispatch(
@@ -33,12 +28,10 @@ export const authService = {
         }),
       );
 
-
       return {
         success: true,
       };
     } catch (error: any) {
-
       return {
         success: false,
         message:
@@ -59,7 +52,6 @@ export const authService = {
     } catch (error: any) {
       console.error('❌ LOGOUT ERROR:', error);
       store.dispatch(logout());
-      
       return {
         success: false,
         message: error?.message || 'Lỗi khi đăng xuất',
@@ -68,10 +60,8 @@ export const authService = {
   },
 
   forceLogout: async () => {
-    
     try {
       await authService.logout();
-      
       Alert.alert(
         'Phiên hết hạn',
         'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
@@ -82,69 +72,74 @@ export const authService = {
     }
   },
 
-  
-sendEmailOtp: async (email: string) => {
-  try {
-
-    const otp = Math.floor(10000000 + Math.random() * 90000000).toString();
-
-    const htmlContent = `
-      <h2>Scan2Order - Reset Password</h2>
-      <p>Mã OTP của bạn là:</p>
-      <h1>${otp}</h1>
-      <p>Mã có hiệu lực trong 5 phút.</p>
-    `;
-
-    const axiosResponse = await authApi.sendEmail(
-      email,
-      "OTP Reset Password",
-      htmlContent
-    );
-
-    const response = axiosResponse.data;
-    console.log('API Response Data for Send Email OTP:', response);
-
-    if (!response?.isSuccess) {
+  // FORGOT PASSWORD FLOW
+  sendForgotPasswordOtp: async (email: string) => {
+    try {
+      const { data: res } = await authApi.sendForgotPasswordOtp(email);
+      if (!res?.isSuccess) {
+        return { success: false, message: res?.message || 'Không thể gửi OTP' };
+      }
+      return { success: true, message: 'OTP đã được gửi tới email của bạn' };
+    } catch (error: any) {
       return {
         success: false,
-        message: response?.message || "Không gửi được email"
+        message: error?.response?.data?.message || 'Lỗi khi gửi OTP',
       };
     }
+  },
 
-    return {
-      success: true,
-      otp
-    };
+  verifyForgotPasswordOtp: async (email: string, otp: string) => {
+    try {
+      const { data: res } = await authApi.verifyForgotPasswordOtp(email, otp);
+      if (!res?.isSuccess) {
+        return { success: false, message: res?.message || 'OTP không hợp lệ' };
+      }
+      // Assuming res.data contains the resetToken
+      return { success: true, resetToken: res.data };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || 'Lỗi khi xác thực OTP',
+      };
+    }
+  },
 
-  } catch (error: any) {
+  completeForgotPassword: async (data: {
+    email: string;
+    newPassword: string;
+    resetToken: string;
+  }) => {
+    try {
+      const { data: res } = await authApi.completeForgotPasswordStaff(data);
+      if (!res?.isSuccess) {
+        return { success: false, message: res?.message || 'Không thể đặt lại mật khẩu' };
+      }
+      return { success: true, message: 'Đặt lại mật khẩu thành công' };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || 'Lỗi khi đặt lại mật khẩu',
+      };
+    }
+  },
 
-  const message =
-    error?.response?.data?.message ||
-    error?.message ||
-    "Không thể gửi email OTP";
-
-  return {
-    success: false,
-    message: typeof message === "string"
-      ? message
-      : JSON.stringify(message),
-  };
-}
-}
-
-, resetPassword: async (data: { email: string; newPassword: string; resetToken: string }) => {
-  try {
-    const { data: res } = await authApi.resetPassword(data);
-    return { success: true, message: res?.message || "Đổi mật khẩu thành công", data: res };
-  } catch (error: any) {
-    return {
-      success: false,
-      message:
-        error?.response?.data?.message ||
-        error?.message ||
-        "Không thể reset mật khẩu",
-    };
-  }
-}
-}
-
+  // CHANGE PASSWORD (AUTHENTICATED)
+  changePassword: async (data: {
+    email: string;
+    oldPassword: string;
+    newPassword: string;
+  }) => {
+    try {
+      const { data: res } = await authApi.changePasswordStaff(data);
+      if (!res?.isSuccess) {
+        return { success: false, message: res?.message || 'Không thể đổi mật khẩu' };
+      }
+      return { success: true, message: 'Đổi mật khẩu thành công' };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || 'Lỗi khi đổi mật khẩu',
+      };
+    }
+  },
+};

@@ -1,15 +1,18 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screen/public/LoginScreen';
-import { AuthStackParamList } from '../type/types';
+import EmailForOTPScreen from '../screen/public/EmailForOTPScreen';
+import ResetPasswordScreen from '../screen/public/ResetPasswordScreen';
+import { RootStackParamList } from '../type';
 
-const Stack = createNativeStackNavigator<AuthStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AuthNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* Login là màn hình đầu tiên khi chưa đăng nhập */}
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="EmailForOTPScreen" component={EmailForOTPScreen} />
+      <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
     </Stack.Navigator>
   );
 }

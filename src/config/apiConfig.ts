@@ -1,5 +1,6 @@
 import Config from 'react-native-config';
 
-// Sử dụng giá trị từ .env, nếu không có thì dùng fallback để tránh lỗi app
-export const API_BASE_URL = Config.API_BASE_URL ;
-console.log('API_BASE_URL123 =', Config.API_BASE_URL);
+// Sử dụng giá trị từ .env được nạp bởi react-native-config
+export const API_BASE_URL = Config.API_BASE_URL || 'http://10.0.2.2:5201/api';
+
+console.log('Current API_BASE_URL:', API_BASE_URL);

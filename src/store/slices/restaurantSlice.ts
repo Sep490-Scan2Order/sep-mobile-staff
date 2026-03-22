@@ -1,32 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { restaurantService } from '../../services/logicServices/restaurantService';
-
-export interface Restaurant {
-  id: number;
-  tenantId: string;
-  restaurantName: string;
-  address: string;
-  longitude: number;
-  latitude: number;
-  image: string;
-  phone: string;
-  slug: string;
-  description: string;
-  profileUrl: string;
-  qrMenu: string;
-  isActive: boolean;
-  isOpened: boolean;
-  isReceivingOrders: boolean;
-  totalOrder: number;
-  createdAt: string;
-  distanceKm: number | null;
-}
-
-interface RestaurantState {
-  restaurant: Restaurant | null;
-  loading: boolean;
-  error: string | null;
-}
+import { Restaurant, RestaurantState } from '../../type';
 
 const initialState: RestaurantState = {
   restaurant: null,

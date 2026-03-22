@@ -1,12 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { shiftService } from '../../services/logicServices/shiftService';
-
-interface ShiftState {
-  currentShift: any | null;
-  currentShiftId: number | null;
-  loading: boolean;
-  error: string | null;
-}
+import { ShiftState } from '../../type';
 
 const initialState: ShiftState = {
   currentShift: null,

@@ -15,16 +15,33 @@ export const authApi = {
       { refreshToken }
     );
   },
-   
-  sendEmail: (to: string, subject: string, htmlContent: string) => {
-  return publicClient.post(`${API_BASE_URL}/Email/send`, {
-    to,
-    subject,
-    htmlContent
-  });
-  },
-  resetPassword: (data: { email: string; newPassword: string; resetToken: string }) => {
-    return publicClient.post(`${API_BASE_URL}/Auth/reset-password-staff`, data);
-  }
 
+  sendForgotPasswordOtp: (email: string) => {
+    return publicClient.post(`${API_BASE_URL}/Auth/send-forgot-password-staff-otp?email=${email}`);
+  },
+
+  verifyForgotPasswordOtp: (email: string, otp: string) => {
+    return publicClient.post(
+      `${API_BASE_URL}/Auth/verify-forgot-password-staff-otp?email=${email}&otp=${otp}`
+    );
+  },
+
+  completeForgotPasswordStaff: (data: {
+    email: string;
+    newPassword: string;
+    resetToken: string;
+  }) => {
+    return publicClient.post(
+      `${API_BASE_URL}/Auth/complete-forgot-password-staff`,
+      data
+    );
+  },
+
+  changePasswordStaff: (data: {
+    email: string;
+    oldPassword: string;
+    newPassword: string;
+  }) => {
+    return publicClient.post(`${API_BASE_URL}/Auth/change-password-staff`, data);
+  },
 };

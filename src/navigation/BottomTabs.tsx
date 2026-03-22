@@ -19,7 +19,9 @@ import {
 } from 'lucide-react-native';
 import CashReportScreen from '../screen/private/CashReportScreen';
 
-const Tab = createBottomTabNavigator();
+import { BottomTabParamList } from '../type';
+
+const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabs() {
   const user = useSelector((state: RootState) => state.auth.userInfo);
@@ -60,12 +62,12 @@ export default function BottomTabs() {
     >
       <Tab.Screen name="KDS" component={KDSScreen} />
       <Tab.Screen name="Foods" component={FoodManagementScreen} />
-      {role === 'Cashier' && (
+      {role === 'Cashier' ? (
         <Tab.Screen name="CheckIn" component={CheckInScreen} />
-      )}
-      {role === 'Cashier' && (
+      ) : null}
+      {role === 'Cashier' ? (
         <Tab.Screen name="CashReport" component={CashReportScreen} />
-      )}
+      ) : null}
       <Tab.Screen name="Orders" component={OrderStatusScreen} />
       <Tab.Screen name="Menu" component={MenuManagementScreen} />
     </Tab.Navigator>

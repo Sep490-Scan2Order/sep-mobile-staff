@@ -4,34 +4,34 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { authService } from '../../services/logicServices/authService';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function ChangePasswordScreen() {
+export default function ResetPasswordScreen() {
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { email } = route.params;
-  const navigation = useNavigation();
 
-  const [oldPassword, setOldPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChangePassword = async () => {
-    if (!oldPassword.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu cũ');
+  const handleResetPassword = async () => {
+    if (!otp.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập mã OTP');
       return;
     }
     if (newPassword.length < 6) {
-      Alert.alert('Lỗi', 'Mật khẩu mới phải ít nhất 6 ký tự');
+      Alert.alert('Lỗi', 'Mật khẩu phải ít nhất 6 ký tự');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -41,21 +41,36 @@ export default function ChangePasswordScreen() {
 
     setIsLoading(true);
     try {
-      const result = await authService.changePassword({
+      // Step 2: Verify OTP and get ResetToken
+      const verifyResult = await authService.verifyForgotPasswordOtp(email, otp.trim());
+      
+      if (!verifyResult.success) {
+        Alert.alert('Lỗi', verifyResult.message || 'Mã OTP không hợp lệ');
+        setIsLoading(false);
+        return;
+      }
+
+      const resetToken = verifyResult.resetToken;
+
+      // Step 3: Complete Forgot Password
+      const result = await authService.completeForgotPassword({
         email,
-        oldPassword,
         newPassword,
+        resetToken,
       });
 
       if (result.success) {
-        Alert.alert('Thành công', 'Mật khẩu đã được đổi thành công', [
-          { text: 'OK', onPress: () => navigation.goBack() },
+        Alert.alert('Thành công', 'Mật khẩu đã được đặt lại', [
+          {
+            text: 'Đến trang Đăng nhập',
+            onPress: () => navigation.navigate('Login'),
+          },
         ]);
       } else {
-        Alert.alert('Lỗi', result.message || 'Không thể đổi mật khẩu');
+        Alert.alert('Lỗi', result.message);
       }
     } catch (error) {
-      Alert.alert('Lỗi', 'Không thể đổi mật khẩu');
+      Alert.alert('Lỗi', 'Không thể đặt lại mật khẩu');
     } finally {
       setIsLoading(false);
     }
@@ -74,29 +89,24 @@ export default function ChangePasswordScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-6">
           <View className="mt-6 mb-10 items-center">
             <Text className="text-3xl font-bold text-white text-center">
-              Đổi mật khẩu
+              Đặt lại mật khẩu
+            </Text>
+            <Text className="text-white mt-2 text-center">
+              Vui lòng nhập mã OTP gửi tới {email} và mật khẩu mới
             </Text>
           </View>
 
-          <View className="bg-white rounded-3xl p-6 shadow-lg">
+          <View className="bg-white rounded-3xl p-6 shadow-lg mb-10">
             <Text className="text-lg font-semibold text-gray-800 mb-2">
-              Email
+              Mã OTP
             </Text>
             <TextInput
-              value={email}
-              editable={false}
-              className="bg-gray-100 rounded-2xl px-4 py-3 mb-4 text-gray-500"
-            />
-
-            <Text className="text-lg font-semibold text-gray-800 mb-2">
-              Mật khẩu cũ
-            </Text>
-            <TextInput
-              placeholder="Nhập mật khẩu cũ"
-              secureTextEntry
-              value={oldPassword}
-              onChangeText={setOldPassword}
               className="bg-gray-200 rounded-2xl px-4 py-3 mb-4 text-gray-800"
+              placeholder="Nhập mã OTP"
+              value={otp}
+              onChangeText={setOtp}
+              autoCapitalize="none"
+              keyboardType="number-pad"
               editable={!isLoading}
             />
 
@@ -105,11 +115,11 @@ export default function ChangePasswordScreen() {
             </Text>
             <View className="relative mb-4">
               <TextInput
+                className="bg-gray-200 rounded-2xl px-4 py-3 pr-12 text-gray-800"
                 placeholder="Nhập mật khẩu mới"
-                secureTextEntry={!showPassword}
                 value={newPassword}
                 onChangeText={setNewPassword}
-                className="bg-gray-200 rounded-2xl px-4 py-3 pr-12 text-gray-800"
+                secureTextEntry={!showPassword}
                 editable={!isLoading}
               />
               <TouchableOpacity
@@ -125,19 +135,19 @@ export default function ChangePasswordScreen() {
             </View>
 
             <Text className="text-lg font-semibold text-gray-800 mb-2">
-              Xác nhận mật khẩu mới
+              Xác nhận mật khẩu
             </Text>
             <TextInput
+              className="bg-gray-200 rounded-2xl px-4 py-3 mb-6 text-gray-800"
               placeholder="Nhập lại mật khẩu mới"
-              secureTextEntry={!showPassword}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              className="bg-gray-200 rounded-2xl px-4 py-3 mb-6 text-gray-800"
+              secureTextEntry={!showPassword}
               editable={!isLoading}
             />
 
             <TouchableOpacity
-              onPress={handleChangePassword}
+              onPress={handleResetPassword}
               disabled={isLoading}
               className={`rounded-2xl py-4 ${
                 isLoading ? 'bg-gray-400' : 'bg-[#226B5D]'
@@ -147,7 +157,7 @@ export default function ChangePasswordScreen() {
                 <ActivityIndicator color="white" />
               ) : (
                 <Text className="text-white text-center font-bold text-lg">
-                  Đổi mật khẩu
+                  Đặt lại mật khẩu
                 </Text>
               )}
             </TouchableOpacity>

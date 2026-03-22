@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { fetchDishesByRestaurant } from '../../store/slices/dishSlice';
+import { Dish } from '../../type';
 
 import { Header } from '../../components/Header';
 import { StatCard } from '../../components/StatCard';

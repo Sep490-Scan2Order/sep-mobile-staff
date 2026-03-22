@@ -8,11 +8,7 @@ import { User, LogOut, ChevronRight, Lock } from 'lucide-react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { authService } from '../../services/logicServices/authService';
 
-type RootStackParamList = {
-  MenuMain: undefined;
-  ProfileScreen: undefined;
-  ChangePasswordScreen: { email: string };
-};
+import { RootStackParamList } from '../../type';
 
 const MenuItem = ({
   icon: Icon,
@@ -97,15 +93,10 @@ export default function MenuScreen() {
           icon={Lock}
           title="Đổi mật khẩu"
           subtitle="Cập nhật mật khẩu tài khoản"
-          onPress={async () => {
-            try {
-              await authService.sendEmailOtp(userInfo.email); // gửi OTP
-              navigation.navigate('ChangePasswordScreen', {
-                email: userInfo.email,
-              });
-            } catch (error) {
-              console.log('Send OTP error:', error);
-            }
+          onPress={() => {
+            navigation.navigate('ChangePasswordScreen', {
+              email: userInfo.email,
+            });
           }}
         />
         {/* Logout */}

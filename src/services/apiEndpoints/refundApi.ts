@@ -1,12 +1,8 @@
 import axiosPrivate from '../axios/privateClient';
+import { RefundRequest } from '../../type';
 
 export const refundApi = {
-  createRefund: (data: {
-    orderId: string;
-    refundType: number;
-    responsibleStaffId: string;
-    note: string;
-  }) => {
+  createRefund: (data: RefundRequest) => {
     return axiosPrivate.post('/Refund', data);
   },
 

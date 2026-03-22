@@ -1,51 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { orderService } from '../../services/logicServices/orderService';
 import { isToday } from '../../utils/dateUtils';
-
-/* ================================
-TYPES
-================================ */
-
-export interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-
-  originalPrice?: number;
-  discountAmount?: number;
-  promotionName?: string;
-  subTotal?: number;
-  image?: string;
-}
-
-export interface Order {
-  id: string;
-  phone: string;
-  orderCode: number;
-  createdAt: string;
-  amount: number;
-  status: number;
-  items: OrderItem[];
-  type?: string;
-  tableName?: string;
-}
-
-interface OrderState {
-  orders: Order[];
-  loading: boolean;
-  error: string | null;
-  refreshCount: number;
-
-  unread: {
-    all: number;
-    0: number;
-    1: number;
-    2: number;
-    3: number;
-    4: number;
-  };
-}
+import { Order, OrderItem, OrderState } from '../../type';
 
 /* ================================
 INITIAL STATE

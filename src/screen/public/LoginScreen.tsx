@@ -13,14 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../type/types';
+import { RootStackParamList } from '../../type';
 
 // IMPORT LOGIC CỦA BẠN
 import { authService } from '../../services/logicServices/authService';
 
 export default function LoginScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,7 +55,6 @@ export default function LoginScreen() {
 
       if (result.success) {
         console.log('ĐĂNG NHẬP THÀNH CÔNG');
-        console.log('User:', result.user);
       } else {
         console.log('Đăng nhập thất bại:', result.message);
         Alert.alert(
@@ -133,6 +132,15 @@ export default function LoginScreen() {
                     )}
                   </TouchableOpacity>
                 </View>
+
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('EmailForOTPScreen' as any)}
+                  className="mb-6 px-1"
+                >
+                  <Text className="text-[#226B5D] text-right font-semibold">
+                    Quên mật khẩu?
+                  </Text>
+                </TouchableOpacity>
 
                 {/* NÚT ĐĂNG NHẬP ĐÃ GẮN LOGIC */}
                 <TouchableOpacity

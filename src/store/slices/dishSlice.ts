@@ -1,38 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { dishService } from '../../services/logicServices/dishService';
-
-export interface Dish {
-  id: number;
-  restaurantName: string;
-  dishName: string;
-  dishImageUrl: string;
-  isSelling: boolean;
-  price: number;
-  isSoldOut: boolean;
-  discountedPrice?: number;
-  promotionName?: string | null;
-  promotionLabel?: string | null;
-  hasPromotion?: boolean;
-}
-
-interface DishState {
-  dishes: Dish[];
-  loading: boolean;
-  error: string | null;
-}
+import { Dish, DishState, TogglePayload } from '../../type';
 
 const initialState: DishState = {
   dishes: [],
   loading: false,
   error: null,
 };
-
-interface TogglePayload {
-  restaurantId: number;
-  id: number;
-  isSoldOut: boolean;
-  quantity: number;
-}
 
 
 export const toggleSoldOutThunk = createAsyncThunk(

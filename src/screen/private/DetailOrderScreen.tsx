@@ -26,23 +26,10 @@ import {
   fetchPendingCashOrders,
   fetchActiveOrders,
   forceRefresh,
-  Order,
 } from '../../store/slices/orderSlice';
 import { RootState, AppDispatch } from '../../store';
+import { Order, RootStackParamList, BottomTabParamList } from '../../type';
 
-type BottomTabParamList = {
-  KDS: undefined;
-  Foods: undefined;
-  Orders: undefined;
-  Menu: undefined;
-  CheckIn: undefined;
-};
-
-type RootStackParamList = {
-  BottomTabs: NavigatorScreenParams<BottomTabParamList>;
-  DetailOrderScreen: { orderId: string };
-  DetailPaymentScreen: { order: Order };
-};
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'DetailOrderScreen'
