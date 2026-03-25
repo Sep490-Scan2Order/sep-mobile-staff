@@ -117,6 +117,10 @@ export interface Order {
   items: OrderItem[];
   type?: string;
   tableName?: string;
+  isPreOrder?: boolean;
+  requestedPickupAt?: string | null;
+  confirmedPickupAt?: string | null;
+  restaurantId?: number;
 }
 
 export interface OrderState {

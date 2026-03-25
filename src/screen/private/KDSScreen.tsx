@@ -130,6 +130,9 @@ const KDSScreen: React.FC = () => {
             status: order.status ?? order.Status ?? 1,
             type: order.type ?? order.Type ?? null,
             items: items,
+            isPreOrder: order.isPreOrder ?? order.IsPreOrder ?? false,
+            requestedPickupAt: order.requestedPickupAt ?? order.RequestedPickupAt ?? null,
+            confirmedPickupAt: order.confirmedPickupAt ?? order.ConfirmedPickupAt ?? null,
           };
 
           console.log('Mapped Confirmed Order:', mappedOrder);
@@ -164,6 +167,9 @@ const KDSScreen: React.FC = () => {
             status: order.status ?? order.Status ?? 0,
             type: order.type ?? order.Type ?? null,
             items: items,
+            isPreOrder: order.isPreOrder ?? order.IsPreOrder ?? false,
+            requestedPickupAt: order.requestedPickupAt ?? order.RequestedPickupAt ?? null,
+            confirmedPickupAt: order.confirmedPickupAt ?? order.ConfirmedPickupAt ?? null,
           };
 
           console.log('Mapped Order:', mappedOrder);
@@ -206,7 +212,7 @@ const KDSScreen: React.FC = () => {
   /**
    * CONNECT SIGNALR
    */
-  useSignalR(restaurantId, kdsEvents);
+  useSignalR(restaurantId ?? 0, kdsEvents);
 
   return (
     <View className="flex-1 bg-teal-700">

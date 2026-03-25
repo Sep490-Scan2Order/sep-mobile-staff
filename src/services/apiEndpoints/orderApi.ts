@@ -26,7 +26,13 @@ export const orderApi = {
 },
 readyForPickup: (orderCode: number) => {
     return axiosPrivate.post(`/Order/ready-for-pickup/${orderCode}`);
-  }
+  },
+  confirmPickupTime: (orderId: string, confirmedPickupAt: string) => {
+    return axiosPrivate.put(`/Order/confirm-pickup-time`, {
+      orderId,
+      confirmedPickupAt,
+    });
+  },
 };
 export const scanQrApi = async (qrContent: string): Promise<boolean> => {
   const res = await axiosPrivate.post(`/Order/scan-qr`, {

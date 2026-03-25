@@ -1,29 +1,26 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   TextInput,
   FlatList,
+  Alert,
 } from 'react-native';
-import {
-  Calendar,
-  DollarSign,
-  Phone,
-  MoreVertical,
-  Search,
-  X,
-} from 'lucide-react-native';
+import { Calendar, Phone, MoreVertical, Search, X } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { Order, updateOrderStatus } from '../store/slices/orderSlice';
+import {
+  updateOrderStatus,
+  confirmPickupTime,
+} from '../store/slices/orderSlice';
+import { Order } from '../type';
 import { playNotificationSound } from '../utils/notificationSound';
-import { getOrderAudio } from '../services/logicServices/orderAudioService';
-import { playAudioUrl } from '../services/logicServices/playAudioUrl';
 import { RefundModal } from './RefundModal';
-import { Menu, Layout, Settings } from 'lucide-react-native';
 import { isToday } from '../utils/dateUtils';
+import { TimePickerModal } from './TimePickerModal';
+import { OrderItemCard } from './OrderItemCard';
 
 interface SDKTableProps {
   statusFilter: number;
@@ -45,15 +42,34 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
 
-  const ORDER_STATUS_LABEL: Record<number, string> = {
-    0: 'Thanh toán',
-    1: 'Nhận đơn',
-    2: 'Đã hoàn thành',
-    3: 'Giao hàng',
-    4: 'Đã giao',
-    5: 'Đã hủy',
-  };
+  // Pre-order type filter: 'all' | 'preorder' | 'dinein'
+  const [orderTypeFilter, setOrderTypeFilter] = useState<
+    'all' | 'preorder' | 'dinein'
+  >('all');
 
+  // Confirm pickup modal
+  const [showConfirmPickupModal, setShowConfirmPickupModal] = useState(false);
+  const [pickupOrderId, setPickupOrderId] = useState<string | null>(null);
+  const [confirmingPickup, setConfirmingPickup] = useState(false);
+
+  const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+  const initNow = new Date();
+  const [selectedHour, setSelectedHour] = useState<number>(initNow.getHours());
+  const [selectedMinute, setSelectedMinute] = useState<number>(
+    Math.floor(initNow.getMinutes() / 5) * 5,
+  );
+
+  const hourListRef = useRef<FlatList>(null);
+  const minuteListRef = useRef<FlatList>(null);
+
+  const scrollToHour = useCallback((h: number) => {
+    hourListRef.current?.scrollToIndex({ index: h, animated: true });
+  }, []);
+
+  const scrollToMinute = useCallback((mIdx: number) => {
+    minuteListRef.current?.scrollToIndex({ index: mIdx, animated: true });
+  }, []);
   const getNextStatus = (status: number) => {
     switch (status) {
       case 1:
@@ -66,37 +82,6 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         return status;
     }
   };
-
-  const getStatusBadge = (status: number) => {
-    switch (status) {
-      case 1:
-        return { text: 'Chờ nhận', color: 'bg-yellow-500' };
-      case 2:
-        return { text: 'Đang làm', color: 'bg-orange-500' };
-      case 3:
-        return { text: 'Hoàn thành', color: 'bg-green-500' };
-      case 4:
-        return { text: 'Đã giao', color: 'bg-blue-500' };
-      case 0:
-        return { text: 'Chưa thanh toán', color: 'bg-red-500' };
-      default:
-        return { text: '', color: '' };
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-
-    const datePart = date.toLocaleDateString();
-    const timePart = date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    return `${datePart} - ${timePart}`;
-  };
-
-
   /**
    * FILTER ORDERS
    */
@@ -106,6 +91,11 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       .filter(order =>
         statusFilter === -1 ? true : order.status === statusFilter,
       )
+      .filter(order => {
+        if (orderTypeFilter === 'preorder') return order.isPreOrder === true;
+        if (orderTypeFilter === 'dinein') return order.isPreOrder !== true;
+        return true;
+      })
       .filter(order => {
         if (!searchText.trim()) return true;
 
@@ -123,7 +113,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
-  }, [orders, statusFilter, searchText]);
+  }, [orders, statusFilter, searchText, orderTypeFilter]);
 
   /**
    * HANDLE STATUS CHANGE
@@ -137,12 +127,20 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       return;
     }
 
-    dispatch(
+    const result = await dispatch(
       updateOrderStatus({
         orderId: order.id,
         newStatus,
       }),
     );
+
+    if (updateOrderStatus.rejected.match(result)) {
+      // Show backend validation error (e.g. pre-order pending, not confirmed by cashier)
+      const errorMsg =
+        (result.payload as string) || 'Cập nhật trạng thái thất bại';
+      Alert.alert('Không thể cập nhật', errorMsg, [{ text: 'OK' }]);
+      return;
+    }
 
     try {
       if (newStatus === 2 || newStatus === 3) {
@@ -154,99 +152,89 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   };
 
   /**
+   * HANDLE CONFIRM PICKUP TIME
+   */
+  const handleConfirmPickup = async () => {
+    if (!pickupOrderId) return;
+
+    const pickedDate = new Date();
+    pickedDate.setHours(selectedHour, selectedMinute, 0, 0);
+
+    if (pickedDate.getTime() < Date.now()) {
+      Alert.alert('Lỗi', 'Không thể chọn thời gian trong quá khứ');
+      return;
+    }
+
+    const confirmedAt = pickedDate.toISOString();
+
+    console.log('SEND:', confirmedAt);
+
+    const result = await dispatch(
+      confirmPickupTime({
+        orderId: pickupOrderId,
+        confirmedPickupAt: confirmedAt,
+      }),
+    );
+
+    setConfirmingPickup(false);
+    setShowConfirmPickupModal(false);
+    setPickupOrderId(null);
+
+    if (confirmPickupTime.rejected.match(result)) {
+      const errorMsg =
+        (result.payload as string) || 'Xác nhận giờ nhận hàng thất bại';
+      Alert.alert('Lỗi', errorMsg, [{ text: 'OK' }]);
+    } else {
+      Alert.alert(
+        'Thành công',
+        'Đã xác nhận giờ nhận hàng cho đơn pre-order.',
+        [{ text: 'OK' }],
+      );
+    }
+  };
+
+  /**
    * RENDER ITEM
    */
   const renderItem = ({ item }: { item: Order }) => {
-    const badge = getStatusBadge(item.status);
-
     return (
-      <View className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6">
-        <View className="flex-row items-center px-4 py-4 border-b border-dashed border-gray-400">
-          <Phone size={20} color="#226B5D" />
+      <OrderItemCard
+        item={item}
+        activeMenuId={activeMenuId}
+        setActiveMenuId={setActiveMenuId}
+        onViewDetail={id =>
+          navigation.navigate('DetailOrderScreen', { orderId: id })
+        }
+        onRefund={order => {
+          setSelectedOrder(order);
+          setShowRefundModal(true);
+        }}
+        onUpdateStatus={handleUpdateStatus}
+        onOpenPickup={order => {
+          const t = new Date();
+          const h = t.getHours();
+          const mIdx = Math.max(
+            0,
+            MINUTES.indexOf(Math.floor(t.getMinutes() / 5) * 5),
+          );
 
-          <Text className="flex-1 ml-3 text-base text-gray-700">
-            {item.phone || 'Không có SĐT'}
-          </Text>
+          setSelectedHour(h);
+          setSelectedMinute(MINUTES[mIdx === -1 ? 0 : mIdx]);
+          setPickupOrderId(order.id);
+          setShowConfirmPickupModal(true);
 
-
-          <View className="relative">
-            <TouchableOpacity
-              onPress={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-            >
-              <MoreVertical size={18} color="#226B5D" />
-            </TouchableOpacity>
-
-            {activeMenuId === item.id && (
-              <View className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-32 py-1">
-                <TouchableOpacity
-                  className="px-4 py-2 border-b border-gray-100"
-                  onPress={() => {
-                    setActiveMenuId(null);
-                    navigation.navigate('DetailOrderScreen', { orderId: item.id });
-                  }}
-                >
-                  <Text className="text-gray-700">Chi tiết</Text>
-                </TouchableOpacity>
-
-                {[1, 2, 3].includes(item.status) && (
-                  <TouchableOpacity
-                    className="px-4 py-2"
-                    onPress={() => {
-                      setActiveMenuId(null);
-                      setSelectedOrder(item);
-                      setShowRefundModal(true);
-                    }}
-                  >
-                    <Text className="text-red-500">Hoàn tiền</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-          </View>
-        </View>
-
-        <View className="flex-row">
-          <View className="flex-1 justify-center px-3 py-4 border-r border-gray-300">
-            <Text className="text-lg text-gray-700 font-semibold">
-              ORD-{item.orderCode}
-            </Text>
-            {item.type && (
-              <Text className="text-sm text-black font-bold mt-1">
-                {item.type === 'Cash' ? 'Tiền mặt' : 'Chuyển khoản'}
-              </Text>
-            )}
-          </View>
-
-          <View className="flex-1 justify-center px-3 py-4">
-            <View className="flex-row items-center mb-3">
-              <Calendar size={16} color="#777" />
-              <Text className="ml-2 text-sm text-gray-600">
-                {formatDate(item.createdAt)}
-              </Text>
-            </View>
-
-            <Text className="text-sm text-gray-600">
-              {item.amount.toLocaleString()} đ
-            </Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          className="py-4 items-center border-t border-dashed border-gray-400"
-          onPress={() => handleUpdateStatus(item)}
-        >
-          <Text className="text-[#226B5D] text-base font-semibold">
-            {ORDER_STATUS_LABEL[item.status]}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          setTimeout(() => {
+            scrollToHour(h);
+            scrollToMinute(mIdx === -1 ? 0 : mIdx);
+          }, 120);
+        }}
+      />
     );
   };
 
   return (
     <View className="flex-1">
       {/* SEARCH */}
-
       <View className="px-4 pt-4">
         <View className="flex-row items-center bg-[#E8F3F0] border border-[#226B5D] rounded-xl px-3 py-2">
           <Search size={18} color="#226B5D" />
@@ -267,8 +255,61 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         </View>
       </View>
 
-      {/* LIST */}
+      {/* ORDER TYPE FILTER */}
+      <View className="flex-row px-4 pt-3 gap-2">
+        <TouchableOpacity
+          onPress={() => setOrderTypeFilter('all')}
+          className={`flex-row items-center px-3 py-1.5 rounded-full border ${
+            orderTypeFilter === 'all'
+              ? 'bg-[#226B5D] border-[#226B5D]'
+              : 'bg-white border-gray-300'
+          }`}
+        >
+          <Text
+            className={`text-xs font-semibold ${
+              orderTypeFilter === 'all' ? 'text-white' : 'text-gray-600'
+            }`}
+          >
+            Tất cả
+          </Text>
+        </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => setOrderTypeFilter('preorder')}
+          className={`px-3 py-1.5 rounded-full border ${
+            orderTypeFilter === 'preorder'
+              ? 'bg-[#226B5D] border-[#226B5D]'
+              : 'bg-white border-gray-300'
+          }`}
+        >
+          <Text
+            className={`text-xs font-semibold ${
+              orderTypeFilter === 'preorder' ? 'text-white' : 'text-[#226B5D]'
+            }`}
+          >
+            Pre-order
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setOrderTypeFilter('dinein')}
+          className={`px-3 py-1.5 rounded-full border ${
+            orderTypeFilter === 'dinein'
+              ? 'bg-[#226B5D] border-[#226B5D]'
+              : 'bg-white border-gray-300'
+          }`}
+        >
+          <Text
+            className={`text-xs font-semibold ${
+              orderTypeFilter === 'dinein' ? 'text-white' : 'text-[#226B5D]'
+            }`}
+          >
+            Tại quán
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* LIST */}
       <FlatList
         data={filteredOrders}
         keyExtractor={item => item.id}
@@ -283,6 +324,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         }
       />
 
+      {/* REFUND MODAL */}
       {selectedOrder && (
         <RefundModal
           isVisible={showRefundModal}
@@ -294,6 +336,22 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           orderCode={selectedOrder.orderCode.toString()}
         />
       )}
+
+      <TimePickerModal
+        visible={showConfirmPickupModal}
+        onClose={() => {
+          if (!confirmingPickup) {
+            setShowConfirmPickupModal(false);
+            setPickupOrderId(null);
+          }
+        }}
+        onConfirm={handleConfirmPickup}
+        confirming={confirmingPickup}
+        selectedHour={selectedHour}
+        selectedMinute={selectedMinute}
+        setSelectedHour={setSelectedHour}
+        setSelectedMinute={setSelectedMinute}
+      />
     </View>
   );
 };

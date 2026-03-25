@@ -111,6 +111,21 @@ export const confirmCashOrder = createAsyncThunk(
   }
 );
 
+export const confirmPickupTime = createAsyncThunk(
+  'order/confirmPickupTime',
+  async (
+    { orderId, confirmedPickupAt }: { orderId: string; confirmedPickupAt: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await orderService.confirmPickupTime(orderId, confirmedPickupAt);
+      return { orderId, confirmedPickupAt };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 /* ================================
 SLICE
 ================================ */
@@ -229,6 +244,16 @@ console.log("OLD:", order.status, "NEW:", status);
         state.orders = state.orders.map(order =>
           order.id === orderId
             ? { ...order, status: newStatus }
+            : order
+        );
+      })
+
+      .addCase(confirmPickupTime.fulfilled, (state, action) => {
+        const { orderId, confirmedPickupAt } = action.payload;
+
+        state.orders = state.orders.map(order =>
+          order.id === orderId
+            ? { ...order, confirmedPickupAt }
             : order
         );
       });
