@@ -86,16 +86,16 @@ console.log('Axios confirmPickupTime:', axiosResponse);
     return response.data;
   },
 
-  async scanOrderQr(qrContent: string): Promise<boolean> {
-    try {
-      const result = await scanQrApi(qrContent);
+async scanOrderQr(qrContent: string, orderNumber: number): Promise<string> {
+  try {
+    const audioUrl = await scanQrApi(qrContent, orderNumber);
 
-      console.log('Axios scanQrApi:', result);
+    console.log('Audio URL:', audioUrl);
 
-      return result === true;
-    } catch (error) {
-      console.log('Scan QR error:', error);
-      throw error;
-    }
-  },
+    return audioUrl;
+  } catch (error) {
+    console.log('Scan QR error:', error);
+    throw error;
+  }
+}
 };

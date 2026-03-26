@@ -23,9 +23,13 @@ export const OrderItemCard: React.FC<Props> = ({
   onOpenPickup,
 }) => {
   const isPreOrder = item.isPreOrder === true;
+
   const needsPickupConfirm =
     isPreOrder && item.status === 1 && !item.confirmedPickupAt;
 
+  /**
+   * FORMAT
+   */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.toLocaleDateString('vi-VN')} - ${date.toLocaleTimeString(
@@ -43,13 +47,45 @@ export const OrderItemCard: React.FC<Props> = ({
     });
   };
 
+  /**
+   * STATUS LABEL (hiển thị text)
+   */
   const ORDER_STATUS_LABEL: Record<number, string> = {
     0: 'Thanh toán',
-    1: 'Nhận đơn',
+    1: 'Đã nhận',
     2: 'Đang làm',
-    3: 'Giao hàng',
+    3: 'Đang giao',
     4: 'Đã giao',
     5: 'Đã hủy',
+  };
+
+  /**
+   * ACTION LABEL (text nút)
+   */
+  const ACTION_LABEL: Record<number, string> = {
+    1: 'Nhận đơn',
+    2: 'Làm xong',
+    3: 'Giao hàng',
+  };
+  /**
+   * SHOW ACTION BUTTON?
+   */
+  const showActionButton = [1, 2, 3].includes(item.status);
+
+  /**
+   * BUTTON COLOR (optional UX upgrade)
+   */
+  const getButtonColor = () => {
+    switch (item.status) {
+      case 1:
+        return 'bg-blue-500';
+      case 2:
+        return 'bg-orange-500';
+      case 3:
+        return 'bg-green-600';
+      default:
+        return 'bg-gray-400';
+    }
   };
 
   return (
@@ -135,6 +171,11 @@ export const OrderItemCard: React.FC<Props> = ({
           <Text className="text-sm text-gray-600">
             {item.amount.toLocaleString()} đ
           </Text>
+
+          {/* STATUS TEXT */}
+          <Text className="mt-2 text-xs text-gray-500">
+            {ORDER_STATUS_LABEL[item.status]}
+          </Text>
         </View>
       </View>
 
@@ -150,15 +191,17 @@ export const OrderItemCard: React.FC<Props> = ({
         </TouchableOpacity>
       )}
 
-      {/* STATUS */}
-      <TouchableOpacity
-        className="py-4 items-center border-t border-dashed"
-        onPress={() => onUpdateStatus(item)}
-      >
-        <Text className="text-[#226B5D] font-semibold">
-          {ORDER_STATUS_LABEL[item.status] ?? ''}
-        </Text>
-      </TouchableOpacity>
+      {/* ACTION BUTTON */}
+      {[1, 2, 3].includes(item.status) && (
+        <TouchableOpacity
+          className="py-4 items-center border-t border-dashed"
+          onPress={() => onUpdateStatus(item)}
+        >
+          <Text className="text-[#226B5D] font-semibold">
+            {ACTION_LABEL[item.status]}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

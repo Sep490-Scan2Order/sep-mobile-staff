@@ -21,6 +21,9 @@ import { RefundModal } from './RefundModal';
 import { isToday } from '../utils/dateUtils';
 import { TimePickerModal } from './TimePickerModal';
 import { OrderItemCard } from './OrderItemCard';
+import { orderService } from '../services/logicServices/orderService';
+import { getOrderAudio } from '../services/logicServices/orderAudioService';
+import { playAudioUrl } from '../services/logicServices/playAudioUrl';
 
 interface SDKTableProps {
   statusFilter: number;
@@ -28,7 +31,7 @@ interface SDKTableProps {
 
 type RootStackParamList = {
   DetailOrderScreen: { orderId: string };
-  ScanDeliveryScreen: undefined;
+  ScanDeliveryScreen: { orderNumber: number };
 };
 
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
@@ -121,33 +124,58 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const handleUpdateStatus = async (order: Order) => {
     const newStatus = getNextStatus(order.status);
 
-    // Nếu là bước giao hàng -> mở camera
-    if (newStatus === 4) {
-      navigation.navigate('ScanDeliveryScreen');
-      return;
-    }
-
-    const result = await dispatch(
-      updateOrderStatus({
-        orderId: order.id,
-        newStatus,
-      }),
-    );
-
-    if (updateOrderStatus.rejected.match(result)) {
-      // Show backend validation error (e.g. pre-order pending, not confirmed by cashier)
-      const errorMsg =
-        (result.payload as string) || 'Cập nhật trạng thái thất bại';
-      Alert.alert('Không thể cập nhật', errorMsg, [{ text: 'OK' }]);
-      return;
-    }
-
     try {
-      if (newStatus === 2 || newStatus === 3) {
+      // ✅ CASE: Đang làm → Làm xong
+      if (order.status === 2) {
+        // 🔊 lấy audio
+        const audioUrl = await getOrderAudio(order.orderCode);
+
+        // 🔊 phát audio
+        await playAudioUrl(audioUrl);
+        // nếu cần update lại redux sau khi call API
+        await dispatch(
+          updateOrderStatus({
+            orderId: order.id,
+            newStatus: 3, // chuyển sang trạng thái tiếp theo
+          }),
+        );
+
+        playNotificationSound();
+        return;
+      }
+
+      // ✅ CASE: Giao hàng → mở camera
+      if (newStatus === 4) {
+        console.log(
+          'Navigating to ScanDeliveryScreen with orderCode:',
+          order.orderCode,
+        );
+        navigation.navigate('ScanDeliveryScreen', {
+          orderNumber: order.orderCode, // ✅ truyền xuống
+        });
+        return;
+      }
+      // ✅ CASE bình thường
+      const result = await dispatch(
+        updateOrderStatus({
+          orderId: order.id,
+          newStatus,
+        }),
+      );
+
+      if (updateOrderStatus.rejected.match(result)) {
+        const errorMsg =
+          (result.payload as string) || 'Cập nhật trạng thái thất bại';
+        Alert.alert('Không thể cập nhật', errorMsg, [{ text: 'OK' }]);
+        return;
+      }
+
+      if (newStatus === 2) {
         playNotificationSound();
       }
     } catch (err) {
-      console.log('Voice error:', err);
+      console.log('Update status error:', err);
+      Alert.alert('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
     }
   };
 

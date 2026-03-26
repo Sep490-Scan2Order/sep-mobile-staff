@@ -34,10 +34,14 @@ readyForPickup: (orderCode: number) => {
     });
   },
 };
-export const scanQrApi = async (qrContent: string): Promise<boolean> => {
+export const scanQrApi = async (
+  qrContent: string,
+  orderNumber: number
+): Promise<string> => {
   const res = await axiosPrivate.post(`/Order/scan-qr`, {
     qrContent,
+    orderNumber,
   });
 
-  return res.data;
+  return res.data.data; // ✅ lấy audioUrl
 };
