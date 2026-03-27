@@ -1,13 +1,15 @@
 import { HubConnection } from '@microsoft/signalr';
 import { createSignalRConnection } from '@/services/logicServices/signalRService';
 import { store } from '@/store';
-import { logout } from '@/store/slices/authSlice';
-import { Alert } from 'react-native';
 
 import {
   updateOrderStatusLocal,
   addOrder,
 } from '@/store/slices/orderSlice';
+
+import {
+  updateReceivingOrdersLocal, // 👈 thêm
+} from '@/store/slices/restaurantSlice';
 
 import {
   playNotificationSound,
@@ -29,6 +31,7 @@ export const initSignalR = async (
 
   // ================== EVENTS ==================
 
+  // ✅ Order status
   connection.on('UpdateStatus', (data: any) => {
     const orderId =
       data.orderId ?? data.OrderId ?? data.id ?? data.Id ?? null;
@@ -50,6 +53,7 @@ export const initSignalR = async (
     );
   });
 
+  // ✅ New order
   connection.on('ReceiveOrder', (order: any) => {
     if (!order) return;
 
@@ -82,17 +86,22 @@ export const initSignalR = async (
     store.dispatch(addOrder(mappedOrder));
   });
 
+  // ✅ Payment
   connection.on('PaymentReceived', (data: any) => {
     const audioUrl = data.audioUrl ?? data.AudioUrl ?? null;
-
-    if (audioUrl) {
-      playAudioFromUrl(audioUrl);
-    }
+    if (audioUrl) playAudioFromUrl(audioUrl);
   });
 
-  connection.on('ShiftChanged', async (data: any) => {
-    console.log('🔔 Shift changed notification:', data);
-  
+  // ✅ 🔥 NEW: Receiving Orders toggle realtime
+  connection.on('ReceivingOrdersChanged', (data: any) => {
+    console.log('📡 ReceivingOrdersChanged:', data);
+
+    const isReceiving =
+      data.isReceivingOrders ??
+      data.IsReceivingOrders ??
+      false;
+
+    store.dispatch(updateReceivingOrdersLocal(isReceiving));
   });
 
   // ================== START ==================
@@ -119,13 +128,14 @@ export const initSignalR = async (
       await connection.invoke('JoinGroup', `staff:${staffId}`);
     }
   });
-};// globalSignalR.ts
+};
+
 export const stopSignalR = async () => {
   try {
     if (connection) {
-      await connection.stop(); // dừng connection
+      await connection.stop();
       console.log('⚡ SignalR disconnected');
-      connection = null; // reset connection
+      connection = null;
     }
   } catch (error) {
     console.log('⚠️ Error stopping SignalR:', error);

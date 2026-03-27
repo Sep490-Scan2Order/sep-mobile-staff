@@ -1,11 +1,18 @@
 import React, { useEffect } from 'react';
-import { View, ScrollView, ActivityIndicator, Text, StatusBar } from 'react-native';
+import {
+  View,
+  ScrollView,
+  ActivityIndicator,
+  Text,
+  StatusBar,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import {
   fetchRestaurantById,
   toggleReceivingOrders,
+  updateReceivingOrdersLocal,
 } from '@/store/slices/restaurantSlice';
 import { Header } from '@/components/Header';
 import { RestaurantCard } from '@/components/RestaurantCard';
@@ -25,10 +32,16 @@ export const OrderStatusScreen = () => {
 
   const handleToggle = () => {
     if (restaurant) {
+      const newValue = !restaurant.isReceivingOrders;
+
+      // ✅ update ngay UI
+      dispatch(updateReceivingOrdersLocal(newValue));
+
+      // gọi API
       dispatch(
         toggleReceivingOrders({
           restaurantId: restaurant.id,
-          isReceiving: !restaurant.isReceivingOrders,
+          isReceiving: newValue,
         }),
       );
     }
@@ -50,15 +63,21 @@ export const OrderStatusScreen = () => {
 
         <View className="flex-1 bg-white">
           {loading && !restaurant ? (
-             <View className="flex-1 justify-center items-center">
-                <ActivityIndicator size="large" color="#0f766e" />
-             </View>
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color="#0f766e" />
+            </View>
           ) : !restaurant ? (
             <View className="flex-1 justify-center items-center">
-              <Text className="text-gray-400 font-bold">Không tìm thấy thông tin nhà hàng</Text>
+              <Text className="text-gray-400 font-bold">
+                Không tìm thấy thông tin nhà hàng
+              </Text>
             </View>
           ) : (
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 24 }}>
+            <ScrollView
+              className="flex-1"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 24 }}
+            >
               <View style={{ height: 50 }} />
               <View className="px-5">
                 <RestaurantCard
