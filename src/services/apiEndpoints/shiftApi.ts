@@ -14,4 +14,7 @@ export const shiftApi = {
   getReportsByStaff: (staffId: string) => {
     return axiosPrivate.get(`/Shift/reports/staff/${staffId}`);
   },
+    getCurrentShift: () => {
+    return axiosPrivate.get('/Shift/current');
+  },
 };

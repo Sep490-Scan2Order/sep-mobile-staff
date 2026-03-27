@@ -65,4 +65,16 @@ export const shiftService = {
       throw new Error(message);
     }
   },
+  async getCurrentShift() {
+    try {
+      const res = await shiftApi.getCurrentShift();
+      return res.data?.data || res.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+        error?.message ||
+        'Không lấy được ca hiện tại'
+      );
+    }
+  },
 };

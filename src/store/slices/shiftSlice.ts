@@ -9,17 +9,34 @@ const initialState: ShiftState = {
   error: null,
 };
 
+// 🔥 check-in
 export const checkInShift = createAsyncThunk(
   'shift/checkInShift',
   async (payload: any, { rejectWithValue }) => {
     try {
       const res = await shiftService.checkIn(payload);
-      console.log('checkInShift - response from shiftService:', res);
-      return res.data;
+
+      // 🔥 FIX: đảm bảo luôn trả về shift object
+      return res?.data || res;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  },
+  }
+);
+
+// 🔥 load current shift
+export const fetchCurrentShift = createAsyncThunk(
+  'shift/fetchCurrentShift',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await shiftService.getCurrentShift();
+
+      // 🔥 FIX: unwrap data
+      return res?.data || res;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
 );
 
 const shiftSlice = createSlice({
@@ -30,25 +47,45 @@ const shiftSlice = createSlice({
       state.currentShift = null;
       state.currentShiftId = null;
     },
+
+    // 🔥 realtime update
+    setShift: (state, action) => {
+      state.currentShift = action.payload
+        ? { ...action.payload } // 🔥 clone để force re-render
+        : null;
+
+      state.currentShiftId = action.payload?.id || null;
+    },
   },
+
   extraReducers: (builder) => {
     builder
+      // ================= CHECK IN =================
       .addCase(checkInShift.pending, (state) => {
         state.loading = true;
       })
       .addCase(checkInShift.fulfilled, (state, action) => {
         state.loading = false;
 
-        state.currentShift = action.payload;
-        state.currentShiftId = action.payload.id;
+        const shift = action.payload?.data || action.payload;
+
+        state.currentShift = shift ? { ...shift } : null;
+        state.currentShiftId = shift?.id || null;
       })
       .addCase(checkInShift.rejected, (state, action: any) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ================= LOAD CURRENT SHIFT =================
+      .addCase(fetchCurrentShift.fulfilled, (state, action) => {
+        const shift = action.payload?.data || action.payload;
+
+        state.currentShift = shift ? { ...shift } : null;
+        state.currentShiftId = shift?.id || null;
       });
   },
 });
 
-export const { clearShift } = shiftSlice.actions;
-
+export const { clearShift, setShift } = shiftSlice.actions;
 export default shiftSlice.reducer;

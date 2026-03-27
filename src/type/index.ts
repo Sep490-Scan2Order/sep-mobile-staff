@@ -146,13 +146,13 @@ export interface CheckInRequest {
   restaurantId: number;
   staffId: string;
   openingCashAmount: number;
-  note: string;
+  note: null;
 }
 
 export interface CheckOutRequest {
   shiftId: number;
   cashAmount: number;
-  note: string;
+  note: null;
 }
 
 export interface ShiftReportDto {

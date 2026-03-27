@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   Alert,
   TextInput,
   ActivityIndicator,
@@ -12,24 +11,56 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+
 import { RootState } from '../../store';
 import { shiftService } from '../../services/logicServices/shiftService';
-import { checkInShift, clearShift } from '../../store/slices/shiftSlice';
+import {
+  checkInShift,
+  clearShift,
+  setShift,
+  fetchCurrentShift,
+} from '../../store/slices/shiftSlice';
 import { Header } from '../../components/Header';
+import { useSignalR } from '../../hook/useSignalR';
 
 export default function CheckInScreen() {
   const dispatch = useDispatch<any>();
   const navigation = useNavigation<any>();
 
   const user = useSelector((state: RootState) => state.auth.userInfo);
-
-  const currentShiftId = useSelector(
-    (state: RootState) => state.shift.currentShiftId,
+  const currentShift = useSelector(
+    (state: RootState) => state.shift.currentShift,
   );
 
   const [cash, setCash] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // ================== LOAD SHIFT (fallback API) ==================
+  useEffect(() => {
+    if (!user?.id) return;
+    dispatch(fetchCurrentShift());
+  }, [user?.id, dispatch]);
+
+  // ================== SIGNALR (SYNC EXTERNAL) ==================
+  useSignalR(user?.restaurantId, user?.id, [
+    {
+      name: 'ShiftChanged',
+      handler: shift => {
+        console.log('🔥 REALTIME SHIFT:', shift);
+
+        if (!shift) return;
+
+        if (shift.status === 0) {
+          dispatch(setShift(shift));
+        } else {
+          dispatch(clearShift());
+        }
+      },
+    },
+  ]);
+
+  // ================== ACTIONS ==================
 
   const handleCheckIn = async () => {
     if (!cash) {
@@ -38,14 +69,14 @@ export default function CheckInScreen() {
     }
 
     if (!user) {
-      Alert.alert('Lỗi', 'Thông tin người dùng không khả dụng. Vui lòng đăng nhập lại.');
+      Alert.alert('Lỗi', 'Thông tin người dùng không khả dụng');
       return;
     }
 
     try {
       setLoading(true);
 
-      await dispatch(
+      const result = await dispatch(
         checkInShift({
           restaurantId: user.restaurantId!,
           staffId: user.id!,
@@ -53,6 +84,9 @@ export default function CheckInScreen() {
           note: note,
         }),
       ).unwrap();
+
+      // 🔥 UPDATE UI NGAY (không chờ SignalR)
+      dispatch(setShift(result));
 
       Alert.alert('Thành công', 'Check-in thành công');
     } catch (error: any) {
@@ -68,7 +102,7 @@ export default function CheckInScreen() {
       return;
     }
 
-    if (!currentShiftId) {
+    if (!currentShift?.id) {
       Alert.alert('Lỗi', 'Không tìm thấy ca làm hiện tại');
       return;
     }
@@ -76,28 +110,29 @@ export default function CheckInScreen() {
     try {
       setLoading(true);
 
-      const savedShiftId = currentShiftId;
+      const savedShiftId = currentShift.id;
 
       await shiftService.checkOut({
-        shiftId: currentShiftId,
+        shiftId: currentShift.id,
         cashAmount: Number(cash),
         note: note,
       });
 
+      // 🔥 UPDATE UI NGAY
       dispatch(clearShift());
 
-      Alert.alert(
-        'Thành công',
-        'Checkout ca làm thành công. Đang chuyển sang báo cáo chi tiết...',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              navigation.navigate('CashReport', { shiftId: savedShiftId });
-            },
+      // 🔥 reset input
+      setCash('');
+      setNote('');
+
+      Alert.alert('Thành công', 'Checkout thành công. Chuyển sang báo cáo...', [
+        {
+          text: 'OK',
+          onPress: () => {
+            navigation.navigate('CashReport', { shiftId: savedShiftId });
           },
-        ]
-      );
+        },
+      ]);
     } catch (error: any) {
       Alert.alert('Lỗi', error?.message || 'Checkout thất bại');
     } finally {
@@ -105,20 +140,36 @@ export default function CheckInScreen() {
     }
   };
 
+  // ================== UI ==================
+
+  const isShiftOpen = !!currentShift && currentShift.status === 0;
+
+  // debug nếu cần
+  // console.log('UI shift:', currentShift);
+
   return (
     <View className="flex-1 bg-teal-700">
-      <StatusBar barStyle="light-content" backgroundColor="#134e4a" /> {/* teal-900 roughly */}
+      <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
+
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
 
         <View className="flex-1 bg-white p-6">
-          <Text className="text-2xl font-black text-teal-700 text-center mb-6">QUẢN LÝ CA LÀM</Text>
+          <Text className="text-2xl font-black text-teal-700 text-center mb-6">
+            QUẢN LÝ CA LÀM
+          </Text>
 
           <View className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <Text className="text-lg font-bold text-gray-800">Nhân viên: {user?.name}</Text>
-            <Text className="mb-5 text-gray-500 text-sm italic">Vai trò: {user?.role}</Text>
+            <Text className="text-lg font-bold text-gray-800">
+              Nhân viên: {user?.name}
+            </Text>
+            <Text className="mb-5 text-gray-500 text-sm italic">
+              Vai trò: {user?.role}
+            </Text>
 
-            <Text className="mt-3 mb-2 font-bold text-gray-700">Số tiền (VNĐ)</Text>
+            <Text className="mt-3 mb-2 font-bold text-gray-700">
+              Số tiền (VNĐ)
+            </Text>
             <TextInput
               className="border border-gray-200 rounded-xl p-4 text-base bg-white"
               placeholder="Nhập số tiền"
@@ -137,27 +188,37 @@ export default function CheckInScreen() {
               numberOfLines={3}
             />
 
+            {/* CHECK IN */}
             <TouchableOpacity
-              className={`bg-teal-700 p-4 rounded-xl mt-6 items-center shadow-md ${!!currentShiftId ? 'opacity-50' : ''}`}
+              className={`bg-teal-700 p-4 rounded-xl mt-6 items-center ${
+                isShiftOpen ? 'opacity-50' : ''
+              }`}
               onPress={handleCheckIn}
-              disabled={loading || !!currentShiftId}
+              disabled={loading || isShiftOpen}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-bold text-base">Bắt đầu ca (Check-in)</Text>
+                <Text className="text-white font-bold">
+                  Bắt đầu ca (Check-in)
+                </Text>
               )}
             </TouchableOpacity>
 
+            {/* CHECK OUT */}
             <TouchableOpacity
-              className={`bg-red-600 p-4 rounded-xl mt-3 items-center shadow-md ${!currentShiftId ? 'opacity-50' : ''}`}
+              className={`bg-red-600 p-4 rounded-xl mt-3 items-center ${
+                !isShiftOpen ? 'opacity-50' : ''
+              }`}
               onPress={handleCheckOut}
-              disabled={loading || !currentShiftId}
+              disabled={loading || !isShiftOpen}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-bold text-base">Kết thúc ca (Check-out)</Text>
+                <Text className="text-white font-bold">
+                  Kết thúc ca (Check-out)
+                </Text>
               )}
             </TouchableOpacity>
           </View>
