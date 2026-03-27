@@ -13,10 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../type';
+import { RootStackParamList } from '@/type';
 
 // IMPORT LOGIC CỦA BẠN
-import { authService } from '../../services/logicServices/authService';
+import { authService } from '@/services/logicServices/authService';
 
 export default function LoginScreen() {
   const navigation =

@@ -2,11 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers } from 'redux';
-import authReducer from '../store/slices/authSlice';
-import dishReducer from '../store/slices/dishSlice';
-import restaurantReducer from '../store/slices/restaurantSlice';
-import shiftReducer from '../store/slices/shiftSlice';
-import orderReducer from '../store/slices/orderSlice';
+import dishReducer from '@/store/slices/dishSlice';
+import restaurantReducer from '@/store/slices/restaurantSlice';
+import shiftReducer from '@/store/slices/shiftSlice';
+import orderReducer from '@/store/slices/orderSlice';
+import authReducer from '@/store/slices/authSlice';
 import {
   FLUSH,
   REHYDRATE,

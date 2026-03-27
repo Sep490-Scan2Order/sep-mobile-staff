@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
-import { HeaderDetail } from '../../components/HeaderDetail';
-import { StatCard } from '../../components/StatCard';
-import { HistoryCard } from '../../components/HistoryCard';
+import { HeaderDetail } from '@/components/HeaderDetail';
+import { StatCard } from '@/components/StatCard';
+import { HistoryCard } from '@/components/HistoryCard';
 
 export const ReportHistoryScreen = () => {
   const reports = [

@@ -1,4 +1,4 @@
-import { dishApi } from '../apiEndpoints/dishApi';
+import { dishApi } from '@/services/apiEndpoints/dishApi';
 
 export const dishService = {
   async getBranchDishes(restaurantId: number) {

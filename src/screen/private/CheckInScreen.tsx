@@ -12,16 +12,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 
-import { RootState } from '../../store';
-import { shiftService } from '../../services/logicServices/shiftService';
+import { RootState } from '@/store';
+import { shiftService } from '@/services/logicServices/shiftService';
 import {
   checkInShift,
   clearShift,
   setShift,
   fetchCurrentShift,
-} from '../../store/slices/shiftSlice';
-import { Header } from '../../components/Header';
-import { useSignalR } from '../../hook/useSignalR';
+} from '@/store/slices/shiftSlice';
+import { Header } from '@/components/Header';
 
 export default function CheckInScreen() {
   const dispatch = useDispatch<any>();
@@ -39,26 +38,10 @@ export default function CheckInScreen() {
   // ================== LOAD SHIFT (fallback API) ==================
   useEffect(() => {
     if (!user?.id) return;
+
+    console.log('📦 Fetch current shift');
     dispatch(fetchCurrentShift());
   }, [user?.id, dispatch]);
-
-  // ================== SIGNALR (SYNC EXTERNAL) ==================
-  useSignalR(user?.restaurantId, user?.id, [
-    {
-      name: 'ShiftChanged',
-      handler: shift => {
-        console.log('🔥 REALTIME SHIFT:', shift);
-
-        if (!shift) return;
-
-        if (shift.status === 0) {
-          dispatch(setShift(shift));
-        } else {
-          dispatch(clearShift());
-        }
-      },
-    },
-  ]);
 
   // ================== ACTIONS ==================
 
@@ -85,8 +68,11 @@ export default function CheckInScreen() {
         }),
       ).unwrap();
 
-      // 🔥 UPDATE UI NGAY (không chờ SignalR)
+      // ✅ update UI ngay (không chờ realtime)
       dispatch(setShift(result));
+
+      setCash('');
+      setNote('');
 
       Alert.alert('Thành công', 'Check-in thành công');
     } catch (error: any) {
@@ -118,14 +104,13 @@ export default function CheckInScreen() {
         note: note,
       });
 
-      // 🔥 UPDATE UI NGAY
+      // ✅ update UI ngay
       dispatch(clearShift());
 
-      // 🔥 reset input
       setCash('');
       setNote('');
 
-      Alert.alert('Thành công', 'Checkout thành công. Chuyển sang báo cáo...', [
+      Alert.alert('Thành công', 'Checkout thành công', [
         {
           text: 'OK',
           onPress: () => {
@@ -142,10 +127,7 @@ export default function CheckInScreen() {
 
   // ================== UI ==================
 
-  const isShiftOpen = !!currentShift && currentShift.status === 0;
-
-  // debug nếu cần
-  // console.log('UI shift:', currentShift);
+  const isShiftOpen = currentShift?.status === 0;
 
   return (
     <View className="flex-1 bg-teal-700">

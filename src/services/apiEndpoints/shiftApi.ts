@@ -1,5 +1,5 @@
-import axiosPrivate from '../axios/privateClient';
-import { CheckInRequest, CheckOutRequest, ShiftReportDto } from '../../type';
+import axiosPrivate from '@/services/axios/privateClient';
+import { CheckInRequest, CheckOutRequest, ShiftReportDto } from '@/type';
 
 export const shiftApi = {
   checkIn: (data: CheckInRequest) => {

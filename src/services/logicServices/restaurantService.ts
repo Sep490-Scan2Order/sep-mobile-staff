@@ -1,4 +1,4 @@
-import { restaurantApi } from '../apiEndpoints/restaurantApi';
+import { restaurantApi } from '@/services/apiEndpoints/restaurantApi';
 
 export const restaurantService = {
   async getRestaurantById(restaurantId: number) {

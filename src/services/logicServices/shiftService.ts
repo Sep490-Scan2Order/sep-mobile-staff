@@ -1,4 +1,4 @@
-import { shiftApi, CheckInRequest, CheckOutRequest } from '../apiEndpoints/shiftApi';
+import { shiftApi, CheckInRequest, CheckOutRequest } from '@/services/apiEndpoints/shiftApi';
 
 export const shiftService = {
   async checkIn(data: CheckInRequest) {

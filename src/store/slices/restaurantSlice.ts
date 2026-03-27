@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { restaurantService } from '../../services/logicServices/restaurantService';
-import { Restaurant, RestaurantState } from '../../type';
+import { restaurantService } from '@/services/logicServices/restaurantService';
+import { Restaurant, RestaurantState } from '@/type';
 
 const initialState: RestaurantState = {
   restaurant: null,

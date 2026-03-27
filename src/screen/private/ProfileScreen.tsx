@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 
 export default function ProfileScreen() {
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);

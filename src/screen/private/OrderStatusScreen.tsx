@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { View, ScrollView, ActivityIndicator, Text, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store';
+import { AppDispatch, RootState } from '@/store';
 import {
   fetchRestaurantById,
   toggleReceivingOrders,
-} from '../../store/slices/restaurantSlice';
-import { Header } from '../../components/Header';
-import { RestaurantCard } from '../../components/RestaurantCard';
-import { OrderStatusCard } from '../../components/OrderStatusCard';
+} from '@/store/slices/restaurantSlice';
+import { Header } from '@/components/Header';
+import { RestaurantCard } from '@/components/RestaurantCard';
+import { OrderStatusCard } from '@/components/OrderStatusCard';
 
 const RESTAURANT_ID = 58;
 

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { shiftService } from '../../services/logicServices/shiftService';
-import { ShiftState } from '../../type';
+import { shiftService } from '@/services/logicServices/shiftService';
+import { ShiftState } from '@/type';
 
 const initialState: ShiftState = {
   currentShift: null,

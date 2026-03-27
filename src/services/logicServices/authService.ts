@@ -1,7 +1,7 @@
-import { authApi } from '../apiEndpoints/authApi';
-import { tokenStorage } from '../../utils/tokenStorage';
-import { store } from '../../store';
-import { setUser, logout } from '../../store/slices/authSlice';
+import { authApi } from '@/services/apiEndpoints/authApi';
+import { tokenStorage } from '@/utils/tokenStorage';
+import { store } from '@/store';
+import { setUser, logout } from '@/store/slices/authSlice';
 import { Alert } from 'react-native';
 
 export const authService = {

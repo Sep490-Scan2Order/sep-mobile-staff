@@ -1,13 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from '@/store';
 
-import KDSScreen from '../screen/private/KDSScreen';
-import FoodManagementScreen from '../screen/private/FoodManagementScreen';
-import OrderStatusScreen from '../screen/private/OrderStatusScreen';
-import MenuManagementScreen from '../screen/private/MenuManagementScreen';
-import CheckInScreen from '../screen/private/CheckInScreen';
+import KDSScreen from '@/screen/private/KDSScreen';
+import FoodManagementScreen from '@/screen/private/FoodManagementScreen';
+import OrderStatusScreen from '@/screen/private/OrderStatusScreen';
+import MenuManagementScreen from '@/screen/private/MenuManagementScreen';
+import CheckInScreen from '@/screen/private/CheckInScreen';
 
 import {
   ClipboardList,
@@ -17,9 +17,9 @@ import {
   QrCode,
   FileText,
 } from 'lucide-react-native';
-import CashReportScreen from '../screen/private/CashReportScreen';
+import CashReportScreen from '@/screen/private/CashReportScreen';
 
-import { BottomTabParamList } from '../type';
+import { BottomTabParamList } from '@/type';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 

@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { authService } from '../../services/logicServices/authService';
+import { authService } from '@/services/logicServices/authService';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 

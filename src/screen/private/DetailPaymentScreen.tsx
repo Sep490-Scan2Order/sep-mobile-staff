@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { DetailPaymentComponent } from '../../components/DetailPaymentComponent';
-import { PaymentInputComponent } from '../../components/PaymentInputComponent';
-import { CashPaymentSuccessComponent } from '../../components/CashPaymentSuccessComponent';
+import { DetailPaymentComponent } from '@/components/DetailPaymentComponent';
+import { PaymentInputComponent } from '@/components/PaymentInputComponent';
+import { CashPaymentSuccessComponent } from '@/components/CashPaymentSuccessComponent';
 import { RouteProp, useRoute } from '@react-navigation/native';
 type PaymentRouteProp = RouteProp<RootStackParamList, 'DetailOrderScreen'>;
 export default function DetailOrderScreen() {

@@ -2,11 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, Text, ActivityIndicator, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { shiftService } from '../../services/logicServices/shiftService';
-import { ShiftReportDto } from '../../services/apiEndpoints/shiftApi';
-import { HistoryCard } from '../../components/HistoryCard';
-import { Header } from '../../components/Header';
+import { RootState } from '@/store';
+import { shiftService } from '@/services/logicServices/shiftService';
+import { ShiftReportDto } from '@/services/apiEndpoints/shiftApi';
+import { HistoryCard } from '@/components/HistoryCard';
+import { Header } from '@/components/Header';
 import { AlertCircle, Clock, ChevronLeft, Calendar } from 'lucide-react-native';
 
 const PRIMARY_COLOR_CLASS = 'bg-teal-700';

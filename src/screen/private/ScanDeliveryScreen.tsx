@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import QRScanner from '../../components/QRScanner';
-import { orderService } from '../../services/logicServices/orderService';
-import { getOrderAudio } from '../../services/logicServices/orderAudioService';
-import { playAudioUrl } from '../../services/logicServices/playAudioUrl';
+import QRScanner from '@/components/QRScanner';
+import { orderService } from '@/services/logicServices/orderService';
+import { getOrderAudio } from '@/services/logicServices/orderAudioService';
+import { playAudioUrl } from '@/services/logicServices/playAudioUrl';
 import { useRoute } from '@react-navigation/native';
 export default function ScanDeliveryScreen() {
   const navigation = useNavigation();

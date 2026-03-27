@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { dishService } from '../../services/logicServices/dishService';
-import { Dish, DishState, TogglePayload } from '../../type';
+import { dishService } from '@/services/logicServices/dishService';
+import { Dish, DishState, TogglePayload } from '@/type';
 
 const initialState: DishState = {
   dishes: [],

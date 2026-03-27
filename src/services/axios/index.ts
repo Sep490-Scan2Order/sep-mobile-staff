@@ -1,4 +1,4 @@
-import axiosPrivate from './privateClient';
+import axiosPrivate from '@/services/axios/privateClient';
 
-export { default as axiosPrivate } from './privateClient';
+export { default as axiosPrivate } from '@/services/axios/privateClient';
 export default axiosPrivate;

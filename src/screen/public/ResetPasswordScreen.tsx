@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { authService } from '../../services/logicServices/authService';
+import { authService } from '@/services/logicServices/authService';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
 export default function ResetPasswordScreen() {

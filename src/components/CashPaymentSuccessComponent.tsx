@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { CheckCircle, ArrowLeft } from 'lucide-react-native';
-import { CustomerDetailBorder } from './CustomerDetailBorder';
-import { Border } from './Border';
-import { HeaderDetail } from './HeaderDetail';
+import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
+import { Border } from '@/components/Border';
+import { HeaderDetail } from '@/components/HeaderDetail';
 
 interface PaymentSuccessProps {
   order: Order;

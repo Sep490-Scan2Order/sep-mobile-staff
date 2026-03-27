@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, ScrollView, TouchableOpacity, Text } from 'react-native';
-import { HeaderDetail } from '../components/HeaderDetail';
-import { CustomerDetailBorder } from '../components/CustomerDetailBorder';
-import { Border } from '../components/Border';
+import { HeaderDetail } from '@/components/HeaderDetail';
+import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
+import { Border } from '@/components/Border';
 
 interface DetailPaymentProps {
   order: Order;

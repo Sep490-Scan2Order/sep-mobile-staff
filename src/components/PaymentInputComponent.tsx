@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { HeaderDetail } from './HeaderDetail';
-import { Border } from './Border';
+import { HeaderDetail } from '@/components/HeaderDetail';
+import { Border } from '@/components/Border';
 
 interface PaymentInputProps {
   onBack: () => void;

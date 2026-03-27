@@ -7,10 +7,10 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
-import { HeaderDetail } from '../../components/HeaderDetail';
-import { CustomerDetailBorder } from '../../components/CustomerDetailBorder';
-import { ListFood } from '../../components/ListFood';
-import { Border } from '../../components/Border';
+import { HeaderDetail } from '@/components/HeaderDetail';
+import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
+import { ListFood } from '@/components/ListFood';
+import { Border } from '@/components/Border';
 import {
   useNavigation,
   useRoute,
@@ -26,9 +26,9 @@ import {
   fetchPendingCashOrders,
   fetchActiveOrders,
   forceRefresh,
-} from '../../store/slices/orderSlice';
-import { RootState, AppDispatch } from '../../store';
-import { Order, RootStackParamList, BottomTabParamList } from '../../type';
+} from '@/store/slices/orderSlice';
+import { RootState, AppDispatch } from '@/store';
+import { Order, RootStackParamList, BottomTabParamList } from '@/type';
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { authService } from '../../services/logicServices/authService';
+import { authService } from '@/services/logicServices/authService';
 import { ChevronLeft } from 'lucide-react-native';
 
 export default function EmailForOTPScreen() {

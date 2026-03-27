@@ -1,5 +1,5 @@
-import publicClient from '../axios/publicClient';
-import { API_BASE_URL } from '../../config/apiConfig';
+import publicClient from '@/services/axios/publicClient';
+import { API_BASE_URL } from '@/config/apiConfig';
 
 export const authApi = {
   staffLogin: (credentials: { email: string; password: string }) => {

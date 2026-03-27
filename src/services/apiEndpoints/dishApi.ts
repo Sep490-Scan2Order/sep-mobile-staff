@@ -1,4 +1,4 @@
-import axiosPrivate from '../axios/privateClient';
+import axiosPrivate from '@/services/axios/privateClient';
 
 export const dishApi = {
   getBranchDishesByRestaurant: (restaurantId: number) => {

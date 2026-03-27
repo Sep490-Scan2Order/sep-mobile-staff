@@ -8,14 +8,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store';
-import { fetchDishesByRestaurant } from '../../store/slices/dishSlice';
-import { Dish } from '../../type';
+import { AppDispatch, RootState } from '@/store';
+import { fetchDishesByRestaurant } from '@/store/slices/dishSlice';
+import { Dish } from '@/type';
 
-import { Header } from '../../components/Header';
-import { StatCard } from '../../components/StatCard';
-import { TabBar } from '../../components/TabBar';
-import { FoodItemCard } from '../../components/FoodItemCard';
+import { Header } from '@/components/Header';
+import { StatCard } from '@/components/StatCard';
+import { TabBar } from '@/components/TabBar';
+import { FoodItemCard } from '@/components/FoodItemCard';
 
 const FoodManagementScreen = () => {
   const dispatch = useDispatch<AppDispatch>();

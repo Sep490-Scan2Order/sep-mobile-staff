@@ -9,21 +9,22 @@ import {
 } from 'react-native';
 import { Calendar, Phone, MoreVertical, Search, X } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../store';
+import { RootState, AppDispatch } from '@/store';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import {
   updateOrderStatus,
   confirmPickupTime,
-} from '../store/slices/orderSlice';
-import { Order } from '../type';
-import { playNotificationSound } from '../utils/notificationSound';
-import { RefundModal } from './RefundModal';
-import { isToday } from '../utils/dateUtils';
-import { TimePickerModal } from './TimePickerModal';
-import { OrderItemCard } from './OrderItemCard';
-import { orderService } from '../services/logicServices/orderService';
-import { getOrderAudio } from '../services/logicServices/orderAudioService';
-import { playAudioUrl } from '../services/logicServices/playAudioUrl';
+} from '@/store/slices/orderSlice';
+import { Order } from '@/type';
+import { playNotificationSound } from '@/utils/notificationSound';
+import { RefundModal } from '@/components/RefundModal';
+import { isToday } from '@/utils/dateUtils';
+import { TimePickerModal } from '@/components/TimePickerModal';
+import { OrderItemCard } from '@/components/OrderItemCard';
+import { orderService } from '@/services/logicServices/orderService';
+import { getOrderAudio } from '@/services/logicServices/orderAudioService';
+import { playAudioUrl } from '@/services/logicServices/playAudioUrl';
+import { orderApi } from '@/services/apiEndpoints/orderApi';
 
 interface SDKTableProps {
   statusFilter: number;
@@ -128,10 +129,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       // ✅ CASE: Đang làm → Làm xong
       if (order.status === 2) {
         // 🔊 lấy audio
-        const audioUrl = await getOrderAudio(order.orderCode);
+        const audio = await orderService.readyForPickup(order.orderCode);
 
-        // 🔊 phát audio
-        await playAudioUrl(audioUrl);
+        await playAudioUrl(audio.audioUrl);
         // nếu cần update lại redux sau khi call API
         await dispatch(
           updateOrderStatus({

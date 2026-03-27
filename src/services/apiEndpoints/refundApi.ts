@@ -1,5 +1,5 @@
-import axiosPrivate from '../axios/privateClient';
-import { RefundRequest } from '../../type';
+import axiosPrivate from '@/services/axios/privateClient';
+import { RefundRequest } from '@/type';
 
 export const refundApi = {
   createRefund: (data: RefundRequest) => {

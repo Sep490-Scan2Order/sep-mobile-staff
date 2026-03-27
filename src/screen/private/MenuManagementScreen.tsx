@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store';
-import { logout } from '../../store/slices/authSlice';
+import { RootState } from '@/store';
+import { logout } from '@/store/slices/authSlice';
 import { User, LogOut, ChevronRight, Lock } from 'lucide-react-native';
 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { authService } from '../../services/logicServices/authService';
+import { authService } from '@/services/logicServices/authService';
 
-import { RootStackParamList } from '../../type';
+import { RootStackParamList } from '@/type';
 
 const MenuItem = ({
   icon: Icon,

@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { X, Camera as CameraIcon, ChevronDown, User } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { refundApi } from '../services/apiEndpoints/refundApi';
-import { staffApi } from '../services/apiEndpoints/staffApi';
+import { RootState } from '@/store';
+import { refundApi } from '@/services/apiEndpoints/refundApi';
+import { staffApi } from '@/services/apiEndpoints/staffApi';
 import Toast from 'react-native-toast-message';
 
 interface Staff {

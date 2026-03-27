@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Calendar, Phone, MoreVertical } from 'lucide-react-native';
-import { Order } from '../type';
+import { Order } from '@/type';
 
 interface Props {
   item: Order;

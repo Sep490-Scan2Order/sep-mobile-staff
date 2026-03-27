@@ -9,7 +9,7 @@ import {
   LayoutDashboard,
 } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from '@/store';
 
 interface NavItem {
   icon: React.ReactNode;

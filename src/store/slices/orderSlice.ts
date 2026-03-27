@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { orderService } from '../../services/logicServices/orderService';
-import { isToday } from '../../utils/dateUtils';
-import { Order, OrderItem, OrderState } from '../../type';
+import { orderService } from '@/services/logicServices/orderService';
+import { isToday } from '@/utils/dateUtils';
+import { Order, OrderItem, OrderState } from '@/type';
 
 /* ================================
 INITIAL STATE

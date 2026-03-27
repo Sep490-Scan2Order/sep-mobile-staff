@@ -1,4 +1,4 @@
-import { orderApi, scanQrApi } from '../apiEndpoints/orderApi';
+import { orderApi, scanQrApi } from '@/services/apiEndpoints/orderApi';
 
 export const orderService = {
   async getActiveOrders(restaurantId: number) {

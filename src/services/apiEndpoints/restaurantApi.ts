@@ -1,5 +1,5 @@
-import axiosPublic from '../axios/publicClient';
-import axiosPrivate from '../axios/privateClient';
+import axiosPublic from '@/services/axios/publicClient';
+import axiosPrivate from '@/services/axios/privateClient';
 
 export const restaurantApi = {
   getRestaurantById: (restaurantId: number) => {

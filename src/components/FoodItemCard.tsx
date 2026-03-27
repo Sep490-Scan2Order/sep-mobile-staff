@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store';
-import { toggleSoldOutThunk } from '../store/slices/dishSlice';
+import { AppDispatch, RootState } from '@/store';
+import { toggleSoldOutThunk } from '@/store/slices/dishSlice';
 
 interface Props {
   id: number;
