@@ -23,19 +23,12 @@ const KDSScreen: React.FC = () => {
 
   const [activeSidebarIndex, setActiveSidebarIndex] = useState(-1);
 
-  /**
-   * 🔥 LOAD ORDERS LẦN ĐẦU
-   */
   useEffect(() => {
     if (!restaurantId) return;
 
-    console.log('📦 Fetch orders lần đầu');
     dispatch(fetchActiveOrders(restaurantId));
   }, [restaurantId, dispatch]);
 
-  /**
-   * 🔥 RELOAD KHI QUAY LẠI SCREEN
-   */
   useFocusEffect(
     useCallback(() => {
       if (!restaurantId) return;
@@ -45,13 +38,9 @@ const KDSScreen: React.FC = () => {
     }, [restaurantId, dispatch]),
   );
 
-  /**
-   * 🔥 CLICK SIDEBAR
-   */
   const handleSidebarPress = useCallback(
     (status: number) => {
       setActiveSidebarIndex(status);
-
       dispatch(clearUnreadByStatus(status));
     },
     [dispatch],

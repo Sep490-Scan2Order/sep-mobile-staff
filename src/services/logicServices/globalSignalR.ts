@@ -11,6 +11,8 @@ import {
   updateReceivingOrdersLocal, // 👈 thêm
 } from '@/store/slices/restaurantSlice';
 
+import { setShift, clearShift } from '@/store/slices/shiftSlice';
+
 import {
   playNotificationSound,
   playAudioFromUrl,
@@ -102,6 +104,17 @@ export const initSignalR = async (
       false;
 
     store.dispatch(updateReceivingOrdersLocal(isReceiving));
+  });
+  // ✅ Shift change
+  connection.on('ShiftChanged', (data: any) => {
+    console.log('🔔 Shift changed notification:', data);
+    if (!data) return;
+
+    if (data.status === 1 || data.endDate) {
+      store.dispatch(clearShift());
+    } else {
+      store.dispatch(setShift(data));
+    }
   });
 
   // ================== START ==================

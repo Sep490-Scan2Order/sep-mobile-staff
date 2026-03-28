@@ -4,7 +4,6 @@ export const decodeJWT = (token: string): any | null => {
     
     const parts = token.split('.');
     if (parts.length !== 3) {
-      console.warn('⚠️ Invalid JWT format');
       return null;
     }
 
@@ -20,7 +19,6 @@ export const decodeJWT = (token: string): any | null => {
     
     return JSON.parse(jsonString);
   } catch (error) {
-    console.error('❌ Error decoding JWT:', error);
     return null;
   }
 };
@@ -30,7 +28,6 @@ export const isTokenExpired = (token: string, bufferSeconds: number = 60): boole
     const decoded = decodeJWT(token);
     
     if (!decoded || !decoded.exp) {
-      console.warn('⚠️ Token không có exp claim');
       return true;
     }
 
@@ -39,18 +36,8 @@ export const isTokenExpired = (token: string, bufferSeconds: number = 60): boole
 
     const isExpired = currentTime >= expiryTime;
     
-    if (isExpired) {
-      const expiryDate = new Date(decoded.exp * 1000);
-      console.log(`⏰ Token đã hết hạn lúc: ${expiryDate.toLocaleString('vi-VN')}`);
-    } else {
-      const expiryDate = new Date(decoded.exp * 1000);
-      const timeRemaining = expiryTime - currentTime;
-      console.log(`✅ Token còn hạn. Hết hạn trong ${timeRemaining}s (${expiryDate.toLocaleString('vi-VN')})`);
-    }
-
     return isExpired;
   } catch (error) {
-    console.error('❌ Error checking token expiration:', error);
     return true; 
   }
 };
@@ -81,7 +68,6 @@ export const getTokenExpirationInfo = (token: string): {
       isExpired: timeRemaining <= 0,
     };
   } catch (error) {
-    console.error('❌ Error getting token expiration info:', error);
     return null;
   }
 };

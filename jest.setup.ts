@@ -12,11 +12,17 @@ jest.mock('react-native-safe-area-context', () => {
 })
 
 // Mock lucide-react-native
-jest.mock('lucide-react-native', () => ({
-  Eye: 'Eye',
-  EyeOff: 'EyeOff',
-  ChevronLeft: 'ChevronLeft',
-}))
+jest.mock('lucide-react-native', () => {
+  const icons = [
+    'Eye', 'EyeOff', 'ChevronLeft', 'Calendar', 'Phone', 
+    'MoreVertical', 'Search', 'X', 'Trash2', 'Plus', 'Minus'
+  ];
+  const obj: any = {};
+  icons.forEach(name => {
+    obj[name] = name;
+  });
+  return obj;
+})
 
 // Mock các thư viện Native phổ biến để tránh lỗi môi trường Node
 jest.mock('react-native-reanimated', () => {
@@ -36,11 +42,76 @@ jest.mock('@react-navigation/native', () => {
     useRoute: () => ({
       params: {},
     }),
+    useFocusEffect: (cb: any) => cb(),
   }
 })
 
 // Mock Async Storage
-jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'))
+const mockAsyncStorage = {
+  setItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+  getAllKeys: jest.fn(() => Promise.resolve([])),
+  multiGet: jest.fn(() => Promise.resolve([])),
+  multiSet: jest.fn(() => Promise.resolve()),
+  multiRemove: jest.fn(() => Promise.resolve()),
+  multiMerge: jest.fn(() => Promise.resolve()),
+  flushGetRequests: jest.fn(),
+};
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  ...mockAsyncStorage,
+  createAsyncStorage: jest.fn(() => mockAsyncStorage),
+}))
+
+// Mock react-native-sound
+jest.mock('react-native-sound', () => {
+  const MockSound = jest.fn().mockImplementation((name, bundle, callback) => {
+    if (callback) {
+      // Simulate successful load asynchronously
+      setTimeout(() => callback(null), 0);
+    }
+    return {
+      setVolume: jest.fn(),
+      setNumberOfLoops: jest.fn(),
+      play: jest.fn(cb => {
+        if (cb) cb(true);
+      }),
+      stop: jest.fn(),
+      release: jest.fn(),
+      getCurrentTime: jest.fn(cb => {
+        if (cb) cb(0);
+      }),
+      getDuration: jest.fn(() => 10),
+      getNumberOfChannels: jest.fn(() => 2),
+      setCurrentTime: jest.fn(),
+    };
+  });
+
+  (MockSound as any).setCategory = jest.fn();
+  (MockSound as any).setActive = jest.fn();
+  (MockSound as any).MAIN_BUNDLE = 0;
+
+  return MockSound;
+});
+
+// Mock react-native-config
+jest.mock('react-native-config', () => ({
+  API_BASE_URL: 'http://localhost:5201/api',
+  API_URL: 'http://localhost:5201/api',
+}));
+
+// Mock react-native-dotenv
+jest.mock('react-native-dotenv', () => ({
+  API_BASE_URL: 'http://localhost:5201/api',
+}));
+
+// Mock react-native-toast-message
+jest.mock('react-native-toast-message', () => ({
+  show: jest.fn(),
+  hide: jest.fn(),
+}));
 
 // Mock Redux Persist
 jest.mock('redux-persist', () => {
