@@ -15,7 +15,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/type';
 
-// IMPORT LOGIC CỦA BẠN
 import { authService } from '@/services/logicServices/authService';
 
 export default function LoginScreen() {
@@ -27,56 +26,36 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // HÀM XỬ LÝ ĐĂNG NHẬP
   const handleLogin = async () => {
-    console.log('===== BẮT ĐẦU LOGIN =====');
-    console.log('Email:', email);
-    console.log('Password length:', password.length);
-
     if (!email.trim() || !password.trim()) {
-      console.log('Thiếu email hoặc password');
       Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ email và mật khẩu');
       return;
     }
 
     setIsLoading(true);
-    console.log('Đã set loading = true');
 
     try {
-      console.log('Gọi authService.login...');
-
       const result = await authService.login({
         email: email.trim(),
         password: password,
       });
 
-      console.log('Nhận được response từ service');
-      console.log('Result full:', JSON.stringify(result, null, 2));
-
       if (result.success) {
-        console.log('ĐĂNG NHẬP THÀNH CÔNG');
+        // TODO: navigate or store token
       } else {
-        console.log('Đăng nhập thất bại:', result.message);
         Alert.alert(
           'Đăng nhập thất bại',
           result.message || 'Sai tài khoản hoặc mật khẩu',
         );
       }
     } catch (error: any) {
-      console.log('CATCH ERROR LOGIN:', error);
-      console.log('Error message:', error?.message);
-      console.log('Error response:', error?.response);
-
       Alert.alert(
         'Lỗi kết nối',
         'Không thể kết nối tới máy chủ. Vui lòng kiểm tra lại Backend.',
       );
     } finally {
-      console.log('FINALLY - set loading = false');
       setIsLoading(false);
     }
-
-    console.log('===== KẾT THÚC LOGIN =====');
   };
 
   return (
@@ -134,7 +113,9 @@ export default function LoginScreen() {
                 </View>
 
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('EmailForOTPScreen' as any)}
+                  onPress={() =>
+                    navigation.navigate('EmailForOTPScreen' as any)
+                  }
                   className="mb-6 px-1"
                 >
                   <Text className="text-[#226B5D] text-right font-semibold">
@@ -142,7 +123,6 @@ export default function LoginScreen() {
                   </Text>
                 </TouchableOpacity>
 
-                {/* NÚT ĐĂNG NHẬP ĐÃ GẮN LOGIC */}
                 <TouchableOpacity
                   onPress={handleLogin}
                   disabled={isLoading}
