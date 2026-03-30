@@ -67,26 +67,26 @@ export const OrderItemCard: React.FC<Props> = ({
     2: 'Làm xong',
     3: 'Giao hàng',
   };
-  /**
-   * SHOW ACTION BUTTON?
-   */
-  const showActionButton = [1, 2, 3].includes(item.status);
+  // /**
+  //  * SHOW ACTION BUTTON?
+  //  */
+  // const showActionButton = [1, 2, 3].includes(item.status);
 
-  /**
-   * BUTTON COLOR (optional UX upgrade)
-   */
-  const getButtonColor = () => {
-    switch (item.status) {
-      case 1:
-        return 'bg-blue-500';
-      case 2:
-        return 'bg-orange-500';
-      case 3:
-        return 'bg-green-600';
-      default:
-        return 'bg-gray-400';
-    }
-  };
+  // /**
+  //  * BUTTON COLOR (optional UX upgrade)
+  //  */
+  // const getButtonColor = () => {
+  //   switch (item.status) {
+  //     case 1:
+  //       return 'bg-blue-500';
+  //     case 2:
+  //       return 'bg-orange-500';
+  //     case 3:
+  //       return 'bg-green-600';
+  //     default:
+  //       return 'bg-gray-400';
+  //   }
+  // };
 
   return (
     <View className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6">

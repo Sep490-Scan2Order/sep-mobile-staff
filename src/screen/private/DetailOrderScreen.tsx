@@ -115,7 +115,7 @@ export default function DetailOrderScreen() {
       </ScrollView>
 
       <View className="px-4 pb-6 bg-gray-100">
-        {order.status === 0 && (
+        {order.status === 0 && order.type === 'Cash' && (
           <TouchableOpacity
             onPress={handlePayment}
             className="bg-[#226B5D] py-4 rounded-2xl items-center shadow-lg"
