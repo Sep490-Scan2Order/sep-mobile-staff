@@ -11,18 +11,33 @@ jest.mock('react-native-safe-area-context', () => {
   }
 })
 
-// Mock lucide-react-native
-jest.mock('lucide-react-native', () => {
-  const icons = [
-    'Eye', 'EyeOff', 'ChevronLeft', 'Calendar', 'Phone', 
-    'MoreVertical', 'Search', 'X', 'Trash2', 'Plus', 'Minus'
-  ];
-  const obj: any = {};
-  icons.forEach(name => {
-    obj[name] = name;
-  });
-  return obj;
-})
+// Mock lucide-react-native using mock-prefixed variables to avoid hoisting issues
+// This allows icons to be rendered as valid components with testIDs without Babel transformation errors
+const mockReact = require('react');
+const mockReactNative = require('react-native');
+
+const mockIcon = (name: string) => {
+  return (props: any) => mockReact.createElement(mockReactNative.View, { ...props, testID: `icon-${name}` });
+};
+
+const mockLucide = {
+  Eye: mockIcon('Eye'),
+  EyeOff: mockIcon('EyeOff'),
+  ChevronLeft: mockIcon('ChevronLeft'),
+  Calendar: mockIcon('Calendar'),
+  Phone: mockIcon('Phone'),
+  MoreVertical: mockIcon('MoreVertical'),
+  Search: mockIcon('Search'),
+  X: mockIcon('X'),
+  Trash2: mockIcon('Trash2'),
+  Plus: mockIcon('Plus'),
+  Minus: mockIcon('Minus'),
+  ChevronDown: mockIcon('ChevronDown'),
+  User: mockIcon('User'),
+  Camera: mockIcon('Camera'),
+};
+
+jest.mock('lucide-react-native', () => mockLucide);
 
 // Mock các thư viện Native phổ biến để tránh lỗi môi trường Node
 jest.mock('react-native-reanimated', () => {
