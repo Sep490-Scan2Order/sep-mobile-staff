@@ -11,7 +11,6 @@ export const dishService = {
       throw new Error(response?.message || 'Không lấy được danh sách món');
     }
 
-    // Flatten the nested category structure into a single array of dishes
     const flattenedDishes = (response.data || []).flatMap((category: any) =>
       (category.dishes || []).map((dish: any) => ({
         id: dish.dishId,
@@ -31,19 +30,19 @@ export const dishService = {
     console.log('Flattened dishes:', flattenedDishes);
     return flattenedDishes;
   },
-async toggleSoldOut(
-  restaurantId: number,
-  id: number,
-  isSoldOut: boolean,
-  quantity: number
-) {
-  const response = await dishApi.toggleSoldOut(
-    restaurantId,
-    id,
-    isSoldOut,
-    quantity
-  );
+  async toggleSoldOut(
+    restaurantId: number,
+    id: number,
+    isSoldOut: boolean,
+    quantity: number
+  ) {
+    const response = await dishApi.toggleSoldOut(
+      restaurantId,
+      id,
+      isSoldOut,
+      quantity
+    );
 
-  return response.data;
-}
+    return response.data;
+  }
 };
