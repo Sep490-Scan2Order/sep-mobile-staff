@@ -3,9 +3,7 @@ import { dishApi } from '@/services/apiEndpoints/dishApi';
 export const dishService = {
   async getBranchDishes(restaurantId: number) {
     const axiosResponse = await dishApi.getRestaurantMenu(restaurantId);
-    console.log('API Response for getRestaurantMenu:', axiosResponse);
     const response = axiosResponse.data;
-    console.log('API Response Data for Dishes:', response);
 
     if (!response?.isSuccess) {
       throw new Error(response?.message || 'Không lấy được danh sách món');
@@ -27,7 +25,6 @@ export const dishService = {
       }))
     );
 
-    console.log('Flattened dishes:', flattenedDishes);
     return flattenedDishes;
   },
   async toggleSoldOut(

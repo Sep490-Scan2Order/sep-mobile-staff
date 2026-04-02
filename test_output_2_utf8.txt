@@ -1,0 +1,317 @@
+﻿node.exe : FAIL src/services/logicServices/globalSignalR.test.ts
+At C:\nvm4w\nodejs\npx.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/npm/bin/npx-cli.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL src/servic...SignalR.test.ts: 
+   String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should create and start connection
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:67:13)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should not re-initialize if connection 
+already exists
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:77:15)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle UpdateStatus event
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:85:13)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle ReceiveOrder event
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:97:13)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle PaymentReceived event
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:109:15)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle ReceivingOrdersChanged 
+event
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:120:15)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle ShiftChanged event
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:129:15)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ΓùÅ globalSignalR ΓÇ║ stopSignalR ΓÇ║ should stop the connection and reset it
+
+    TypeError: Cannot read properties of undefined (reading 'on')
+
+    [0m [90m 31 |[39m   connection [33m=[39m 
+createSignalRConnection()[33m;[39m
+     [90m 32 |[39m
+    [31m[1m>[22m[39m[90m 33 |[39m   
+connection[33m.[39mon([32m'UpdateStatus'[39m[33m,[39m (data[33m:[39m 
+any) [33m=>[39m {
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 34 |[39m     [36mconst[39m orderId [33m=[39m
+     [90m 35 |[39m       data[33m.[39morderId [33m?[39m[33m?[39m 
+data[33m.[39m[33mOrderId[39m [33m?[39m[33m?[39m data[33m.[39mid 
+[33m?[39m[33m?[39m data[33m.[39m[33mId[39m [33m?[39m[33m?[39m 
+[36mnull[39m[33m;[39m
+     [90m 36 |[39m[0m
+
+      at on (src/services/logicServices/globalSignalR.ts:33:14)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+      at apply (src/services/logicServices/globalSignalR.ts:23:25)
+      at Object.initSignalR 
+(src/services/logicServices/globalSignalR.test.ts:145:13)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+FAIL src/services/logicServices/playAudioUrl.test.ts
+  ΓùÅ playAudioUrl ΓÇ║ should reject when sound playback fails
+
+    expect(received).rejects.toBe()
+
+    Received promise resolved instead of rejected
+    Resolved to value: true
+
+    [0m [90m 39 |[39m     
+[33mSoundMock[39m[33m.[39mprototype[33m.[39mplay [33m=[39m 
+jest[33m.[39mfn((callback) [33m=>[39m callback([36mfalse[39m))[33m;[39m
+     [90m 40 |[39m
+    [31m[1m>[22m[39m[90m 41 |[39m     [36mawait[39m expect(playAudioUrl(
+[32m'http://test.com/fail.mp3'[39m))[33m.[39mrejects[33m.[39mtoBe([32m'Pl
+ayback failed'[39m)[33m;[39m
+     [90m    |[39m           [31m[1m^[22m[39m
+     [90m 42 |[39m   })[33m;[39m
+     [90m 43 |[39m })[33m;[39m
+     [90m 44 |[39m[0m
+
+      at expect (node_modules/expect/build/index.js:113:15)
+      at Object.expect (src/services/logicServices/playAudioUrl.test.ts:41:11)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+Test Suites: 2 failed, 2 total
+Tests:       9 failed, 2 passed, 11 total
+Snapshots:   0 total
+Time:        0.524 s, estimated 1 s
+Ran all test suites matching /src\\services\\logicServices\\globalSignalR.test.t
+s|src\\services\\logicServices\\playAudioUrl.test.ts/i.

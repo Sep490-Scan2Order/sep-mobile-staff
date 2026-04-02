@@ -50,7 +50,6 @@ export const authService = {
         success: true,
       };
     } catch (error: any) {
-      console.error('❌ LOGOUT ERROR:', error);
       store.dispatch(logout());
       return {
         success: false,
@@ -68,7 +67,6 @@ export const authService = {
         [{ text: 'OK' }],
       );
     } catch (error) {
-      console.error('❌ Error forcing logout:', error);
     }
   },
 
@@ -94,7 +92,6 @@ export const authService = {
       if (!res?.isSuccess) {
         return { success: false, message: res?.message || 'OTP không hợp lệ' };
       }
-      // Assuming res.data contains the resetToken
       return { success: true, resetToken: res.data };
     } catch (error: any) {
       return {

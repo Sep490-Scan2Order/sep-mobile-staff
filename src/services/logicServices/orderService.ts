@@ -3,7 +3,6 @@ import { orderApi, scanQrApi } from '@/services/apiEndpoints/orderApi';
 export const orderService = {
   async getActiveOrders(restaurantId: number) {
     const axiosResponse = await orderApi.getActiveOrders(restaurantId);
-    console.log('Axios Response:', axiosResponse);
     const response = axiosResponse.data;
 
     if (!response?.isSuccess) {
@@ -18,7 +17,6 @@ export const orderService = {
     const response = axiosResponse.data;
 
     if (!response?.isSuccess) {
-      // Surface the backend validation message (e.g. pre-order pending not yet confirmed by cashier)
       throw new Error(response?.message || 'Cập nhật trạng thái thất bại');
     }
 
@@ -39,7 +37,6 @@ export const orderService = {
   async getPendingCashOrders() {
     const axiosResponse = await orderApi.getPendingCashOrders();
     const response = axiosResponse.data;
-    console.log('Axios Response for Pending Cash Orders:', axiosResponse);
 
     if (!response?.isSuccess) {
       throw new Error(
@@ -63,9 +60,6 @@ export const orderService = {
 
   async readyForPickup(orderCode: number) {
     const axiosResponse = await orderApi.readyForPickup(orderCode);
-
-    console.log('Axios readyForPickup:', axiosResponse);
-
     const response = axiosResponse.data;
 
     if (!response?.success) {
@@ -78,7 +72,6 @@ export const orderService = {
   async confirmPickupTime(orderId: string, confirmedPickupAt: string) {
     const axiosResponse = await orderApi.confirmPickupTime(orderId, confirmedPickupAt);
     const response = axiosResponse.data;
-console.log('Axios confirmPickupTime:', axiosResponse);
     if (!response?.isSuccess) {
       throw new Error(response?.message || 'Xác nhận giờ nhận hàng thất bại');
     }
@@ -86,16 +79,12 @@ console.log('Axios confirmPickupTime:', axiosResponse);
     return response.data;
   },
 
-async scanOrderQr(qrContent: string, orderNumber: number): Promise<string> {
-  try {
-    const audioUrl = await scanQrApi(qrContent, orderNumber);
-
-    console.log('Audio URL:', audioUrl);
-
-    return audioUrl;
-  } catch (error) {
-    console.log('Scan QR error:', error);
-    throw error;
+  async scanOrderQr(qrContent: string, orderNumber: number): Promise<string> {
+    try {
+      const audioUrl = await scanQrApi(qrContent, orderNumber);
+      return audioUrl;
+    } catch (error) {
+      throw error;
+    }
   }
-}
 };

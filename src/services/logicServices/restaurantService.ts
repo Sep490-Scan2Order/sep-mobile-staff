@@ -5,7 +5,6 @@ export const restaurantService = {
     const axiosResponse = await restaurantApi.getRestaurantById(restaurantId);
 
     const response = axiosResponse.data;
-    console.log('API Response Data for Restaurant:', response);
 
     if (!response?.isSuccess) {
       throw new Error(response?.message || 'Không lấy được thông tin nhà hàng');
@@ -21,7 +20,6 @@ export const restaurantService = {
     );
 
     const response = axiosResponse.data;
-    console.log('API Response Data for Update:', response);
 
     if (!response?.isSuccess) {
       throw new Error(response?.message || 'Không cập nhật được trạng thái');

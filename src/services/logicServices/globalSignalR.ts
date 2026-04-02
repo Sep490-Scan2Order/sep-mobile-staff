@@ -8,7 +8,7 @@ import {
 } from '@/store/slices/orderSlice';
 
 import {
-  updateReceivingOrdersLocal, // 👈 thêm
+  updateReceivingOrdersLocal,
 } from '@/store/slices/restaurantSlice';
 
 import { setShift, clearShift } from '@/store/slices/shiftSlice';
@@ -25,15 +25,11 @@ export const initSignalR = async (
   staffId?: string
 ) => {
   if (connection) {
-    console.log('⚠️ SignalR already initialized');
     return;
   }
 
   connection = createSignalRConnection();
 
-  // ================== EVENTS ==================
-
-  // ✅ Order status
   connection.on('UpdateStatus', (data: any) => {
     const orderId =
       data.orderId ?? data.OrderId ?? data.id ?? data.Id ?? null;
@@ -55,7 +51,6 @@ export const initSignalR = async (
     );
   });
 
-  // ✅ New order
   connection.on('ReceiveOrder', (order: any) => {
     if (!order) return;
 
@@ -88,15 +83,12 @@ export const initSignalR = async (
     store.dispatch(addOrder(mappedOrder));
   });
 
-  // ✅ Payment
   connection.on('PaymentReceived', (data: any) => {
     const audioUrl = data.audioUrl ?? data.AudioUrl ?? null;
     if (audioUrl) playAudioFromUrl(audioUrl);
   });
 
-  // ✅ 🔥 NEW: Receiving Orders toggle realtime
   connection.on('ReceivingOrdersChanged', (data: any) => {
-    console.log('📡 ReceivingOrdersChanged:', data);
 
     const isReceiving =
       data.isReceivingOrders ??
@@ -105,7 +97,6 @@ export const initSignalR = async (
 
     store.dispatch(updateReceivingOrdersLocal(isReceiving));
   });
-  // ✅ Shift change
   connection.on('ShiftChanged', (data: any) => {
     console.log('🔔 Shift changed notification:', data);
     if (!data) return;
@@ -117,10 +108,7 @@ export const initSignalR = async (
     }
   });
 
-  // ================== START ==================
-
   await connection.start();
-  console.log('✅ SignalR Connected');
 
   if (restaurantId) {
     await connection.invoke('JoinRestaurantGroup', restaurantId.toString());

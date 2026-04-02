@@ -1,0 +1,202 @@
+﻿  console.log
+    ΓÜí SignalR disconnected
+
+      at log (src/services/logicServices/globalSignalR.ts:138:15)
+
+node.exe : FAIL src/services/logicServices/globalSignalR.test.ts
+At C:\nvm4w\nodejs\npx.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/npm/bin/npx-cli.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL src/servic...SignalR.test.ts: 
+   String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  globalSignalR
+    initSignalR
+      ΓêÜ should create and start connection (3 ms)
+      ├ù should not re-initialize if connection already exists (1 ms)
+      ├ù should handle UpdateStatus event
+      ├ù should handle ReceiveOrder event
+      ├ù should handle PaymentReceived event
+      ├ù should handle ReceivingOrdersChanged event
+      ├ù should handle ShiftChanged event
+    stopSignalR
+      ├ù should stop the connection and reset it (14 ms)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should not re-initialize if connection 
+already exists
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+    [0m [90m 73 |[39m         [36mawait[39m initSignalR()[33m;[39m
+     [90m 74 |[39m         
+    [31m[1m>[22m[39m[90m 75 |[39m         expect(createSignalRConnection)
+[33m.[39mtoHaveBeenCalledTimes([35m1[39m)[33m;[39m
+     [90m    |[39m                                         
+[31m[1m^[22m[39m
+     [90m 76 |[39m     })[33m;[39m
+     [90m 77 |[39m
+     [90m 78 |[39m     it([32m'should handle UpdateStatus 
+event'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.toHaveBeenCalledTimes 
+(src/services/logicServices/globalSignalR.test.ts:75:41)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle UpdateStatus event
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+    [0m [90m 79 |[39m       [36mawait[39m initSignalR()[33m;[39m
+     [90m 80 |[39m
+    [31m[1m>[22m[39m[90m 81 |[39m       [36mconst[39m 
+updateStatusHandler [33m=[39m 
+mockConnection[33m.[39mon[33m.[39mmock[33m.[39mcalls[33m.[39mfind(call 
+[33m=>[39m call[[35m0[39m] [33m===[39m 
+[32m'UpdateStatus'[39m)[[35m1[39m][33m;[39m
+     [90m    |[39m                                                            
+                                            [31m[1m^[22m[39m
+     [90m 82 |[39m       
+     [90m 83 |[39m       [36mconst[39m mockData [33m=[39m { 
+orderId[33m:[39m [32m'o1'[39m[33m,[39m status[33m:[39m [35m2[39m 
+}[33m;[39m
+     [90m 84 |[39m       updateStatusHandler(mockData)[33m;[39m[0m
+
+      at Object.<anonymous> 
+(src/services/logicServices/globalSignalR.test.ts:81:104)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle ReceiveOrder event
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+    [0m [90m 91 |[39m       [36mawait[39m initSignalR()[33m;[39m
+     [90m 92 |[39m
+    [31m[1m>[22m[39m[90m 93 |[39m       [36mconst[39m 
+receiveOrderHandler [33m=[39m 
+mockConnection[33m.[39mon[33m.[39mmock[33m.[39mcalls[33m.[39mfind(call 
+[33m=>[39m call[[35m0[39m] [33m===[39m 
+[32m'ReceiveOrder'[39m)[[35m1[39m][33m;[39m
+     [90m    |[39m                                                            
+                                            [31m[1m^[22m[39m
+     [90m 94 |[39m       
+     [90m 95 |[39m       [36mconst[39m mockOrder [33m=[39m { 
+id[33m:[39m [32m'o1'[39m[33m,[39m items[33m:[39m [] }[33m;[39m
+     [90m 96 |[39m       receiveOrderHandler(mockOrder)[33m;[39m[0m
+
+      at Object.<anonymous> 
+(src/services/logicServices/globalSignalR.test.ts:93:104)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle PaymentReceived event
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+    [0m [90m 103 |[39m         [36mawait[39m initSignalR()[33m;[39m
+     [90m 104 |[39m   
+    [31m[1m>[22m[39m[90m 105 |[39m         [36mconst[39m 
+paymentReceivedHandler [33m=[39m 
+mockConnection[33m.[39mon[33m.[39mmock[33m.[39mcalls[33m.[39mfind(call 
+[33m=>[39m call[[35m0[39m] [33m===[39m 
+[32m'PaymentReceived'[39m)[[35m1[39m][33m;[39m
+     [90m     |[39m                                                           
+                                                     [31m[1m^[22m[39m
+     [90m 106 |[39m         
+     [90m 107 |[39m         [36mconst[39m mockData [33m=[39m { 
+audioUrl[33m:[39m [32m'url'[39m }[33m;[39m
+     [90m 108 |[39m         paymentReceivedHandler(mockData)[33m;[39m[0m
+
+      at Object.<anonymous> 
+(src/services/logicServices/globalSignalR.test.ts:105:112)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle ReceivingOrdersChanged 
+event
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+    [0m [90m 114 |[39m         [36mawait[39m initSignalR()[33m;[39m
+     [90m 115 |[39m   
+    [31m[1m>[22m[39m[90m 116 |[39m         [36mconst[39m handler 
+[33m=[39m 
+mockConnection[33m.[39mon[33m.[39mmock[33m.[39mcalls[33m.[39mfind(call 
+[33m=>[39m call[[35m0[39m] [33m===[39m 
+[32m'ReceivingOrdersChanged'[39m)[[35m1[39m][33m;[39m
+     [90m     |[39m                                                           
+                                             [31m[1m^[22m[39m
+     [90m 117 |[39m         
+     [90m 118 |[39m         handler({ isReceivingOrders[33m:[39m 
+[36mtrue[39m })[33m;[39m
+     [90m 119 |[39m         expect(updateReceivingOrdersLocal)[33m.[39mtoHav
+eBeenCalledWith([36mtrue[39m)[33m;[39m[0m
+
+      at Object.<anonymous> 
+(src/services/logicServices/globalSignalR.test.ts:116:104)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ΓùÅ globalSignalR ΓÇ║ initSignalR ΓÇ║ should handle ShiftChanged event
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+    [0m [90m 123 |[39m         [36mawait[39m initSignalR()[33m;[39m
+     [90m 124 |[39m   
+    [31m[1m>[22m[39m[90m 125 |[39m         [36mconst[39m handler 
+[33m=[39m 
+mockConnection[33m.[39mon[33m.[39mmock[33m.[39mcalls[33m.[39mfind(call 
+[33m=>[39m call[[35m0[39m] [33m===[39m 
+[32m'ShiftChanged'[39m)[[35m1[39m][33m;[39m
+     [90m     |[39m                                                           
+                                   [31m[1m^[22m[39m
+     [90m 126 |[39m         
+     [90m 127 |[39m         [90m// Test clear shift[39m
+     [90m 128 |[39m         handler({ status[33m:[39m [35m1[39m 
+})[33m;[39m[0m
+
+      at Object.<anonymous> 
+(src/services/logicServices/globalSignalR.test.ts:125:94)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ΓùÅ globalSignalR ΓÇ║ stopSignalR ΓÇ║ should stop the connection and reset it
+
+    expect(jest.fn()).toHaveBeenCalled()
+
+    Expected number of calls: >= 1
+    Received number of calls:    0
+
+    [0m [90m 140 |[39m       [36mawait[39m stopSignalR()[33m;[39m
+     [90m 141 |[39m
+    [31m[1m>[22m[39m[90m 142 |[39m       
+expect(mockConnection[33m.[39mstop)[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 143 |[39m       
+     [90m 144 |[39m       [90m// If we call init again, it should create a 
+new connection[39m
+     [90m 145 |[39m       [36mawait[39m initSignalR()[33m;[39m[0m
+
+      at Object.toHaveBeenCalled 
+(src/services/logicServices/globalSignalR.test.ts:142:35)
+      at asyncGeneratorStep 
+(node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 1 passed, 8 total
+Snapshots:   0 total
+Time:        0.448 s, estimated 1 s
+Ran all test suites matching 
+/src\\services\\logicServices\\globalSignalR.test.ts/i.
