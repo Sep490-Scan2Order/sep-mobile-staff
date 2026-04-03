@@ -81,8 +81,14 @@ const shiftSlice = createSlice({
       .addCase(fetchCurrentShift.fulfilled, (state, action) => {
         const shift = action.payload?.data || action.payload;
 
+        // Nếu API trả về null hoặc undefined (không có ca) thì reset
         state.currentShift = shift ? { ...shift } : null;
         state.currentShiftId = shift?.id || null;
+      })
+      .addCase(fetchCurrentShift.rejected, (state) => {
+        // Không có ca làm hiện tại → reset về null
+        state.currentShift = null;
+        state.currentShiftId = null;
       });
   },
 });

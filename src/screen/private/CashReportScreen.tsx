@@ -1,20 +1,22 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, Text, ActivityIndicator, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
+import {
+  View,
+  ScrollView,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  RefreshControl,
+  StatusBar,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { shiftService } from '@/services/logicServices/shiftService';
-import { ShiftReportDto } from '@/services/apiEndpoints/shiftApi';
+import { ShiftReportDto } from '@/type';
 import { HistoryCard } from '@/components/HistoryCard';
 import { Header } from '@/components/Header';
 import { AlertCircle, Clock, ChevronLeft, Calendar } from 'lucide-react-native';
 
-const PRIMARY_COLOR_CLASS = 'bg-teal-700';
-
-/**
- * Màn hình Báo cáo & Lịch sử ca làm.
- * Layout vuông vức, không bo tròn, đồng bộ với KDS.
- */
 const CashReportScreen = ({ route }: any) => {
   const paramShiftId = route?.params?.shiftId;
   const user = useSelector((state: RootState) => state.auth.userInfo);
@@ -46,8 +48,13 @@ const CashReportScreen = ({ route }: any) => {
     setError(null);
     try {
       const data = await shiftService.getReportsByStaff(user.id);
-      setHistory(data || []);
+      // Đảm bảo luôn là array dù API trả về object bọc hay array thẳng
+      const list = Array.isArray(data)
+        ? data
+        : (data?.data ?? data?.items ?? []);
+      setHistory(list);
       setReport(null);
+
     } catch (err: any) {
       setError(err.message || 'Không thể lấy lịch sử báo cáo.');
     } finally {
@@ -66,7 +73,9 @@ const CashReportScreen = ({ route }: any) => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    if (report) {
+    if (paramShiftId) {
+      fetchSingleReport(paramShiftId);
+    } else if (report) {
       fetchSingleReport(report.shiftId);
     } else {
       fetchStaffHistory();
@@ -81,25 +90,35 @@ const CashReportScreen = ({ route }: any) => {
 
   const renderDetail = () => (
     <View className="flex-1 bg-gray-50">
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => fetchStaffHistory()}
         className="mx-6 my-4 flex-row items-center"
       >
         <ChevronLeft size={20} color="#0f766e" />
-        <Text className="text-teal-700 ml-1 font-bold text-base">Quay lại lịch sử</Text>
+        <Text className="text-teal-700 ml-1 font-bold text-base">
+          Quay lại lịch sử
+        </Text>
       </TouchableOpacity>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0f766e" />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#0f766e"
+          />
+        }
       >
         {report && (
           <View className="mx-5 bg-white p-6 shadow-sm border border-gray-100">
             <View className="items-center mb-6">
               <View className="bg-teal-50 px-4 py-2 rounded-lg border border-teal-100">
-                <Text className="text-teal-700 font-black text-lg">BÁO CÁO CA #{report.shiftId}</Text>
+                <Text className="text-teal-700 font-black text-lg">
+                  BÁO CÁO CA #{report.shiftId}
+                </Text>
               </View>
               <View className="flex-row items-center mt-3">
                 <Calendar size={14} color="#9ca3af" />
@@ -112,36 +131,75 @@ const CashReportScreen = ({ route }: any) => {
             <View className="gap-4">
               {[
                 { label: 'Tiền mặt doanh thu', value: report.totalCashOrder },
-                { label: 'Chuyển khoản doanh thu', value: report.totalTransferOrder },
-                { label: 'Tổng hoàn tiền', value: report.totalRefundAmount, isRefund: true },
+                {
+                  label: 'Chuyển khoản doanh thu',
+                  value: report.totalTransferOrder,
+                },
+                {
+                  label: 'Tổng hoàn tiền',
+                  value: report.totalRefundAmount,
+                  isRefund: true,
+                },
               ].map((item, idx) => (
-                <View key={idx} className="flex-row justify-between items-center py-3 border-b border-gray-50">
+                <View
+                  key={idx}
+                  className="flex-row justify-between items-center py-3 border-b border-gray-50"
+                >
                   <Text className="text-gray-500 text-base">{item.label}</Text>
-                  <Text className={`font-bold text-lg ${item.isRefund ? 'text-orange-600' : 'text-gray-900'}`}>
-                    {item.isRefund ? '-' : ''}{formatCurrency(item.value)} đ
+                  <Text
+                    className={`font-bold text-lg ${
+                      item.isRefund ? 'text-orange-600' : 'text-gray-900'
+                    }`}
+                  >
+                    {item.isRefund ? '-' : ''}
+                    {formatCurrency(item.value)} đ
                   </Text>
                 </View>
               ))}
 
               <View className="mt-4 bg-teal-50/30 p-5 rounded-xl gap-3">
-                 <View className="flex-row justify-between">
-                  <Text className="text-gray-600 font-semibold">Tiền mặt dự kiến</Text>
-                  <Text className="font-bold text-gray-900 text-lg">{formatCurrency(report.expectedCashAmount)} đ</Text>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-600 font-semibold">
+                    Tiền mặt dự kiến
+                  </Text>
+                  <Text className="font-bold text-gray-900 text-lg">
+                    {formatCurrency(report.expectedCashAmount)} đ
+                  </Text>
                 </View>
                 <View className="flex-row justify-between">
-                  <Text className="text-gray-600 font-semibold">Thực tế bàn giao</Text>
-                  <Text className="font-black text-teal-700 text-xl">{formatCurrency(report.actualCashAmount)} đ</Text>
+                  <Text className="text-gray-600 font-semibold">
+                    Thực tế bàn giao
+                  </Text>
+                  <Text className="font-black text-teal-700 text-xl">
+                    {formatCurrency(report.actualCashAmount)} đ
+                  </Text>
                 </View>
               </View>
 
-              <View className={`mt-4 p-5 items-center ${
-                report.difference == 0 ? 'bg-emerald-50' : Number(report.difference) > 0 ? 'bg-blue-50' : 'bg-red-50'
-              }`}>
-                <Text className="text-gray-400 text-xs font-black tracking-widest mb-1">CHÊNH LỆCH</Text>
-                <Text className={`text-2xl font-black ${
-                  report.difference == 0 ? 'text-emerald-700' : Number(report.difference) > 0 ? 'text-blue-700' : 'text-red-700'
-                }`}>
-                  {report.difference == 0 ? 'HOÀN TOÀN KHỚP ✔' : `${formatCurrency(report.difference)} đ`}
+              <View
+                className={`mt-4 p-5 items-center ${
+                  report.difference == 0
+                    ? 'bg-emerald-50'
+                    : Number(report.difference) > 0
+                    ? 'bg-blue-50'
+                    : 'bg-red-50'
+                }`}
+              >
+                <Text className="text-gray-400 text-xs font-black tracking-widest mb-1">
+                  CHÊNH LỆCH
+                </Text>
+                <Text
+                  className={`text-2xl font-black ${
+                    report.difference == 0
+                      ? 'text-emerald-700'
+                      : Number(report.difference) > 0
+                      ? 'text-blue-700'
+                      : 'text-red-700'
+                  }`}
+                >
+                  {report.difference == 0
+                    ? 'HOÀN TOÀN KHỚP ✔'
+                    : `${formatCurrency(report.difference)} đ`}
                 </Text>
               </View>
             </View>
@@ -156,16 +214,26 @@ const CashReportScreen = ({ route }: any) => {
       <View className="px-6 mt-5 mb-4 flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Clock size={20} color="#0f766e" />
-          <Text className="text-xl font-black text-gray-900 ml-2">Lịch sử ca làm</Text>
+          <Text className="text-xl font-black text-gray-900 ml-2">
+            Lịch sử ca làm
+          </Text>
         </View>
-        <Text className="bg-gray-100 px-3 py-1 rounded-full text-gray-500 text-xs font-bold">{history.length} CA</Text>
+        <Text className="bg-gray-100 px-3 py-1 rounded-full text-gray-500 text-xs font-bold">
+          {history.length} CA
+        </Text>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0f766e" />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#0f766e"
+          />
+        }
       >
         {history.length === 0 ? (
           <View className="mt-20 items-center px-10">
@@ -176,8 +244,12 @@ const CashReportScreen = ({ route }: any) => {
           </View>
         ) : (
           history.map((item, index) => (
-            <TouchableOpacity key={index} activeOpacity={0.85} onPress={() => setReport(item)}>
-              <HistoryCard 
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.85}
+              onPress={() => setReport(item)}
+            >
+              <HistoryCard
                 employee={user?.name || 'Nhân viên'}
                 restaurant={user?.restaurantName || 'Nhà hàng'}
                 {...item}
@@ -194,7 +266,7 @@ const CashReportScreen = ({ route }: any) => {
       <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
-        
+
         <View className="flex-1 bg-white">
           {loading && !refreshing ? (
             <View className="flex-1 justify-center items-center">
@@ -203,12 +275,21 @@ const CashReportScreen = ({ route }: any) => {
           ) : error ? (
             <View className="flex-1 justify-center items-center p-10">
               <AlertCircle size={60} color="#ef4444" />
-              <Text className="text-red-500 text-center mt-4 font-bold">{error}</Text>
-              <TouchableOpacity onPress={onRefresh} className="mt-8 bg-teal-700 px-8 py-3 rounded-xl shadow-lg">
-                 <Text className="text-white font-bold">Thử lại</Text>
+              <Text className="text-red-500 text-center mt-4 font-bold">
+                {error}
+              </Text>
+              <TouchableOpacity
+                onPress={onRefresh}
+                className="mt-8 bg-teal-700 px-8 py-3 rounded-xl shadow-lg"
+              >
+                <Text className="text-white font-bold">Thử lại</Text>
               </TouchableOpacity>
             </View>
-          ) : report ? renderDetail() : renderHistory()}
+          ) : report ? (
+            renderDetail()
+          ) : (
+            renderHistory()
+          )}
         </View>
       </SafeAreaView>
     </View>

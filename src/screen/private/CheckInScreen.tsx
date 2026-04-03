@@ -127,7 +127,11 @@ export default function CheckInScreen() {
 
   // ================== UI ==================
 
-  const isShiftOpen = currentShift?.status === 0;
+  // Ca đang mở = có currentShift với id hợp lệ
+  // status === 0 là "Open/Active" theo backend enum ShiftStatus
+  // Nếu currentShift null → chưa có ca → isShiftOpen = false
+  const isShiftOpen = !!(currentShift && currentShift.id);
+
 
   return (
     <View className="flex-1 bg-teal-700">

@@ -128,11 +128,14 @@ export const authService = {
   }) => {
     try {
       const { data: res } = await authApi.changePasswordStaff(data);
+            console.log('Change password response:', res);
       if (!res?.isSuccess) {
         return { success: false, message: res?.message || 'Không thể đổi mật khẩu' };
       }
+
       return { success: true, message: 'Đổi mật khẩu thành công' };
     } catch (error: any) {
+      console.error('Error changing password:', error);
       return {
         success: false,
         message: error?.response?.data?.message || 'Lỗi khi đổi mật khẩu',

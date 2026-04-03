@@ -1,5 +1,7 @@
 import publicClient from '@/services/axios/publicClient';
+import axiosPrivate from '@/services/axios/privateClient';
 import { API_BASE_URL } from '@/config/apiConfig';
+import privateClient from '../axios';
 
 export const authApi = {
   staffLogin: (credentials: { email: string; password: string }) => {
@@ -42,6 +44,6 @@ export const authApi = {
     oldPassword: string;
     newPassword: string;
   }) => {
-    return publicClient.post(`${API_BASE_URL}/Auth/change-password-staff`, data);
+    return privateClient.post(`${API_BASE_URL}/Auth/change-password-staff`, data);
   },
 };

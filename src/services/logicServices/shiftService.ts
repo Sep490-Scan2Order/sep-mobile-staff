@@ -1,4 +1,6 @@
-import { shiftApi, CheckInRequest, CheckOutRequest } from '@/services/apiEndpoints/shiftApi';
+import { shiftApi } from '@/services/apiEndpoints/shiftApi';
+import { CheckInRequest, CheckOutRequest } from '@/type';
+
 
 export const shiftService = {
   async checkIn(data: CheckInRequest) {
@@ -43,7 +45,10 @@ export const shiftService = {
   async getReportsByStaff(staffId: string) {
     try {
       const response = await shiftApi.getReportsByStaff(staffId);
-      return response.data?.data || response.data;
+      const raw = response.data?.data ?? response.data;
+      // Đảm bảo trả về array dù API wrapped hay không
+      return Array.isArray(raw) ? raw : (raw?.items ?? raw?.data ?? []);
+
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||

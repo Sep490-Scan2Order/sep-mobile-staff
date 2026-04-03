@@ -11,6 +11,17 @@ import orderReducer, {
 } from './orderSlice';
 import { OrderState, Order } from '@/type';
 
+// Mock order service to test thunks
+jest.mock('@/services/logicServices/orderService', () => ({
+  orderService: {
+    getActiveOrders: jest.fn(),
+    getPendingCashOrders: jest.fn(),
+    updateOrderStatus: jest.fn(),
+    confirmCashOrder: jest.fn(),
+    confirmPickupTime: jest.fn(),
+  }
+}));
+
 describe('orderSlice', () => {
     const initialState: OrderState = {
         orders: [],
@@ -79,6 +90,45 @@ describe('orderSlice', () => {
         expect(result.refreshCount).toBe(1);
     });
 
+    it('increaseUnread: should NOT increment when order is not from today', () => {
+        // Use a date in the past so isToday() returns false
+        const oldOrder: Order = { ...mockOrder, createdAt: '2020-01-01T00:00:00.000Z' };
+        const result = orderReducer(initialState, addOrder(oldOrder));
+        expect(result.orders).toHaveLength(1);
+        expect(result.unread.all).toBe(0); // not incremented because not today
+    });
+
+    it('increaseUnread: should NOT increment for unknown status (outside 0-4)', () => {
+        // Status 99 means unread[99] is undefined — branch not taken
+        const orderUnknownStatus: Order = { ...mockOrder, id: 'o99', status: 99 };
+        const result = orderReducer(initialState, addOrder(orderUnknownStatus));
+        expect(result.unread.all).toBe(1); // all incremented
+        expect((result.unread as any)[99]).toBeUndefined(); // status-specific not incremented
+    });
+
+    it('updateOrderStatusLocal: should NOT increase unread when status has NOT changed', () => {
+        const stateWithOrder: OrderState = {
+            ...initialState,
+            orders: [mockOrder], // status = 0
+            unread: { ...initialState.unread, all: 1, 0: 1 }
+        };
+        // Update to same status (0 -> 0)
+        const result = orderReducer(stateWithOrder, updateOrderStatusLocal({ id: 'o1', status: 0 }));
+        expect(result.orders[0].status).toBe(0);
+        // unread should NOT have increased
+        expect(result.unread.all).toBe(1);
+    });
+
+    it('clearUnreadByStatus: should handle unknown status gracefully (no-op)', () => {
+        const stateWithUnread: OrderState = {
+            ...initialState,
+            unread: { all: 5, 0: 2, 1: 3, 2: 0, 3: 0, 4: 0 }
+        };
+        // status 99 is not in unread map, so unread[99] is undefined -> branch not taken
+        const result = orderReducer(stateWithUnread, clearUnreadByStatus(99));
+        expect(result.unread.all).toBe(5); // unchanged
+    });
+
     // Thunks
     it('should handle fetchActiveOrders.fulfilled', () => {
         const result = orderReducer(initialState, fetchActiveOrders.fulfilled([mockOrder], '', 1));
@@ -108,5 +158,145 @@ describe('orderSlice', () => {
         const stateWithOrder: OrderState = { ...initialState, orders: [mockOrder] };
         const result = orderReducer(stateWithOrder, confirmPickupTime.fulfilled({ orderId: 'o1', confirmedPickupAt: '2024' }, '', { orderId: 'o1', confirmedPickupAt: '2024' }));
         expect(result.orders[0].confirmedPickupAt).toBe('2024');
+    });
+
+    it('should handle updateOrderStatus.fulfilled - non-matching id unchanged', () => {
+        const order2: Order = { ...mockOrder, id: 'o2', status: 1 };
+        const stateWithOrders: OrderState = { ...initialState, orders: [mockOrder, order2] };
+        const result = orderReducer(stateWithOrders, updateOrderStatus.fulfilled(
+            { orderId: 'o1', newStatus: 3 }, '', { orderId: 'o1', newStatus: 3 }
+        ));
+        expect(result.orders[0].status).toBe(3); // o1 updated
+        expect(result.orders[1].status).toBe(1); // o2 unchanged
+    });
+
+    it('should handle confirmPickupTime.fulfilled - non-matching id unchanged', () => {
+        const order2: Order = { ...mockOrder, id: 'o2' };
+        const stateWithOrders: OrderState = { ...initialState, orders: [mockOrder, order2] };
+        const result = orderReducer(stateWithOrders, confirmPickupTime.fulfilled(
+            { orderId: 'o1', confirmedPickupAt: '2025' }, '', { orderId: 'o1', confirmedPickupAt: '2025' }
+        ));
+        expect(result.orders[0].confirmedPickupAt).toBe('2025'); // o1 updated
+        expect(result.orders[1].confirmedPickupAt).toBeUndefined(); // o2 unchanged
+    });
+
+    it('should handle fetchActiveOrders.pending and rejected', () => {
+        const pendingResult = orderReducer(initialState, fetchActiveOrders.pending('', 1));
+        expect(pendingResult.loading).toBe(true);
+
+        const rejectedResult = orderReducer(initialState, fetchActiveOrders.rejected(new Error('fail'), '', 1, 'error msg'));
+        expect(rejectedResult.loading).toBe(false);
+        expect(rejectedResult.error).toBe('error msg');
+    });
+
+    it('should return unchanged order if updateOrderStatusLocal id does not match', () => {
+        const order2 = { ...mockOrder, id: 'o2' };
+        const stateWithOrders: OrderState = { ...initialState, orders: [mockOrder, order2] };
+        
+        const result = orderReducer(stateWithOrders, updateOrderStatusLocal({ id: 'o1', status: 1 }));
+        
+        expect(result.orders[1].id).toBe('o2');
+        expect(result.orders[1].status).toBe(0); // unchanged
+    });
+
+    describe('Thunk functions execution', () => {
+        const dispatch = jest.fn();
+        const getState = jest.fn();
+        const mockOrderService = require('@/services/logicServices/orderService').orderService;
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('executes fetchActiveOrders successfully', async () => {
+            mockOrderService.getActiveOrders.mockResolvedValue([mockOrder]);
+            const thunk = fetchActiveOrders(1);
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(mockOrderService.getActiveOrders).toHaveBeenCalledWith(1);
+            expect(result.payload).toEqual([mockOrder]);
+        });
+
+        it('executes fetchActiveOrders with error', async () => {
+            mockOrderService.getActiveOrders.mockRejectedValue(new Error('Fetch Error'));
+            const thunk = fetchActiveOrders(1);
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(result.payload).toBe('Fetch Error');
+        });
+
+        it('executes fetchPendingCashOrders successfully', async () => {
+            const rawMockData = [{
+                id: 'o1', phone: '123', orderCode: 1, createdAt: '2024',
+                amount: 100, status: 0, type: 1, tableName: 'T1',
+                items: [{ dishId: 1, dishName: 'Dish', price: 10, quantity: 1, originalPrice: 10, discountAmount: 0, promotionName: null, subTotal: 10 }]
+            }];
+            mockOrderService.getPendingCashOrders.mockResolvedValue(rawMockData);
+            
+            const thunk = fetchPendingCashOrders();
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(mockOrderService.getPendingCashOrders).toHaveBeenCalled();
+            expect((result.payload as any[])[0].id).toBe('o1');
+        });
+
+        it('executes fetchPendingCashOrders with error', async () => {
+            mockOrderService.getPendingCashOrders.mockRejectedValue(new Error('Cash Error'));
+            const thunk = fetchPendingCashOrders();
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(result.payload).toBe('Cash Error');
+        });
+
+        it('executes updateOrderStatus successfully', async () => {
+            mockOrderService.updateOrderStatus.mockResolvedValue(undefined);
+            const thunk = updateOrderStatus({ orderId: 'o1', newStatus: 2 });
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(mockOrderService.updateOrderStatus).toHaveBeenCalledWith('o1', 2);
+            expect(result.payload).toEqual({ orderId: 'o1', newStatus: 2 });
+        });
+
+        it('executes updateOrderStatus with error', async () => {
+            mockOrderService.updateOrderStatus.mockRejectedValue(new Error('Update Error'));
+            const thunk = updateOrderStatus({ orderId: 'o1', newStatus: 2 });
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(result.payload).toBe('Update Error');
+        });
+
+        it('executes confirmCashOrder successfully', async () => {
+            mockOrderService.confirmCashOrder.mockResolvedValue(undefined);
+            const thunk = confirmCashOrder('o1');
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(mockOrderService.confirmCashOrder).toHaveBeenCalledWith('o1');
+            expect(result.payload).toBe('o1');
+        });
+
+        it('executes confirmCashOrder with error', async () => {
+            mockOrderService.confirmCashOrder.mockRejectedValue(new Error('Confirm Error'));
+            const thunk = confirmCashOrder('o1');
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(result.payload).toBe('Confirm Error');
+        });
+
+        it('executes confirmPickupTime successfully', async () => {
+            mockOrderService.confirmPickupTime.mockResolvedValue(undefined);
+            const thunk = confirmPickupTime({ orderId: 'o1', confirmedPickupAt: 'time' });
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(mockOrderService.confirmPickupTime).toHaveBeenCalledWith('o1', 'time');
+            expect(result.payload).toEqual({ orderId: 'o1', confirmedPickupAt: 'time' });
+        });
+
+        it('executes confirmPickupTime with error', async () => {
+            mockOrderService.confirmPickupTime.mockRejectedValue(new Error('Pickup Error'));
+            const thunk = confirmPickupTime({ orderId: 'o1', confirmedPickupAt: 'time' });
+            const result = await thunk(dispatch, getState, undefined);
+            
+            expect(result.payload).toBe('Pickup Error');
+        });
     });
 });
