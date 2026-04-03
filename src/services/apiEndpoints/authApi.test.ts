@@ -1,9 +1,15 @@
 import publicClient from '@/services/axios/publicClient';
+import axiosPrivate from '@/services/axios/privateClient';
 import { authApi } from './authApi';
 import { API_BASE_URL } from '@/config/apiConfig';
 
 // Mock publicClient
 jest.mock('@/services/axios/publicClient', () => ({
+  post: jest.fn(),
+}));
+
+// Mock privateClient (used for authenticated endpoints)
+jest.mock('@/services/axios/privateClient', () => ({
   post: jest.fn(),
 }));
 
@@ -75,19 +81,22 @@ describe('authApi', () => {
     );
   });
 
-  it('changePasswordStaff should call /Auth/change-password-staff with correct data', async () => {
+  it('changePasswordStaff should call /Auth/change-password-staff with correct data using authenticated client', async () => {
     const data = {
       email: 'test@example.com',
       oldPassword: 'old-password',
       newPassword: 'new-password',
     };
-    (publicClient.post as jest.Mock).mockResolvedValue({ data: { isSuccess: true } });
+    // changePasswordStaff now uses axiosPrivate (requires auth token)
+    (axiosPrivate.post as jest.Mock).mockResolvedValue({ data: { isSuccess: true } });
 
     await authApi.changePasswordStaff(data);
 
-    expect(publicClient.post).toHaveBeenCalledWith(
+    expect(axiosPrivate.post).toHaveBeenCalledWith(
       `${API_BASE_URL}/Auth/change-password-staff`,
       data
     );
+    // publicClient should NOT be called
+    expect(publicClient.post).not.toHaveBeenCalled();
   });
 });

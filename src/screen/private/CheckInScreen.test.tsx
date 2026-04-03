@@ -226,7 +226,9 @@ describe('CheckInScreen', () => {
     expect(Alert.alert).toHaveBeenCalledWith('Thông báo', 'Vui lòng nhập tiền cuối ca');
   });
 
-  it('shows error alert if currentShift has no id on check-out', () => {
+  it('disables check-out button when currentShift has no id', () => {
+    // Since isShiftOpen = !!(currentShift && currentShift.id),
+    // a shift without id means isShiftOpen=false -> checkout button is disabled
     const mockShift = { status: 0 }; // missing id
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
@@ -235,11 +237,15 @@ describe('CheckInScreen', () => {
       })
     );
 
-    const { getByText, getByPlaceholderText } = render(<CheckInScreen />);
-    fireEvent.changeText(getByPlaceholderText('Nhập số tiền'), '1000000');
-    fireEvent.press(getByText(/Kết thúc ca/i));
-    
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Không tìm thấy ca làm hiện tại');
+    const { getByText } = render(<CheckInScreen />);
+    const checkOutText = getByText(/Kết thúc ca/i);
+
+    // Traverse up to find the TouchableOpacity with disabled prop
+    let current: any = checkOutText;
+    while (current && current.props.disabled === undefined) {
+      current = current.parent;
+    }
+    expect(current?.props.disabled).toBe(true);
   });
 
   it('handles error when check-out fails', async () => {
