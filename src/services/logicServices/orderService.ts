@@ -4,7 +4,7 @@ export const orderService = {
   async getActiveOrders(restaurantId: number) {
     const axiosResponse = await orderApi.getActiveOrders(restaurantId);
     const response = axiosResponse.data;
-
+ console.log('🚀 API Response for getActiveOrders:', response);
     if (!response?.isSuccess) {
       throw new Error(response?.message || 'Không lấy được danh sách order');
     }

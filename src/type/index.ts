@@ -174,6 +174,7 @@ export interface RefundRequest {
   refundType: number;
   responsibleStaffId: string;
   note: string;
+  imageFile?: any; // Added for image evidence support
 }
 
 export interface ShiftState {

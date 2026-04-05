@@ -7,7 +7,7 @@ import BottomTabs from '@/navigation/BottomTabs';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import ProfileScreen from '@/screen/private/ProfileScreen';
 import DetailOrderScreen from '@/screen/private/DetailOrderScreen';
-import DetailPaymentScreen from '@/screen/private/DetailPaymentScreen';
+// import DetailPaymentScreen from '@/screen/private/DetailPaymentScreen';
 import ChangePasswordScreen from '@/screen/private/ChangePasswordScreen';
 import ScanDeliveryScreen from '@/screen/private/ScanDeliveryScreen';
 import { RootStackParamList } from '@/type';
@@ -51,10 +51,10 @@ export default function RootNavigator() {
             name="DetailOrderScreen"
             component={DetailOrderScreen}
           />
-          <Stack.Screen
+          {/* <Stack.Screen
             name="DetailPaymentScreen"
             component={DetailPaymentScreen}
-          />
+          /> */}
           <Stack.Screen
             name="ChangePasswordScreen"
             component={ChangePasswordScreen}

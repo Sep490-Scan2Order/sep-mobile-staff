@@ -135,7 +135,6 @@ export const authService = {
 
       return { success: true, message: 'Đổi mật khẩu thành công' };
     } catch (error: any) {
-      console.error('Error changing password:', error);
       return {
         success: false,
         message: error?.response?.data?.message || 'Lỗi khi đổi mật khẩu',

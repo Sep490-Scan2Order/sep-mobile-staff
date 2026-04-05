@@ -23,12 +23,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import {
   confirmCashOrder,
-  fetchPendingCashOrders,
   fetchActiveOrders,
   forceRefresh,
 } from '@/store/slices/orderSlice';
 import { RootState, AppDispatch } from '@/store';
-import { Order, RootStackParamList, BottomTabParamList } from '@/type';
+import { RootStackParamList } from '@/type';
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,

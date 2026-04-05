@@ -14,9 +14,23 @@ jest.mock('@/services/logicServices/authService', () => ({
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
+// Mock Navigation
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+}));
+
+// Mock lucide icons
+jest.mock('lucide-react-native', () => ({
+  Eye: () => null,
+  EyeOff: () => null,
+}));
+
 describe('LoginScreen', () => {
+  const navigation = { navigate: jest.fn() };
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (require('@react-navigation/native').useNavigation as jest.Mock).mockReturnValue(navigation);
   });
 
   it('renders all UI elements correctly', () => {
@@ -79,5 +93,14 @@ describe('LoginScreen', () => {
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith('Đăng nhập thất bại', errorMessage);
     });
+  });
+
+  it('navigates to EmailForOTPScreen when "Quên mật khẩu?" is pressed', () => {
+    const { getByText } = render(<LoginScreen />);
+    const forgotPasswordLink = getByText('Quên mật khẩu?');
+    
+    fireEvent.press(forgotPasswordLink);
+    
+    expect(navigation.navigate).toHaveBeenCalledWith('EmailForOTPScreen');
   });
 });

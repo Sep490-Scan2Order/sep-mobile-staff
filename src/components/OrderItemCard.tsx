@@ -24,6 +24,9 @@ export const OrderItemCard: React.FC<Props> = ({
 }) => {
   const isPreOrder = item.isPreOrder === true;
 
+  // 👇 NEW: check unpaid
+  const isUnpaid = item.status === 0;
+
   const needsPickupConfirm =
     isPreOrder && item.status === 1 && !item.confirmedPickupAt;
 
@@ -48,7 +51,7 @@ export const OrderItemCard: React.FC<Props> = ({
   };
 
   /**
-   * STATUS LABEL (hiển thị text)
+   * STATUS LABEL
    */
   const ORDER_STATUS_LABEL: Record<number, string> = {
     0: 'Thanh toán',
@@ -60,33 +63,16 @@ export const OrderItemCard: React.FC<Props> = ({
   };
 
   /**
-   * ACTION LABEL (text nút)
+   * ACTION LABEL
    */
   const ACTION_LABEL: Record<number, string> = {
     1: 'Nhận đơn',
     2: 'Làm xong',
     3: 'Giao hàng',
   };
-  // /**
-  //  * SHOW ACTION BUTTON?
-  //  */
-  // const showActionButton = [1, 2, 3].includes(item.status);
 
-  // /**
-  //  * BUTTON COLOR (optional UX upgrade)
-  //  */
-  // const getButtonColor = () => {
-  //   switch (item.status) {
-  //     case 1:
-  //       return 'bg-blue-500';
-  //     case 2:
-  //       return 'bg-orange-500';
-  //     case 3:
-  //       return 'bg-green-600';
-  //     default:
-  //       return 'bg-gray-400';
-  //   }
-  // };
+  // 👇 NEW: logic hiển thị refund
+  const canRefund = isUnpaid || [1, 2, 3].includes(item.status);
 
   return (
     <View className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6">
@@ -127,7 +113,8 @@ export const OrderItemCard: React.FC<Props> = ({
           </TouchableOpacity>
 
           {activeMenuId === item.id && (
-            <View className="absolute right-0 top-8 bg-white border rounded-lg shadow-xl z-50 w-32 py-1">
+            <View className="absolute right-0 top-8 bg-white border rounded-lg shadow-xl z-50 w-40 py-1">
+              {/* VIEW DETAIL */}
               <TouchableOpacity
                 className="px-4 py-2 border-b"
                 onPress={() => {
@@ -138,7 +125,8 @@ export const OrderItemCard: React.FC<Props> = ({
                 <Text>Chi tiết</Text>
               </TouchableOpacity>
 
-              {[1, 2, 3].includes(item.status) && (
+              {/* REFUND */}
+              {canRefund && (
                 <TouchableOpacity
                   className="px-4 py-2"
                   onPress={() => {
@@ -146,7 +134,9 @@ export const OrderItemCard: React.FC<Props> = ({
                     onRefund(item);
                   }}
                 >
-                  <Text className="text-red-500">Hoàn tiền</Text>
+                  <Text className="text-red-500">
+                    {isUnpaid ? 'Xác nhận thanh toán' : 'Hoàn tiền'}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -172,9 +162,18 @@ export const OrderItemCard: React.FC<Props> = ({
             {item.amount.toLocaleString()} đ
           </Text>
 
-          {/* STATUS TEXT */}
+          {/* STATUS */}
           <Text className="mt-2 text-xs text-gray-500">
             {ORDER_STATUS_LABEL[item.status]}
+          </Text>
+
+          {/* 👇 NEW: hiển thị payment status */}
+          <Text
+            className={`mt-1 text-xs font-semibold ${
+              isUnpaid ? 'text-red-500' : 'text-green-600'
+            }`}
+          >
+            {isUnpaid ? 'Chưa thanh toán' : 'Đã thanh toán'}
           </Text>
         </View>
       </View>
@@ -191,8 +190,8 @@ export const OrderItemCard: React.FC<Props> = ({
         </TouchableOpacity>
       )}
 
-      {/* ACTION BUTTON */}
-      {[1, 2, 3].includes(item.status) && (
+      {/* ACTION */}
+      {[0, 1, 2, 3].includes(item.status) && (
         <TouchableOpacity
           className="py-4 items-center border-t border-dashed"
           onPress={() => onUpdateStatus(item)}

@@ -156,7 +156,7 @@ export default function ResetPasswordScreen() {
               {isLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-white text-center font-bold text-lg">
+                <Text testID="reset-button-text" className="text-white text-center font-bold text-lg">
                   Đặt lại mật khẩu
                 </Text>
               )}
