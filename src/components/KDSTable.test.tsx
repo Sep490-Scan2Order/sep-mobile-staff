@@ -235,7 +235,7 @@ describe('SDKTable Component Coverage', () => {
                 await props.onUpdateStatus(props.item);
             });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Không thể cập nhật', 'Mock Err', expect.any(Array));
+            expect(Alert.alert).toHaveBeenCalledWith('Không thể cập nhật', 'Mock Err');
         });
 
         it('covers handleUpdateStatus catch block (lines 176-179)', async () => {
@@ -247,7 +247,7 @@ describe('SDKTable Component Coverage', () => {
                 await props.onUpdateStatus(props.item);
             });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', expect.any(String));
+            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
         });
     });
 
@@ -262,7 +262,7 @@ describe('SDKTable Component Coverage', () => {
             
             await act(async () => { fireEvent.press(getByText('ConfirmPickup')); });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', expect.stringContaining('quá khứ'));
+            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Không thể chọn thời gian trong quá khứ');
         });
 
         it('covers confirmPickupTime rejected (lines 211-214)', async () => {
@@ -276,7 +276,7 @@ describe('SDKTable Component Coverage', () => {
             
             await act(async () => { fireEvent.press(getByText('ConfirmPickup')); });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'API Fail', expect.any(Array));
+            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'API Fail');
         });
 
         it('covers confirmPickupTime success (lines 215-221)', async () => {
@@ -287,7 +287,7 @@ describe('SDKTable Component Coverage', () => {
             mockDispatch.mockResolvedValueOnce({ type: 'order/confirmPickupTime/fulfilled' });
             
             await act(async () => { fireEvent.press(getByText('ConfirmPickup')); });
-            expect(Alert.alert).toHaveBeenCalledWith('Thành công', expect.any(String), expect.any(Array));
+            expect(Alert.alert).toHaveBeenCalledWith('Thành công', 'Đã xác nhận giờ nhận hàng');
         });
     });
 

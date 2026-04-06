@@ -1,0 +1,42 @@
+﻿
+> Scan2Order@0.0.1 test
+> jest src/components/RefundModal.test.tsx
+
+FAIL src/components/RefundModal.test.tsx
+  RefundModal Component
+    ΓêÜ renders correctly for paid order (357 ms)
+    ΓêÜ renders correctly for unpaid order (isUnpaid=true) (17 ms)
+    ΓêÜ handles staff selection (113 ms)
+    ΓêÜ submits paid refund successfully (88 ms)
+    ΓêÜ submits unpaid (system) refund successfully (87 ms)
+    ΓêÜ handles submission error (75 ms)
+    ├ù takes photo and compresses it (38 ms)
+System.Management.Automation.RemoteException
+  ΓùÅ RefundModal Component ΓÇ║ takes photo and compresses it
+System.Management.Automation.RemoteException
+    Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+System.Management.Automation.RemoteException
+    Check the render method of `RefundModal`.
+System.Management.Automation.RemoteException
+      at createFiberFromTypeAndProps (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:14784:28)
+      at createFiberFromElement (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:14798:14)
+      at createChild (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:3450:26)
+      at reconcileChildrenArray (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:3780:25)
+      at reconcileChildFibersImpl (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:4097:30)
+      at node_modules/react-test-renderer/cjs/react-test-renderer.development.js:4202:33
+      at reconcileChildren (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:6684:13)
+      at beginWork (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:8576:13)
+      at runWithFiberInDEV (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:2315:13)
+      at performUnitOfWork (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:13224:22)
+      at workLoopSync (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:13068:41)
+      at renderRootSync (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:13049:11)
+      at performWorkOnRoot (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:12253:39)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-test-renderer/cjs/react-test-renderer.development.js:2908:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at node_modules/react/cjs/react.development.js:847:21
+System.Management.Automation.RemoteException
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 6 passed, 7 total
+Snapshots:   0 total
+Time:        1.307 s, estimated 2 s
+Ran all test suites matching /src\\components\\RefundModal.test.tsx/i.

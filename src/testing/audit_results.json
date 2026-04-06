@@ -1,0 +1,562 @@
+﻿[
+    {
+        "RelativePath":  "components\\Border.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  22,
+        "LastModifiedSource":  "\/Date(1774409815416)\/",
+        "LastModifiedTest":  "\/Date(1775286934045)\/"
+    },
+    {
+        "RelativePath":  "components\\BottomNavbar.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  0,
+        "LastModifiedSource":  "\/Date(1774409815417)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "components\\CustomerDetailBorder.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774409815417)\/",
+        "LastModifiedTest":  "\/Date(1775272639017)\/"
+    },
+    {
+        "RelativePath":  "components\\DetailPaymentComponent.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774598465835)\/",
+        "LastModifiedTest":  "\/Date(1775286942216)\/"
+    },
+    {
+        "RelativePath":  "components\\FoodItemCard.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774598465836)\/",
+        "LastModifiedTest":  "\/Date(1775204224950)\/"
+    },
+    {
+        "RelativePath":  "components\\Header.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  17,
+        "LastModifiedSource":  "\/Date(1774409815418)\/",
+        "LastModifiedTest":  "\/Date(1775271466966)\/"
+    },
+    {
+        "RelativePath":  "components\\HeaderDetail.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  6,
+        "LastModifiedSource":  "\/Date(1774409815418)\/",
+        "LastModifiedTest":  "\/Date(1775272267852)\/"
+    },
+    {
+        "RelativePath":  "components\\HistoryCard.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774409815418)\/",
+        "LastModifiedTest":  "\/Date(1775287299027)\/"
+    },
+    {
+        "RelativePath":  "components\\InputField.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  0,
+        "LastModifiedSource":  "\/Date(1774409815419)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "components\\KDSTable.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1775390480620)\/",
+        "LastModifiedTest":  "\/Date(1774966304685)\/"
+    },
+    {
+        "RelativePath":  "components\\ListFood.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774409815419)\/",
+        "LastModifiedTest":  "\/Date(1775272669037)\/"
+    },
+    {
+        "RelativePath":  "components\\Navbar.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  0,
+        "LastModifiedSource":  "\/Date(1774409815419)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "components\\OrderItemCard.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1775390357350)\/",
+        "LastModifiedTest":  "\/Date(1774796940039)\/"
+    },
+    {
+        "RelativePath":  "components\\OrderStatusCard.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774409815419)\/",
+        "LastModifiedTest":  "\/Date(1775271482802)\/"
+    },
+    {
+        "RelativePath":  "components\\PrimaryButton.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  0,
+        "LastModifiedSource":  "\/Date(1774409815419)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "components\\QRScanner.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774409815420)\/",
+        "LastModifiedTest":  "\/Date(1775287239910)\/"
+    },
+    {
+        "RelativePath":  "components\\RefundModal.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1775390998604)\/",
+        "LastModifiedTest":  "\/Date(1774965302014)\/"
+    },
+    {
+        "RelativePath":  "components\\RestaurantCard.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774409815420)\/",
+        "LastModifiedTest":  "\/Date(1775271474479)\/"
+    },
+    {
+        "RelativePath":  "components\\Sidebar.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774598465845)\/",
+        "LastModifiedTest":  "\/Date(1774799330122)\/"
+    },
+    {
+        "RelativePath":  "components\\StatCard.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  3,
+        "LastModifiedSource":  "\/Date(1774409815420)\/",
+        "LastModifiedTest":  "\/Date(1775203932043)\/"
+    },
+    {
+        "RelativePath":  "components\\TabBar.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774409815421)\/",
+        "LastModifiedTest":  "\/Date(1775203940757)\/"
+    },
+    {
+        "RelativePath":  "components\\TimePickerModal.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774798701589)\/",
+        "LastModifiedTest":  "\/Date(1774799966436)\/"
+    },
+    {
+        "RelativePath":  "config\\apiConfig.ts",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  8,
+        "LastModifiedSource":  "\/Date(1774528385915)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "navigation\\AuthNavigator.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774598465847)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "navigation\\BottomTabs.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774598465849)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "navigation\\RootNavigator.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1775299035531)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "screen\\private\\CashReportScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1775202556674)\/",
+        "LastModifiedTest":  "\/Date(1775186536301)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\ChangePasswordScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774598465852)\/",
+        "LastModifiedTest":  "\/Date(1775203394427)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\CheckInScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1775202476446)\/",
+        "LastModifiedTest":  "\/Date(1775203591255)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\DetailOrderScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  5,
+        "LastModifiedSource":  "\/Date(1775270613250)\/",
+        "LastModifiedTest":  "\/Date(1775272417805)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\DetailPaymentScreen.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1775270573181)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "screen\\private\\FoodManagementScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774598465858)\/",
+        "LastModifiedTest":  "\/Date(1775204232873)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\KDSScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774683797328)\/",
+        "LastModifiedTest":  "\/Date(1774682788329)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\MenuManagementScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774598465861)\/",
+        "LastModifiedTest":  "\/Date(1775284525256)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\OrderStatusScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774621389474)\/",
+        "LastModifiedTest":  "\/Date(1775271082114)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\ProfileScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774598465863)\/",
+        "LastModifiedTest":  "\/Date(1775202984632)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\ReportHistoryScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  0,
+        "LastModifiedSource":  "\/Date(1774598465863)\/",
+        "LastModifiedTest":  "\/Date(1775186029967)\/"
+    },
+    {
+        "RelativePath":  "screen\\private\\ScanDeliveryScreen.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774598465864)\/",
+        "LastModifiedTest":  null
+    },
+    {
+        "RelativePath":  "screen\\public\\EmailForOTPScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774598465865)\/",
+        "LastModifiedTest":  "\/Date(1775285142668)\/"
+    },
+    {
+        "RelativePath":  "screen\\public\\LoginScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774666640575)\/",
+        "LastModifiedTest":  "\/Date(1775285085264)\/"
+    },
+    {
+        "RelativePath":  "screen\\public\\ResetPasswordScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1775285222953)\/",
+        "LastModifiedTest":  "\/Date(1775285245159)\/"
+    },
+    {
+        "RelativePath":  "screen\\public\\WelcomeScreen.tsx",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774409815425)\/",
+        "LastModifiedTest":  "\/Date(1775285052669)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\authApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1775202164401)\/",
+        "LastModifiedTest":  "\/Date(1775203589213)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\dishApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774598465867)\/",
+        "LastModifiedTest":  "\/Date(1775034408418)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\orderApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774598465868)\/",
+        "LastModifiedTest":  "\/Date(1775034426447)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\refundApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1775315688843)\/",
+        "LastModifiedTest":  "\/Date(1775034817630)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\restaurantApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774598465869)\/",
+        "LastModifiedTest":  "\/Date(1775034886781)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\shiftApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774598465871)\/",
+        "LastModifiedTest":  "\/Date(1774966763335)\/"
+    },
+    {
+        "RelativePath":  "services\\apiEndpoints\\staffApi.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774598465871)\/",
+        "LastModifiedTest":  "\/Date(1774966769045)\/"
+    },
+    {
+        "RelativePath":  "services\\axios\\privateClient.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  16,
+        "LastModifiedSource":  "\/Date(1775315286109)\/",
+        "LastModifiedTest":  "\/Date(1775042492659)\/"
+    },
+    {
+        "RelativePath":  "services\\axios\\publicClient.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774598465873)\/",
+        "LastModifiedTest":  "\/Date(1775036424499)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\authService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  9,
+        "LastModifiedSource":  "\/Date(1775286499800)\/",
+        "LastModifiedTest":  "\/Date(1775136076973)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\dishService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1775135170737)\/",
+        "LastModifiedTest":  "\/Date(1775136086800)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\globalSignalR.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1775135345103)\/",
+        "LastModifiedTest":  "\/Date(1775138625573)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\orderAudioService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  1,
+        "LastModifiedSource":  "\/Date(1774953726213)\/",
+        "LastModifiedTest":  "\/Date(1775136579920)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\orderService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  6,
+        "LastModifiedSource":  "\/Date(1775388939692)\/",
+        "LastModifiedTest":  "\/Date(1775136098217)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\playAudioUrl.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774409815429)\/",
+        "LastModifiedTest":  "\/Date(1775139384453)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\restaurantService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1775135285759)\/",
+        "LastModifiedTest":  "\/Date(1775136104856)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\shiftService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  6,
+        "LastModifiedSource":  "\/Date(1775202588750)\/",
+        "LastModifiedTest":  "\/Date(1774967440279)\/"
+    },
+    {
+        "RelativePath":  "services\\logicServices\\signalRService.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774598465878)\/",
+        "LastModifiedTest":  "\/Date(1775136594092)\/"
+    },
+    {
+        "RelativePath":  "store\\slices\\authSlice.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  7,
+        "LastModifiedSource":  "\/Date(1774598465879)\/",
+        "LastModifiedTest":  "\/Date(1775139899157)\/"
+    },
+    {
+        "RelativePath":  "store\\slices\\dishSlice.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  5,
+        "LastModifiedSource":  "\/Date(1774598465881)\/",
+        "LastModifiedTest":  "\/Date(1775140621450)\/"
+    },
+    {
+        "RelativePath":  "store\\slices\\orderSlice.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  9,
+        "LastModifiedSource":  "\/Date(1774598465881)\/",
+        "LastModifiedTest":  "\/Date(1775187458515)\/"
+    },
+    {
+        "RelativePath":  "store\\slices\\restaurantSlice.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  5,
+        "LastModifiedSource":  "\/Date(1774621368752)\/",
+        "LastModifiedTest":  "\/Date(1775286042741)\/"
+    },
+    {
+        "RelativePath":  "store\\slices\\shiftSlice.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  5,
+        "LastModifiedSource":  "\/Date(1775202460165)\/",
+        "LastModifiedTest":  "\/Date(1775286049519)\/"
+    },
+    {
+        "RelativePath":  "utils\\dateUtils.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  3,
+        "LastModifiedSource":  "\/Date(1774409815432)\/",
+        "LastModifiedTest":  "\/Date(1774683365910)\/"
+    },
+    {
+        "RelativePath":  "utils\\jwtHelper.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774683885341)\/",
+        "LastModifiedTest":  "\/Date(1774683947595)\/"
+    },
+    {
+        "RelativePath":  "utils\\notificationSound.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  true,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774684333924)\/",
+        "LastModifiedTest":  "\/Date(1774684206294)\/"
+    },
+    {
+        "RelativePath":  "utils\\tokenStorage.ts",
+        "TestStatus":  "Exists",
+        "OutdatedTest":  false,
+        "UsageCount":  4,
+        "LastModifiedSource":  "\/Date(1774409815432)\/",
+        "LastModifiedTest":  "\/Date(1774683429941)\/"
+    },
+    {
+        "RelativePath":  "MainApp.tsx",
+        "TestStatus":  "Missing",
+        "OutdatedTest":  false,
+        "UsageCount":  2,
+        "LastModifiedSource":  "\/Date(1774599234582)\/",
+        "LastModifiedTest":  null
+    }
+]

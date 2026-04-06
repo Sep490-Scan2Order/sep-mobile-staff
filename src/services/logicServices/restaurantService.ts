@@ -13,16 +13,31 @@ export const restaurantService = {
     return response.data;
   },
 
-  async updateReceivingOrders(restaurantId: number, isReceiving: boolean) {
+  async updateReceivingOrders(restaurantId: number, isReceivingOrders: boolean) {
     const axiosResponse = await restaurantApi.updateReceivingOrders(
       restaurantId,
-      isReceiving
+      isReceivingOrders
     );
 
     const response = axiosResponse.data;
 
     if (!response?.isSuccess) {
-      throw new Error(response?.message || 'Không cập nhật được trạng thái');
+      throw new Error(response?.message || 'Không cập nhật được trạng thái nhận đơn');
+    }
+
+    return response.data;
+  },
+
+  async updateOpeningStatus(restaurantId: number, isOpened: boolean) {
+    const axiosResponse = await restaurantApi.updateOpeningStatus(
+      restaurantId,
+      isOpened
+    );
+
+    const response = axiosResponse.data;
+
+    if (!response?.isSuccess) {
+      throw new Error(response?.message || 'Không cập nhật được trạng thái đóng/mở');
     }
 
     return response.data;

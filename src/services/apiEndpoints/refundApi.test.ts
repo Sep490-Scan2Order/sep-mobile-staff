@@ -15,16 +15,24 @@ describe('refundApi', () => {
     jest.clearAllMocks();
   });
 
-  it('createRefund should call /Refund with correct data', async () => {
-    const mockData: RefundRequest = {
-      orderId: 'order-123',
-      reason: 'Customer requested',
-    } as any;
+  it('createRefund should call /Refund with FormData and headers', async () => {
+    const mockFormData = new FormData();
+    mockFormData.append('orderId', 'order-123');
+    
     (axiosPrivate.post as jest.Mock).mockResolvedValue({ data: { isSuccess: true } });
 
-    await refundApi.createRefund(mockData);
+    await refundApi.createRefund(mockFormData);
 
-    expect(axiosPrivate.post).toHaveBeenCalledWith('/Refund', mockData);
+    expect(axiosPrivate.post).toHaveBeenCalledWith(
+      '/Refund',
+      mockFormData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        transformRequest: expect.any(Function),
+      }
+    );
   });
 
   it('confirmSystemPayment should call /Refund/confirm-system-payment with FormData and headers', async () => {
@@ -43,6 +51,7 @@ describe('refundApi', () => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        transformRequest: expect.any(Function),
       }
     );
   });

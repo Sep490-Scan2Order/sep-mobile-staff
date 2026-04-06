@@ -52,6 +52,8 @@ export interface Restaurant {
   totalOrder: number;
   createdAt: string;
   distanceKm: number | null;
+  openTime?: string;
+  closeTime?: string;
 }
 
 export interface RestaurantState {

@@ -128,4 +128,30 @@ describe('CashReportScreen High Coverage', () => {
     render(<CashReportScreen route={{ params: { shiftId: 123 } }} />);
     await waitFor(() => expect(screen.getAllByText(/0 đ/).length).toBeGreaterThan(0));
   });
+
+  describe('UI States for Difference Colors', () => {
+    it('shows emerald for zero difference', async () => {
+      (shiftService.getReport as jest.Mock).mockResolvedValue({ ...mockReport, difference: 0 });
+      render(<CashReportScreen route={{ params: { shiftId: 100 } }} />);
+      await waitFor(() => expect(screen.getByText('HOÀN TOÀN KHỚP ✔')).toBeTruthy());
+    });
+
+    it('shows blue for positive difference', async () => {
+      (shiftService.getReport as jest.Mock).mockResolvedValue({ ...mockReport, difference: 1000 });
+      render(<CashReportScreen route={{ params: { shiftId: 100 } }} />);
+      await waitFor(() => expect(screen.getByText('1.000 đ')).toBeTruthy());
+    });
+
+    it('shows red for negative difference', async () => {
+        (shiftService.getReport as jest.Mock).mockResolvedValue({ ...mockReport, difference: -1000 });
+        render(<CashReportScreen route={{ params: { shiftId: 100 } }} />);
+        await waitFor(() => expect(screen.getByText('-1.000 đ')).toBeTruthy());
+    });
+
+    it('renders total refund amount with negative sign', async () => {
+        (shiftService.getReport as jest.Mock).mockResolvedValue({ ...mockReport, totalRefundAmount: 50000 });
+        render(<CashReportScreen route={{ params: { shiftId: 100 } }} />);
+        await waitFor(() => expect(screen.getByText('-50.000 đ')).toBeTruthy());
+    });
+  });
 });

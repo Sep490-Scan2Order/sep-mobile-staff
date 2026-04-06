@@ -20,11 +20,16 @@ describe('shiftService', () => {
 
   describe('checkIn', () => {
     it('should return data on success', async () => {
-      const mockRequest = { staffId: '1', initialAmount: 100, note: 'test' };
+      const mockRequest = { 
+        staffId: '1', 
+        restaurantId: 1, 
+        openingCashAmount: 100, 
+        note: 'test' 
+      };
       const mockResponse = { data: { id: 's1', isSuccess: true } };
       (shiftApi.checkIn as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await shiftService.checkIn(mockRequest);
+      const result = await shiftService.checkIn(mockRequest as any);
       expect(result).toEqual(mockResponse.data);
     });
 
@@ -51,11 +56,15 @@ describe('shiftService', () => {
 
   describe('checkOut', () => {
     it('should return data on success', async () => {
-      const mockRequest = { shiftId: 1, endAmount: 200, note: 'out' };
+      const mockRequest = { 
+        shiftId: 1, 
+        cashAmount: 200, 
+        note: 'out' 
+      };
       const mockResponse = { data: { id: 's1', isSuccess: true } };
       (shiftApi.checkOut as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await shiftService.checkOut(mockRequest);
+      const result = await shiftService.checkOut(mockRequest as any);
       expect(result).toEqual(mockResponse.data);
     });
 
@@ -103,21 +112,29 @@ describe('shiftService', () => {
   });
 
   describe('getReportsByStaff', () => {
-    it('should return list reports on success', async () => {
+    it('should return list reports from response.data.data', async () => {
       const mockResponse = { data: { data: [{ id: '1' }] } };
       (shiftApi.getReportsByStaff as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await shiftService.getReportsByStaff('s1');
-      expect(result).toEqual(mockResponse.data.data);
+      expect(result).toEqual([{ id: '1' }]);
     });
 
-    it('should return full data if data.data is missing', async () => {
-        const mockResponse = { data: [{ id: '1' }] };
-        (shiftApi.getReportsByStaff as jest.Mock).mockResolvedValue(mockResponse);
-  
-        const result = await shiftService.getReportsByStaff('s1');
-        expect(result).toEqual(mockResponse.data);
-      });
+    it('should return list reports from response.data.items', async () => {
+      const mockResponse = { data: { items: [{ id: '2' }] } };
+      (shiftApi.getReportsByStaff as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await shiftService.getReportsByStaff('s2');
+      expect(result).toEqual([{ id: '2' }]);
+    });
+
+    it('should return list reports from response.data if it is an array', async () => {
+      const mockResponse = { data: [{ id: '3' }] };
+      (shiftApi.getReportsByStaff as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await shiftService.getReportsByStaff('s3');
+      expect(result).toEqual([{ id: '3' }]);
+    });
 
     it('should throw error on failure', async () => {
       const error = { response: { data: { message: 'History Fail' } } };
@@ -127,9 +144,9 @@ describe('shiftService', () => {
     });
 
     it('should throw default message if no message found', async () => {
-        (shiftApi.getReportsByStaff as jest.Mock).mockRejectedValue({});
-        await expect(shiftService.getReportsByStaff('s1')).rejects.toThrow('Lấy lịch sử báo cáo thất bại');
-      });
+      (shiftApi.getReportsByStaff as jest.Mock).mockRejectedValue({});
+      await expect(shiftService.getReportsByStaff('s1')).rejects.toThrow('Lấy lịch sử báo cáo thất bại');
+    });
   });
 
   describe('getCurrentShift', () => {
@@ -142,12 +159,12 @@ describe('shiftService', () => {
     });
 
     it('should return full data if data.data is missing', async () => {
-        const mockResponse = { data: { id: 's1' } };
-        (shiftApi.getCurrentShift as jest.Mock).mockResolvedValue(mockResponse);
-  
-        const result = await shiftService.getCurrentShift();
-        expect(result).toEqual(mockResponse.data);
-      });
+      const mockResponse = { data: { id: 's1' } };
+      (shiftApi.getCurrentShift as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await shiftService.getCurrentShift();
+      expect(result).toEqual(mockResponse.data);
+    });
 
     it('should throw error on failure', async () => {
       (shiftApi.getCurrentShift as jest.Mock).mockRejectedValue(new Error('Internal Error'));
@@ -155,8 +172,8 @@ describe('shiftService', () => {
     });
 
     it('should throw default message if no message found', async () => {
-        (shiftApi.getCurrentShift as jest.Mock).mockRejectedValue({});
-        await expect(shiftService.getCurrentShift()).rejects.toThrow('Không lấy được ca hiện tại');
-      });
+      (shiftApi.getCurrentShift as jest.Mock).mockRejectedValue({});
+      await expect(shiftService.getCurrentShift()).rejects.toThrow('Không lấy được ca hiện tại');
+    });
   });
 });

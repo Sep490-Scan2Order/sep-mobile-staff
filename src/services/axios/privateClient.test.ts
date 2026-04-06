@@ -47,6 +47,14 @@ describe('privateClient', () => {
     responseInterceptorError = resHandlers[0].rejected;
   });
 
+  describe('Instance Configuration', () => {
+    it('should not have hardcoded multipart/form-data header in default config', () => {
+      // Axios instance creation with commented out headers line implies we want it empty or auto-detected
+      const defaultHeaders = (axiosPrivate.defaults.headers as any);
+      expect(defaultHeaders['Content-Type']).toBeUndefined();
+    });
+  });
+
   describe('Request Interceptor', () => {
     it('should add Authorization header if token is valid', async () => {
       const config: any = { headers: {} };

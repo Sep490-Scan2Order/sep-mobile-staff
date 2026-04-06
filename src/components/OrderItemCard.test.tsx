@@ -12,10 +12,7 @@ describe('OrderItemCard Component', () => {
     amount: 50000,
     isPreOrder: false,
     createdAt: new Date('2026-03-29T10:00:00Z').toISOString(),
-    items: [{ name: 'Bún chả', quantity: 1, price: 50000 }],
-    accountId: 'acc-1',
-    paymentMethod: 'Cash',
-    orderType: 'Dine-in'
+    items: [{ id: 'item-1', name: 'Bún chả', quantity: 1, price: 50000 }],
   };
 
   const mockProps = {
@@ -56,16 +53,35 @@ describe('OrderItemCard Component', () => {
     expect(getByText('Làm xong')).toBeTruthy();
   });
 
+  it('shows action button "Giao hàng" for status 3', () => {
+    const orderShipping = { ...mockOrder, status: 3 };
+    const { getByText } = render(<OrderItemCard {...mockProps} item={orderShipping} />);
+    
+    expect(getByText('Giao hàng')).toBeTruthy();
+  });
+
+  it('shows "Chưa thanh toán" for status 0', () => {
+    const unpaidOrder = { ...mockOrder, status: 0 };
+    const { getByText } = render(<OrderItemCard {...mockProps} item={unpaidOrder} />);
+    
+    expect(getByText('Chưa thanh toán')).toBeTruthy();
+  });
+
+  it('shows "Đã thanh toán" for status 1', () => {
+    const { getByText } = render(<OrderItemCard {...mockProps} />);
+    expect(getByText('Đã thanh toán')).toBeTruthy();
+  });
+
   it('shows pre-order labels only when isPreOrder is true', () => {
     const preOrder = { 
       ...mockOrder, 
       isPreOrder: true, 
       requestedPickupAt: new Date('2026-03-29T12:00:00Z').toISOString() 
     };
-    const { getByText, queryByText } = render(<OrderItemCard {...mockProps} item={preOrder} />);
+    const { getByText } = render(<OrderItemCard {...mockProps} item={preOrder} />);
     
     expect(getByText('PRE-ORDER')).toBeTruthy();
-    expect(getByText(/Nhận lúc:/)).toBeTruthy();
+    expect(getByText(/Nhận lúc/)).toBeTruthy();
   });
 
   it('shows "Xác nhận giờ nhận hàng" for status 1 pre-order without confirmation', () => {
@@ -79,15 +95,24 @@ describe('OrderItemCard Component', () => {
     expect(mockProps.onOpenPickup).toHaveBeenCalledWith(preOrder);
   });
 
-  it('opens options menu when MoreVertical icon is pressed', () => {
-    // We pass activeMenuId matching the order id to simulate it being open
+  it('opens options menu and shows "Hoàn tiền" for paid orders', () => {
     const { getByText } = render(<OrderItemCard {...mockProps} activeMenuId="ord-123" />);
     
     expect(getByText('Chi tiết')).toBeTruthy();
     expect(getByText('Hoàn tiền')).toBeTruthy();
     
-    fireEvent.press(getByText('Chi tiết'));
-    expect(mockProps.onViewDetail).toHaveBeenCalledWith('ord-123');
+    fireEvent.press(getByText('Hoàn tiền'));
+    expect(mockProps.onRefund).toHaveBeenCalledWith(mockOrder);
     expect(mockProps.setActiveMenuId).toHaveBeenCalledWith(null);
+  });
+
+  it('opens options menu and shows "Xác nhận thanh toán" for unpaid orders', () => {
+    const unpaidOrder = { ...mockOrder, status: 0 };
+    const { getByText } = render(<OrderItemCard {...mockProps} item={unpaidOrder} activeMenuId="ord-123" />);
+    
+    expect(getByText('Xác nhận thanh toán')).toBeTruthy();
+    
+    fireEvent.press(getByText('Xác nhận thanh toán'));
+    expect(mockProps.onRefund).toHaveBeenCalledWith(unpaidOrder);
   });
 });

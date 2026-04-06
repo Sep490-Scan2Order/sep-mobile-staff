@@ -40,6 +40,21 @@ export const toggleReceivingOrders = createAsyncThunk(
   }
 );
 
+export const toggleOpeningStatus = createAsyncThunk(
+  'restaurant/toggleOpeningStatus',
+  async (
+    { restaurantId, isOpened }: { restaurantId: number; isOpened: boolean },
+    { rejectWithValue }
+  ) => {
+    try {
+      await restaurantService.updateOpeningStatus(restaurantId, isOpened);
+      return { isOpened };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 // ================== SLICE ==================
 
 const restaurantSlice = createSlice({
@@ -50,6 +65,14 @@ const restaurantSlice = createSlice({
     updateReceivingOrdersLocal: (state, action) => {
       if (state.restaurant) {
         state.restaurant.isReceivingOrders = action.payload;
+      }
+    },
+    updateOpeningStatusLocal: (state, action) => {
+      if (state.restaurant) {
+        state.restaurant.isOpened = action.payload;
+        if (!action.payload) {
+          state.restaurant.isReceivingOrders = false;
+        }
       }
     },
   },
@@ -82,6 +105,23 @@ const restaurantSlice = createSlice({
         }
       })
       .addCase(toggleReceivingOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // toggle opening
+      .addCase(toggleOpeningStatus.pending, state => {
+        state.loading = true;
+      })
+      .addCase(toggleOpeningStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.restaurant) {
+          state.restaurant.isOpened = action.payload.isOpened;
+          if (!action.payload.isOpened) {
+            state.restaurant.isReceivingOrders = false;
+          }
+        }
+      })
+      .addCase(toggleOpeningStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

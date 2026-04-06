@@ -5,9 +5,14 @@ export const restaurantApi = {
   getRestaurantById: (restaurantId: number) => {
     return axiosPublic.get(`/Restaurant/${restaurantId}`);
   },
-  updateReceivingOrders: (restaurantId: number, isReceiving: boolean) => {
+  updateReceivingOrders: (restaurantId: number, isReceivingOrders: boolean) => {
     return axiosPrivate.put(
-      `/Restaurant/${restaurantId}/receiving-orders?isReceiving=${isReceiving}`
+      `/Restaurant/${restaurantId}/receiving-orders?isReceivingOrders=${isReceivingOrders}`
+    );
+  },
+  updateOpeningStatus: (restaurantId: number, isOpened: boolean) => {
+    return axiosPrivate.put(
+      `/Restaurant/${restaurantId}/opening-status?isOpened=${isOpened}`
     );
   },
 };
