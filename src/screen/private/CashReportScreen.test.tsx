@@ -11,6 +11,50 @@ jest.mock('react-redux', () => ({
   useDispatch: jest.fn(() => jest.fn()),
 }));
 
+// Mock Navigation
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+  useRoute: jest.fn(),
+  useFocusEffect: jest.fn((cb) => cb()),
+}));
+
+jest.mock('lucide-react-native', () => ({
+  AlertCircle: () => null,
+  Clock: () => null,
+  ChevronLeft: () => null,
+  Calendar: () => null,
+}));
+
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+      AppSnackbar: ({ message, visible }: any) => {
+        if (!visible) return null;
+        return <View><Text>{message}</Text></View>;
+      }
+    };
+});
+
+jest.mock('@/components/AppModal', () => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return {
+        AppModal: ({ visible, title, message, buttons }: any) => {
+            if (!visible) return null;
+            return (
+                <View>
+                    <Text>{title}</Text>
+                    <Text>{message}</Text>
+                    {buttons?.map((btn: any, index: number) => (
+                        <TouchableOpacity key={index} onPress={btn.onPress}>
+                            <Text>{btn.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+    }
+});
+
 // Mock Services
 jest.mock('@/services/logicServices/shiftService', () => ({
   shiftService: {

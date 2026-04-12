@@ -6,22 +6,31 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { authService } from '@/services/logicServices/authService';
 import { ChevronLeft } from 'lucide-react-native';
+import { InlineError } from '@/components/InlineError';
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { AppModal } from '@/components/AppModal';
+import { useSnackbar } from '@/hooks/useSnackbar';
+import { useAppModal } from '@/hooks/useAppModal';
 
 export default function EmailForOTPScreen() {
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  const snackbar = useSnackbar();
+  const modal = useAppModal();
 
   const handleSendOtp = async () => {
+    setEmailError('');
     if (!email.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập email');
+      setEmailError('Vui lòng nhập email');
       return;
     }
 
@@ -29,17 +38,16 @@ export default function EmailForOTPScreen() {
     try {
       const result = await authService.sendForgotPasswordOtp(email.trim());
       if (result.success) {
-        Alert.alert('Thành công', result.message, [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('ResetPasswordScreen', { email: email.trim() }),
-          },
-        ]);
+        modal.showSuccess(
+          'Gửi OTP thành công',
+          result.message,
+          () => navigation.navigate('ResetPasswordScreen', { email: email.trim() }),
+        );
       } else {
-        Alert.alert('Lỗi', result.message);
+        snackbar.showError(result.message || 'Không thể gửi OTP');
       }
     } catch (error) {
-      Alert.alert('Lỗi', 'Không thể kết nối server');
+      snackbar.showError('Không thể kết nối server. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -70,22 +78,21 @@ export default function EmailForOTPScreen() {
               Email của bạn
             </Text>
             <TextInput
-              className="bg-gray-200 rounded-2xl px-4 py-3 mb-6 text-gray-800"
+              className={`bg-gray-200 rounded-2xl px-4 py-3 text-gray-800 ${emailError ? 'border border-red-400' : 'mb-6'}`}
               placeholder="example@gmail.com"
               placeholderTextColor="#999"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={t => { setEmail(t); setEmailError(''); }}
               autoCapitalize="none"
               keyboardType="email-address"
               editable={!isLoading}
             />
+            <InlineError message={emailError} />
 
             <TouchableOpacity
               onPress={handleSendOtp}
               disabled={isLoading}
-              className={`rounded-2xl py-4 ${
-                isLoading ? 'bg-gray-400' : 'bg-[#226B5D]'
-              }`}
+              className={`rounded-2xl py-4 ${isLoading ? 'bg-gray-400' : 'bg-[#226B5D]'}`}
             >
               {isLoading ? (
                 <ActivityIndicator color="white" />
@@ -98,6 +105,9 @@ export default function EmailForOTPScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </SafeAreaView>
   );
 }

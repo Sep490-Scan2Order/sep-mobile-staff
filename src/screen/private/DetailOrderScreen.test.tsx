@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, screen, waitFor, act } from '@testing-library/react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Alert } from 'react-native';
 import DetailOrderScreen from './DetailOrderScreen';
 import {
   confirmCashOrder,
@@ -61,6 +60,38 @@ jest.mock('@/components/Border', () => ({
   Border: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+
+
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+      AppSnackbar: ({ message, visible }: any) => {
+        if (!visible) return null;
+        return <View><Text>{message}</Text></View>;
+      }
+    };
+});
+
+jest.mock('@/components/AppModal', () => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return {
+        AppModal: ({ visible, title, message, buttons }: any) => {
+            if (!visible) return null;
+            return (
+                <View>
+                    <Text>{title}</Text>
+                    <Text>{message}</Text>
+                    {buttons?.map((btn: any, index: number) => (
+                        <TouchableOpacity key={index} onPress={btn.onPress}>
+                            <Text>{btn.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+    }
+});
+
 describe('DetailOrderScreen', () => {
   const dispatch = jest.fn();
   const navigation = { goBack: jest.fn() };
@@ -84,9 +115,6 @@ describe('DetailOrderScreen', () => {
     (useDispatch as unknown as jest.Mock).mockReturnValue((action: any) => action);
     (useNavigation as jest.Mock).mockReturnValue(navigation);
     (useRoute as jest.Mock).mockReturnValue(route);
-    
-    // Default alert mock
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   });
 
   const setupSelector = (state: any) => {
@@ -179,15 +207,24 @@ describe('DetailOrderScreen', () => {
     render(<DetailOrderScreen />);
     
     const paymentButton = screen.getByText('Thanh toán');
-    fireEvent.press(paymentButton);
+    await act(async () => {
+      fireEvent.press(paymentButton);
+    });
 
-    expect(confirmCashOrder).toHaveBeenCalledWith(mockOrder.id);
-    
+    // Should show confirm modal
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Thanh toán thành công',
-        expect.stringContaining(mockOrder.orderCode)
-      );
+      expect(screen.getByText('Xác nhận thanh toán')).toBeTruthy();
+    });
+    
+    // Press confirm button in modal
+    await act(async () => {
+      const confirmButtons = screen.getAllByText('Thanh toán');
+      fireEvent.press(confirmButtons[confirmButtons.length - 1]);
+    });
+
+    await waitFor(() => {
+      expect(confirmCashOrder).toHaveBeenCalledWith(mockOrder.id);
+      expect(screen.getByText(`Đơn hàng #${mockOrder.orderCode} đã thanh toán thành công`)).toBeTruthy();
       expect(forceRefresh).toHaveBeenCalled();
       expect(navigation.goBack).toHaveBeenCalled();
     });
@@ -207,10 +244,22 @@ describe('DetailOrderScreen', () => {
     render(<DetailOrderScreen />);
     
     const paymentButton = screen.getByText('Thanh toán');
-    fireEvent.press(paymentButton);
+    await act(async () => {
+      fireEvent.press(paymentButton);
+    });
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Thanh toán thất bại');
+      expect(screen.getByText('Xác nhận thanh toán')).toBeTruthy();
+    });
+
+    // Confirm modal
+    await act(async () => {
+      const confirmButtons = screen.getAllByText('Thanh toán');
+      fireEvent.press(confirmButtons[confirmButtons.length - 1]);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Thanh toán thất bại. Vui lòng thử lại.')).toBeTruthy();
     });
   });
 });

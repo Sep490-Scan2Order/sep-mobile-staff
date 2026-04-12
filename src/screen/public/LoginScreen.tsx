@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +15,9 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/type';
 
 import { authService } from '@/services/logicServices/authService';
+import { InlineError } from '@/components/InlineError';
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { useSnackbar } from '@/hooks/useSnackbar';
 
 export default function LoginScreen() {
   const navigation =
@@ -26,14 +28,32 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ email và mật khẩu');
-      return;
+  // Inline validation errors
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const snackbar = useSnackbar();
+
+  const validate = () => {
+    let valid = true;
+    setEmailError('');
+    setPasswordError('');
+
+    if (!email.trim()) {
+      setEmailError('Vui lòng nhập email');
+      valid = false;
     }
+    if (!password.trim()) {
+      setPasswordError('Vui lòng nhập mật khẩu');
+      valid = false;
+    }
+    return valid;
+  };
+
+  const handleLogin = async () => {
+    if (!validate()) return;
 
     setIsLoading(true);
-
     try {
       const result = await authService.login({
         email: email.trim(),
@@ -43,16 +63,10 @@ export default function LoginScreen() {
       if (result.success) {
         // TODO: navigate or store token
       } else {
-        Alert.alert(
-          'Đăng nhập thất bại',
-          result.message || 'Sai tài khoản hoặc mật khẩu',
-        );
+        snackbar.showError(result.message || 'Sai tài khoản hoặc mật khẩu');
       }
     } catch (error: any) {
-      Alert.alert(
-        'Lỗi kết nối',
-        'Không thể kết nối tới máy chủ. Vui lòng kiểm tra lại Backend.',
-      );
+      snackbar.showError('Không thể kết nối tới máy chủ. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -77,26 +91,27 @@ export default function LoginScreen() {
                   Tên đăng nhập
                 </Text>
                 <TextInput
-                  className="bg-gray-200 rounded-2xl px-4 py-3 mb-6 text-gray-800"
+                  className={`bg-gray-200 rounded-2xl px-4 py-3 text-gray-800 ${emailError ? 'border border-red-400' : 'mb-2'}`}
                   placeholder="Nhập email"
                   placeholderTextColor="#999"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={t => { setEmail(t); setEmailError(''); }}
                   autoCapitalize="none"
                   keyboardType="email-address"
                   editable={!isLoading}
                 />
+                <InlineError message={emailError} />
 
                 <Text className="text-lg font-semibold text-gray-800 mb-3">
                   Mật khẩu
                 </Text>
-                <View className="mb-2 relative">
+                <View className={`relative ${passwordError ? '' : 'mb-2'}`}>
                   <TextInput
-                    className="bg-gray-200 rounded-2xl px-4 py-3 pr-12 text-gray-800"
+                    className={`bg-gray-200 rounded-2xl px-4 py-3 pr-12 text-gray-800 ${passwordError ? 'border border-red-400' : ''}`}
                     placeholder="Nhập mật khẩu"
                     placeholderTextColor="#999"
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={t => { setPassword(t); setPasswordError(''); }}
                     secureTextEntry={!showPassword}
                     editable={!isLoading}
                   />
@@ -111,6 +126,7 @@ export default function LoginScreen() {
                     )}
                   </TouchableOpacity>
                 </View>
+                <InlineError message={passwordError} />
 
                 <TouchableOpacity
                   onPress={() =>
@@ -143,6 +159,11 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <AppSnackbar
+        {...snackbar.config}
+        onDismiss={snackbar.hide}
+      />
     </SafeAreaView>
   );
 }

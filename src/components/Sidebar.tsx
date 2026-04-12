@@ -7,6 +7,8 @@ import {
   Truck,
   CreditCard,
   LayoutDashboard,
+  RotateCcw,
+  Trash2,
 } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -53,6 +55,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <CreditCard size={22} color="#226B5D" />,
       label: 'Chưa thanh toán',
       status: 0,
+    },
+    {
+      icon: <Trash2 size={22} color="#dc2626" />,
+      label: 'Đã hủy',
+      status: 5,
     },
   ];
 

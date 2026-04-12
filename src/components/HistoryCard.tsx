@@ -48,35 +48,35 @@ export const HistoryCard: React.FC<Props> = ({
         <View className="flex-row justify-between mb-1">
           <Text className="text-gray-700 text-sm">Doanh thu tiền mặt</Text>
           <Text className="text-sm font-medium">
-            {totalCashOrder.toLocaleString()} VND
+            {(totalCashOrder ?? 0).toLocaleString()} VND
           </Text>
         </View>
 
         <View className="flex-row justify-between mb-1">
           <Text className="text-gray-700 text-sm">Doanh thu CK</Text>
           <Text className="text-sm font-medium">
-            {totalTransferOrder.toLocaleString()} VND
+            {(totalTransferOrder ?? 0).toLocaleString()} VND
           </Text>
         </View>
 
         <View className="flex-row justify-between mb-1">
           <Text className="text-gray-700 text-sm italic">Hoàn tiền</Text>
           <Text className="text-sm font-medium text-orange-600">
-            -{totalRefundAmount.toLocaleString()} VND
+            -{(totalRefundAmount ?? 0).toLocaleString()} VND
           </Text>
         </View>
 
         <View className="flex-row justify-between mb-1 pt-1 border-t border-gray-100">
           <Text className="text-gray-900 text-sm font-semibold">Dự kiến trong két</Text>
           <Text className="text-sm font-bold">
-            {expectedCashAmount.toLocaleString()} VND
+            {(expectedCashAmount ?? 0).toLocaleString()} VND
           </Text>
         </View>
 
         <View className="flex-row justify-between mb-2">
           <Text className="text-gray-900 text-sm font-semibold">Thực tế nhập</Text>
           <Text className="text-sm font-bold">
-            {actualCashAmount.toLocaleString()} VND
+            {(actualCashAmount ?? 0).toLocaleString()} VND
           </Text>
         </View>
 

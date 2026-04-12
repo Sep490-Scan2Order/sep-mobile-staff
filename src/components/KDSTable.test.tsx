@@ -8,9 +8,6 @@ import { orderService } from '@/services/logicServices/orderService';
 import { playAudioUrl } from '@/services/logicServices/playAudioUrl';
 import { updateOrderStatus, confirmPickupTime } from '@/store/slices/orderSlice';
 import { playNotificationSound } from '@/utils/notificationSound';
-import { Alert } from 'react-native';
-
-import { View, Text } from 'react-native';
 
 // === MOCKS ===
 
@@ -22,6 +19,16 @@ jest.mock('react-redux', () => ({
 jest.mock('@react-navigation/native', () => ({
     useNavigation: jest.fn(),
 }));
+
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+        AppSnackbar: ({ message, visible }: any) => {
+            if (!visible) return null;
+            return <View><Text>{message}</Text></View>;
+        }
+    };
+});
 
 jest.mock('@/store', () => ({}));
 
@@ -146,7 +153,6 @@ describe('SDKTable Component Coverage', () => {
         
         jest.useFakeTimers();
         jest.setSystemTime(new Date('2026-03-31T10:00:00Z'));
-        jest.spyOn(Alert, 'alert').mockImplementation(() => {});
         jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
@@ -227,27 +233,29 @@ describe('SDKTable Component Coverage', () => {
         });
 
         it('covers updateOrderStatus.rejected (lines 166-171)', async () => {
-            render(<SDKTable statusFilter={-1} />);
+            const { getByText } = render(<SDKTable statusFilter={-1} />);
             const props = mockOrderItemCard.mock.calls[0][0];
             mockDispatch.mockResolvedValueOnce({ type: 'order/updateOrderStatus/rejected', payload: 'Mock Err' });
             
             await act(async () => {
                 await props.onUpdateStatus(props.item);
+                jest.advanceTimersByTime(100);
             });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Không thể cập nhật', 'Mock Err');
+            expect(getByText('Mock Err')).toBeTruthy();
         });
 
         it('covers handleUpdateStatus catch block (lines 176-179)', async () => {
             (orderService.readyForPickup as jest.Mock).mockRejectedValueOnce(new Error('Internal'));
-            render(<SDKTable statusFilter={-1} />);
+            const { getByText } = render(<SDKTable statusFilter={-1} />);
             const props = mockOrderItemCard.mock.calls.find(c => c[0].item.status === 2)[0];
             
             await act(async () => {
                 await props.onUpdateStatus(props.item);
+                jest.advanceTimersByTime(100);
             });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
+            expect(getByText('Có lỗi xảy ra khi cập nhật trạng thái')).toBeTruthy();
         });
     });
 
@@ -262,7 +270,9 @@ describe('SDKTable Component Coverage', () => {
             
             await act(async () => { fireEvent.press(getByText('ConfirmPickup')); });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Không thể chọn thời gian trong quá khứ');
+            act(() => { jest.advanceTimersByTime(100); });
+            
+            expect(getByText('Không thể chọn thời gian trong quá khứ')).toBeTruthy();
         });
 
         it('covers confirmPickupTime rejected (lines 211-214)', async () => {
@@ -276,7 +286,9 @@ describe('SDKTable Component Coverage', () => {
             
             await act(async () => { fireEvent.press(getByText('ConfirmPickup')); });
             
-            expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'API Fail');
+            act(() => { jest.advanceTimersByTime(100); });
+            
+            expect(getByText('API Fail')).toBeTruthy();
         });
 
         it('covers confirmPickupTime success (lines 215-221)', async () => {
@@ -287,7 +299,8 @@ describe('SDKTable Component Coverage', () => {
             mockDispatch.mockResolvedValueOnce({ type: 'order/confirmPickupTime/fulfilled' });
             
             await act(async () => { fireEvent.press(getByText('ConfirmPickup')); });
-            expect(Alert.alert).toHaveBeenCalledWith('Thành công', 'Đã xác nhận giờ nhận hàng');
+            act(() => { jest.advanceTimersByTime(100); });
+            expect(getByText('Đã xác nhận giờ nhận hàng thành công')).toBeTruthy();
         });
     });
 

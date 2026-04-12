@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Alert,
   Image,
 } from 'react-native';
 import {
@@ -14,15 +13,17 @@ import {
   Camera as CameraIcon,
   ChevronDown,
   User,
+  Check,
+  Minus,
+  Plus,
 } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { OrderItem } from '@/type';
 import { refundApi } from '@/services/apiEndpoints/refundApi';
 import { staffApi } from '@/services/apiEndpoints/staffApi';
 import Toast from 'react-native-toast-message';
 import { Camera, useCameraDevice, PhotoFile } from 'react-native-vision-camera';
-import RNFS from 'react-native-fs';
-// 👇 Import thư viện nén ảnh
 import ImageResizer from 'react-native-image-resizer';
 
 interface Staff {
@@ -36,8 +37,10 @@ interface RefundModalProps {
   onClose: () => void;
   orderId: string;
   orderCode: string;
-  paymentStatus: number;
   isUnpaid: boolean;
+  orderItems: OrderItem[];
+  orderTotalAmount: number;
+  orderFinalAmount: number;
 }
 
 export const RefundModal: React.FC<RefundModalProps> = ({
@@ -46,6 +49,9 @@ export const RefundModal: React.FC<RefundModalProps> = ({
   orderId,
   orderCode,
   isUnpaid,
+  orderItems,
+  orderTotalAmount,
+  orderFinalAmount,
 }) => {
   const [refundType, setRefundType] = useState<number>(0);
   const [note, setNote] = useState('');
@@ -56,15 +62,32 @@ export const RefundModal: React.FC<RefundModalProps> = ({
   const [staffSearchText, setStaffSearchText] = useState('');
   const [showCamera, setShowCamera] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<PhotoFile | null>(null);
+  const [isFullRefund, setIsFullRefund] = useState(true);
+  const [selectedRefundItems, setSelectedRefundItems] = useState<
+    Record<string, number>
+  >({});
+
+  // Cache để tránh fetch staff mỗi lần mở modal
+  const staffCacheRef = React.useRef<Staff[]>([]);
+
   const cameraRef = React.useRef<Camera>(null);
   const device = useCameraDevice('back');
 
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
+  // Tỉ lệ thanh toán thực tế (Dùng để hoàn tiền theo tỉ trọng)
+  const paymentRatio = orderTotalAmount > 0 ? orderFinalAmount / orderTotalAmount : 1;
+  const isDiscounted = paymentRatio < 0.999; // Coi như có giảm giá nếu < 100%
+
   React.useEffect(() => {
     if (isVisible && userInfo?.restaurantId) {
-      fetchStaff();
       setSelectedStaffId(userInfo.id);
+      // Chỉ gọi API nếu chưa có cache
+      if (staffCacheRef.current.length > 0) {
+        setStaffList(staffCacheRef.current);
+      } else {
+        fetchStaff();
+      }
     }
   }, [isVisible, userInfo]);
 
@@ -74,6 +97,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
         userInfo!.restaurantId,
       );
       if (response.data.isSuccess) {
+        staffCacheRef.current = response.data.data;
         setStaffList(response.data.data);
       }
     } catch (error) {
@@ -99,7 +123,12 @@ export const RefundModal: React.FC<RefundModalProps> = ({
   const handleTakePhoto = async () => {
     const permission = await Camera.requestCameraPermission();
     if (permission !== 'granted') {
-      Alert.alert('Lỗi', 'Ứng dụng cần quyền truy cập máy ảnh');
+      Toast.show({
+        type: 'error',
+        text1: 'Không có quyền',
+        text2:
+          'Ứng dụng cần quyền truy cập máy ảnh. Vui lòng cấp phép trong cài đặt.',
+      });
       return;
     }
     setShowCamera(true);
@@ -110,9 +139,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       try {
         const photo = await cameraRef.current.takePhoto({
           flash: 'off',
-          qualityPrioritization: 'speed',
           enableShutterSound: false,
-          quality: 50,
         });
         setCapturedPhoto(photo);
         setShowCamera(false);
@@ -121,69 +148,137 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       }
     }
   };
+  const toggleItemSelection = (itemId: string, availableQty: number) => {
+    if (availableQty <= 0) return;
+    setSelectedRefundItems(prev => {
+      const newItems = { ...prev };
+      if (newItems[itemId]) {
+        delete newItems[itemId];
+      } else {
+        newItems[itemId] = 1;
+      }
+      return newItems;
+    });
+  };
+
+  const updateItemQty = (itemId: string, delta: number, availableQty: number) => {
+    setSelectedRefundItems(prev => {
+      const current = prev[itemId] || 0;
+      if (current === 0 && delta < 0) return prev;
+      const next = Math.min(availableQty, Math.max(1, current + delta));
+      return { ...prev, [itemId]: next };
+    });
+  };
 
   const handleSubmit = async () => {
     setLoading(true); // Bật loading ngay từ đầu để chặn spam click
     try {
+      if (isUnpaid) {
+        // ConfirmSystemPaymentRequest chỉ có: OrderId, ResponsibleStaffId, Note, ImageFile
+        const formData = new FormData();
+        formData.append('OrderId', orderId.trim());
+        formData.append('ResponsibleStaffId', selectedStaffId.trim());
+        formData.append('Note', note.trim());
+
+        if (capturedPhoto) {
+          const rawPath = capturedPhoto.path.startsWith('file://')
+            ? capturedPhoto.path
+            : `file://${capturedPhoto.path}`;
+          console.log('🔄 Đang nén ảnh...');
+          const resizedImage = await ImageResizer.createResizedImage(
+            rawPath, 600, 600, 'JPEG', 50, 0, undefined, false,
+            { mode: 'contain', onlyScaleDown: true },
+          );
+          console.log('✅ Đã nén ảnh xong. URI mới:', resizedImage.uri);
+          formData.append('ImageFile', {
+            uri: resizedImage.uri,
+            type: 'image/jpeg',
+            name: `refund_${Date.now()}.jpg`,
+          } as any);
+        }
+
+        console.log('🚀 GỌI API CONFIRM SYSTEM PAYMENT...');
+        const startTime = Date.now();
+        const res = await refundApi.confirmSystemPayment(formData);
+        console.log(`✅ THÀNH CÔNG (${Date.now() - startTime}ms):`, res);
+
+        Toast.show({ type: 'success', text1: 'Thành công', text2: 'Đã xác nhận thanh toán hệ thống' });
+        onClose();
+        return;
+      }
+
+      // RefundRequest: OrderId, RefundType, ResponsibleStaffId, Note, ImageFile, RefundItems, IsFullRefund
       const formData = new FormData();
       formData.append('OrderId', orderId.trim());
       formData.append('RefundType', String(refundType));
       formData.append('ResponsibleStaffId', selectedStaffId.trim());
       formData.append('Note', note.trim());
+      formData.append('IsFullRefund', String(isFullRefund));
+
+      if (!isFullRefund) {
+        // Gửi dưới dạng JSON array: [{"orderDetailId":1,"quantityToRefund":2}]
+        const refundItemsArray = Object.entries(selectedRefundItems).map(
+          ([id, qty]) => ({
+            orderDetailId: parseInt(id),
+            quantityToRefund: qty,
+          }),
+        );
+        console.log(
+          '📦 RefundItems JSON array:',
+          JSON.stringify(refundItemsArray),
+        );
+        formData.append('RefundItems', JSON.stringify(refundItemsArray));
+      } else {
+        formData.append('RefundItems', '[]');
+      }
 
       if (capturedPhoto) {
-        // Đảm bảo đường dẫn luôn có scheme file:// cho Android
         const rawPath = capturedPhoto.path.startsWith('file://')
           ? capturedPhoto.path
           : `file://${capturedPhoto.path}`;
-
         console.log('🔄 Đang nén ảnh...');
-
-        // 👇 THỰC HIỆN NÉN ẢNH
         const resizedImage = await ImageResizer.createResizedImage(
           rawPath,
-          1024, // maxWidth
-          1024, // maxHeight
-          'JPEG', // Định dạng đầu ra
-          70, // Chất lượng (0-100)
-          0, // Góc xoay
-          undefined, // Đường dẫn lưu (để undefined sẽ tự lưu vào cache)
-          false, // Không giữ lại metadata để giảm dung lượng thêm
+          600,  // maxWidth - giảm để upload nhanh hơn
+          600,  // maxHeight
+          'JPEG',
+          50,   // Chất lượng 50% - đủ rõ cho bằng chứng
+          0,
+          undefined,
+          false,
           { mode: 'contain', onlyScaleDown: true },
         );
-
         console.log('✅ Đã nén ảnh xong. URI mới:', resizedImage.uri);
-
-        const file = {
+        formData.append('ImageFile', {
           uri: resizedImage.uri,
           type: 'image/jpeg',
           name: `refund_${Date.now()}.jpg`,
-        };
-        formData.append('ImageFile', file as any);
+        } as any);
       }
 
-      console.log('🚀 GỌI API REFUND...');
-      let res;
-      console.log('isUnpaid:', isUnpaid);
-      if (isUnpaid) {
-        // Lỗi hệ thống → gọi API riêng
-        res = await refundApi.confirmSystemPayment(formData);
-      } else {
-        // Các loại khác → API cũ
-        res = await refundApi.createRefund(formData);
-      }
-      console.log('✅ THÀNH CÔNG:', res.data);
+      console.log('🚀 GỌI API REFUND (Bắt đầu gửi)...');
+      const startTime = Date.now();
+      const res = await refundApi.createRefund(formData);
+
+      console.log(
+        `✅ THÀNH CÔNG (Thời gian upload: ${Date.now() - startTime}ms):`,
+        res,
+      );
       Toast.show({
         type: 'success',
         text1: 'Thành công',
         text2: 'Đã tạo yêu cầu hoàn tiền',
       });
-      onClose(); // Đóng modal khi thành công
+      onClose();
     } catch (err) {
       console.log('❌ FINAL ERROR:', err);
-      Alert.alert('Lỗi', 'Không thể hoàn tiền. Vui lòng thử lại.');
+      Toast.show({
+        type: 'error',
+        text1: 'Hoàn tiền thất bại',
+        text2: 'Không thể hoàn tiền. Vui lòng thử lại.',
+      });
     } finally {
-      setLoading(false); // Tắt loading dù thành công hay thất bại
+      setLoading(false);
     }
   };
 
@@ -207,6 +302,23 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 ORD-{orderCode}
               </Text>
             </View>
+
+            {/* FINANCIAL BANNER */}
+            {!isUnpaid && isDiscounted && (
+              <View className="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100 flex-row items-center">
+                <View className="bg-blue-100 p-2 rounded-full mr-3">
+                  <Text className="text-blue-700 font-bold">%</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-blue-800 font-bold text-sm">
+                    Đơn hàng có áp dụng Khuyến mãi
+                  </Text>
+                  <Text className="text-blue-600 text-xs">
+                    Tỉ lệ hoàn trả mỗi món: {(paymentRatio * 100).toFixed(0)}% giá niêm yết.
+                  </Text>
+                </View>
+              </View>
+            )}
 
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-2">
@@ -305,6 +417,145 @@ export const RefundModal: React.FC<RefundModalProps> = ({
               </View>
             </View>
 
+            {/* FULL OR PARTIAL TOGGLE */}
+            {!isUnpaid && (
+              <View className="mb-6">
+                <Text className="text-gray-700 font-medium mb-3">
+                  Phạm vi hoàn tiền
+                </Text>
+                <View className="flex-row gap-4">
+                  <TouchableOpacity
+                    onPress={() => setIsFullRefund(true)}
+                    className={`flex-1 py-3 border rounded-xl items-center ${
+                      isFullRefund
+                        ? 'bg-[#E8F3F0] border-[#226B5D]'
+                        : 'bg-white border-gray-200'
+                    }`}
+                  >
+                    <Text
+                      className={
+                        isFullRefund
+                          ? 'text-[#226B5D] font-bold'
+                          : 'text-gray-600'
+                      }
+                    >
+                      Toàn bộ đơn
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setIsFullRefund(false)}
+                    className={`flex-1 py-3 border rounded-xl items-center ${
+                      !isFullRefund
+                        ? 'bg-[#E8F3F0] border-[#226B5D]'
+                        : 'bg-white border-gray-200'
+                    }`}
+                  >
+                    <Text
+                      className={
+                        !isFullRefund
+                          ? 'text-[#226B5D] font-bold'
+                          : 'text-gray-600'
+                      }
+                    >
+                      Một phần đơn
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* ITEM SELECTION FOR PARTIAL REFUND */}
+            {!isFullRefund && !isUnpaid && (
+              <View className="mb-6">
+                <Text className="text-gray-700 font-medium mb-2">
+                  Chọn món hoàn tiền
+                </Text>
+                <View className="bg-gray-50 rounded-xl p-2 border border-gray-200">
+                  {orderItems.map(item => {
+                    const isSelected = !!selectedRefundItems[item.id];
+                    const refundedQty = item.refundedQuantity || 0;
+                    const availableQty = item.quantity - refundedQty;
+                    const isFullyRefunded = availableQty <= 0;
+
+                    return (
+                      <View
+                        key={item.id}
+                        className={`p-3 border-b border-gray-100 last:border-0 ${
+                          isFullyRefunded ? 'bg-gray-50 opacity-60' : ''
+                        }`}
+                      >
+                        <View className="flex-row items-center justify-between">
+                          <TouchableOpacity
+                            onPress={() =>
+                              toggleItemSelection(item.id, availableQty)
+                            }
+                            disabled={isFullyRefunded}
+                            className="flex-row items-center flex-1"
+                          >
+                            <View
+                              className={`w-6 h-6 rounded border items-center justify-center mr-3 ${
+                                isSelected
+                                  ? 'bg-[#226B5D] border-[#226B5D]'
+                                  : isFullyRefunded
+                                  ? 'bg-gray-200 border-gray-300'
+                                  : 'bg-white border-gray-300'
+                              }`}
+                            >
+                              {isSelected && <Check size={16} color="white" />}
+                            </View>
+                            <View className="flex-1">
+                              <Text className={`font-medium ${isFullyRefunded ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                                {item.name} {isFullyRefunded && '(Đã hoàn hết)'}
+                              </Text>
+                              <View className="flex-row items-center">
+                                <Text className={`text-xs ${isDiscounted || (item.originalPrice && item.originalPrice > item.price) ? 'text-gray-400 line-through' : 'text-gray-500'}`}>
+                                  {(item.originalPrice ?? 0).toLocaleString()}đ
+                                </Text>
+                                {(isDiscounted || (item.originalPrice && item.originalPrice > item.price)) && (
+                                  <Text className="text-xs text-red-600 font-bold ml-2">
+                                    → {(Math.round((item.price ?? 0) * paymentRatio)).toLocaleString()}đ
+                                  </Text>
+                                )}
+                                <Text className={`text-xs ml-2 ${isFullyRefunded ? 'text-gray-400' : 'text-gray-500 font-bold'}`}>
+                                  x {availableQty} {refundedQty > 0 && `(Gốc ${item.quantity})`}
+                                </Text>
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+
+                          {isSelected && (
+                            <View className="flex-row items-center bg-white border border-gray-200 rounded-lg">
+                              <TouchableOpacity
+                                onPress={() =>
+                                  updateItemQty(item.id, -1, availableQty)
+                                }
+                                className="p-2"
+                              >
+                                <Minus size={16} color="#226B5D" />
+                              </TouchableOpacity>
+                              <View className="px-2 min-w-[30px] items-center">
+                                <Text className="font-bold text-[#226B5D]">
+                                  {selectedRefundItems[item.id]}
+                                </Text>
+                              </View>
+                              <TouchableOpacity
+                                onPress={() =>
+                                  updateItemQty(item.id, 1, availableQty)
+                                }
+                                className="p-2"
+                              >
+                                <Plus size={16} color="#226B5D" />
+                              </TouchableOpacity>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-2">Ghi chú</Text>
               <TextInput
@@ -347,6 +598,44 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </TouchableOpacity>
               )}
             </View>
+
+            {/* SUMMARY FOOTER */}
+            {!isUnpaid && !isFullRefund && Object.keys(selectedRefundItems).length > 0 && (
+              <View className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-gray-500">Tổng giá niêm yết:</Text>
+                  <Text className="text-gray-700">
+                    {Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
+                      const item = orderItems.find(i => i.id === id);
+                      return acc + (item?.originalPrice ?? 0) * qty;
+                    }, 0).toLocaleString()}đ
+                  </Text>
+                </View>
+                {isDiscounted && (
+                  <View className="flex-row justify-between mb-1">
+                    <Text className="text-red-500 text-xs italic">Khấu trừ khuyến mãi đơn hàng:</Text>
+                    <Text className="text-red-500 text-xs italic">
+                      -{(Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
+                        const item = orderItems.find(i => i.id === id);
+                        const gross = (item?.originalPrice ?? 0) * qty;
+                        const net = Math.round((item?.price ?? 0) * qty * paymentRatio);
+                        return acc + (gross - net);
+                      }, 0)).toLocaleString()}đ
+                    </Text>
+                  </View>
+                )}
+                <View className="border-t border-gray-100 my-2" />
+                <View className="flex-row justify-between items-center">
+                  <Text className="font-bold text-gray-800">DỰ KIẾN THỰC HOÀN:</Text>
+                  <Text className="text-[#226B5D] font-bold text-lg">
+                    {Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
+                      const item = orderItems.find(i => i.id === id);
+                      return acc + Math.round((item?.price ?? 0) * qty * paymentRatio);
+                    }, 0).toLocaleString()}đ
+                  </Text>
+                </View>
+              </View>
+            )}
 
             <TouchableOpacity
               onPress={handleSubmit}

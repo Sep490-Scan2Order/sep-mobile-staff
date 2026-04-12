@@ -107,6 +107,7 @@ export interface OrderItem {
   promotionName?: string;
   subTotal?: number;
   image?: string;
+  refundedQuantity?: number;
 }
 
 export interface Order {
@@ -123,6 +124,11 @@ export interface Order {
   requestedPickupAt?: string | null;
   confirmedPickupAt?: string | null;
   restaurantId?: number;
+  refundOrderId?: string;
+  typeOrder?: number;
+  totalAmount?: number;
+  promotionDiscount?: number;
+  finalAmount?: number;
 }
 
 export interface OrderState {
@@ -169,6 +175,7 @@ export interface ShiftReportDto {
   difference: number;
   expectedTotalAmount: number;
   note: string;
+  cashierName?: string;
 }
 
 export interface RefundRequest {
@@ -176,7 +183,9 @@ export interface RefundRequest {
   refundType: number;
   responsibleStaffId: string;
   note: string;
-  imageFile?: any; // Added for image evidence support
+  imageFile?: any; 
+  isFullRefund: boolean;
+  refundItems: { orderDetailId: number; quantityToRefund: number }[];
 }
 
 export interface ShiftState {

@@ -45,7 +45,35 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
   'order/fetchActiveOrders',
   async (restaurantId, { rejectWithValue }) => {
     try {
-      return await orderService.getActiveOrders(restaurantId);
+      const data = await orderService.getActiveOrders(restaurantId);
+
+      // Manual mapping to fix field naming mismatches (e.g., PascalCase from API)
+      return data.map((order: any) => ({
+        id: order.id,
+        phone: order.phone,
+        orderCode: order.orderCode,
+        createdAt: order.createdAt,
+        amount: order.amount,
+        finalAmount: order.finalAmount,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        type: order.type,
+        typeOrder: order.typeOrder,
+        isPreOrder: order.isPreOrder,
+        requestedPickupAt: order.requestedPickupAt,
+        confirmedPickupAt: order.confirmedPickupAt,
+        items: order.items.map((item: any) => ({
+          id: item.id?.toString(),
+          name: item.name,
+          price: item.discountedPrice, // Use discounted price as the Selling Price
+          quantity: item.quantity,
+          originalPrice: item.originalPrice,
+          discountedPrice: item.discountedPrice,
+          promotionAmount: item.promotionAmount,
+          refundedQuantity: item.refundedQuantity || 0,
+          image: item.image,
+        })),
+      }));
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

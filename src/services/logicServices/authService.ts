@@ -2,7 +2,7 @@ import { authApi } from '@/services/apiEndpoints/authApi';
 import { tokenStorage } from '@/utils/tokenStorage';
 import { store } from '@/store';
 import { setUser, logout } from '@/store/slices/authSlice';
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
@@ -61,11 +61,12 @@ export const authService = {
   forceLogout: async () => {
     try {
       await authService.logout();
-      Alert.alert(
-        'Phiên hết hạn',
-        'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
-        [{ text: 'OK' }],
-      );
+      Toast.show({
+        type: 'error',
+        text1: 'Phiên đăng nhập hết hạn',
+        text2: 'Vui lòng đăng nhập lại để tiếp tục.',
+        visibilityTime: 4000,
+      });
     } catch (error) {
     }
   },

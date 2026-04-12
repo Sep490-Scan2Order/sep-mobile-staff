@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   TextInput,
   ActivityIndicator,
   StatusBar,
@@ -21,6 +20,10 @@ import {
   fetchCurrentShift,
 } from '@/store/slices/shiftSlice';
 import { Header } from '@/components/Header';
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { AppModal } from '@/components/AppModal';
+import { useSnackbar } from '@/hooks/useSnackbar';
+import { useAppModal } from '@/hooks/useAppModal';
 
 export default function CheckInScreen() {
   const dispatch = useDispatch<any>();
@@ -35,30 +38,26 @@ export default function CheckInScreen() {
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ================== LOAD SHIFT (fallback API) ==================
+  const snackbar = useSnackbar();
+  const modal = useAppModal();
+
   useEffect(() => {
     if (!user?.id) return;
-
-    console.log('📦 Fetch current shift');
     dispatch(fetchCurrentShift());
   }, [user?.id, dispatch]);
 
-  // ================== ACTIONS ==================
-
   const handleCheckIn = async () => {
     if (!cash) {
-      Alert.alert('Thông báo', 'Vui lòng nhập số tiền đầu ca');
+      snackbar.showWarning('Vui lòng nhập số tiền đầu ca');
       return;
     }
-
     if (!user) {
-      Alert.alert('Lỗi', 'Thông tin người dùng không khả dụng');
+      snackbar.showError('Thông tin người dùng không khả dụng');
       return;
     }
 
     try {
       setLoading(true);
-
       const result = await dispatch(
         checkInShift({
           restaurantId: user.restaurantId!,
@@ -68,15 +67,12 @@ export default function CheckInScreen() {
         }),
       ).unwrap();
 
-      // ✅ update UI ngay (không chờ realtime)
       dispatch(setShift(result));
-
       setCash('');
       setNote('');
-
-      Alert.alert('Thành công', 'Check-in thành công');
+      snackbar.showSuccess('Check-in thành công! Ca làm đã bắt đầu.');
     } catch (error: any) {
-      Alert.alert('Lỗi', error?.message || 'Check-in thất bại');
+      snackbar.showError(error?.message || 'Check-in thất bại');
     } finally {
       setLoading(false);
     }
@@ -84,54 +80,47 @@ export default function CheckInScreen() {
 
   const handleCheckOut = async () => {
     if (!cash) {
-      Alert.alert('Thông báo', 'Vui lòng nhập tiền cuối ca');
+      snackbar.showWarning('Vui lòng nhập tiền cuối ca');
       return;
     }
-
     if (!currentShift?.id) {
-      Alert.alert('Lỗi', 'Không tìm thấy ca làm hiện tại');
+      snackbar.showError('Không tìm thấy ca làm hiện tại');
       return;
     }
 
-    try {
-      setLoading(true);
+    const savedShiftId = currentShift.id;
 
-      const savedShiftId = currentShift.id;
-
-      await shiftService.checkOut({
-        shiftId: currentShift.id,
-        cashAmount: Number(cash),
-        note: note,
-      });
-
-      // ✅ update UI ngay
-      dispatch(clearShift());
-
-      setCash('');
-      setNote('');
-
-      Alert.alert('Thành công', 'Checkout thành công', [
-        {
-          text: 'OK',
-          onPress: () => {
-            navigation.navigate('CashReport', { shiftId: savedShiftId });
-          },
-        },
-      ]);
-    } catch (error: any) {
-      Alert.alert('Lỗi', error?.message || 'Checkout thất bại');
-    } finally {
-      setLoading(false);
-    }
+    modal.showConfirm(
+      'Kết thúc ca làm?',
+      'Bạn có chắc muốn kết thúc ca làm việc hiện tại không?',
+      async () => {
+        try {
+          setLoading(true);
+          await shiftService.checkOut({
+            shiftId: currentShift.id,
+            cashAmount: Number(cash),
+            note: note,
+          });
+          dispatch(clearShift());
+          setCash('');
+          setNote('');
+          // Show success then navigate
+          modal.showSuccess(
+            'Checkout thành công',
+            'Ca làm đã kết thúc. Chuyển đến báo cáo ca.',
+            () => navigation.navigate('CashReport', { shiftId: savedShiftId }),
+          );
+        } catch (error: any) {
+          snackbar.showError(error?.message || 'Checkout thất bại');
+        } finally {
+          setLoading(false);
+        }
+      },
+      'Kết thúc ca',
+    );
   };
 
-  // ================== UI ==================
-
-  // Ca đang mở = có currentShift với id hợp lệ
-  // status === 0 là "Open/Active" theo backend enum ShiftStatus
-  // Nếu currentShift null → chưa có ca → isShiftOpen = false
   const isShiftOpen = !!(currentShift && currentShift.id);
-
 
   return (
     <View className="flex-1 bg-teal-700">
@@ -153,9 +142,7 @@ export default function CheckInScreen() {
               Vai trò: {user?.role}
             </Text>
 
-            <Text className="mt-3 mb-2 font-bold text-gray-700">
-              Số tiền (VNĐ)
-            </Text>
+            <Text className="mt-3 mb-2 font-bold text-gray-700">Số tiền (VNĐ)</Text>
             <TextInput
               className="border border-gray-200 rounded-xl p-4 text-base bg-white"
               placeholder="Nhập số tiền"
@@ -185,9 +172,7 @@ export default function CheckInScreen() {
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-bold">
-                  Bắt đầu ca (Check-in)
-                </Text>
+                <Text className="text-white font-bold">Bắt đầu ca (Check-in)</Text>
               )}
             </TouchableOpacity>
 
@@ -202,14 +187,15 @@ export default function CheckInScreen() {
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-bold">
-                  Kết thúc ca (Check-out)
-                </Text>
+                <Text className="text-white font-bold">Kết thúc ca (Check-out)</Text>
               )}
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
+
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </View>
   );
 }

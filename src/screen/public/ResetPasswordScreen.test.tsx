@@ -19,18 +19,47 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: jest.fn(),
 }));
 
-// Mock lucide icons
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
   return {
     ChevronLeft: () => <View testID="chevron-left" />,
     Eye: () => <View testID="eye-icon" />,
     EyeOff: () => <View testID="eye-off-icon" />,
+    AlertCircle: () => <View testID="alert-circle" />,
   };
 });
 
-// Mock Alert
-jest.spyOn(Alert, 'alert');
+
+
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+      AppSnackbar: ({ message, visible }: any) => {
+        if (!visible) return null;
+        return <View><Text>{message}</Text></View>;
+      }
+    };
+});
+
+jest.mock('@/components/AppModal', () => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return {
+        AppModal: ({ visible, title, message, buttons }: any) => {
+            if (!visible) return null;
+            return (
+                <View>
+                    <Text>{title}</Text>
+                    <Text>{message}</Text>
+                    {buttons?.map((btn: any, index: number) => (
+                        <TouchableOpacity key={index} onPress={btn.onPress}>
+                            <Text>{btn.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+    }
+});
 
 describe('ResetPasswordScreen', () => {
   const navigation = { navigate: jest.fn(), goBack: jest.fn() };
@@ -49,25 +78,25 @@ describe('ResetPasswordScreen', () => {
     expect(getByPlaceholderText('Nhập mật khẩu mới')).toBeTruthy();
   });
 
-  it('shows alert for invalid input', () => {
-    const { getByTestId, getByPlaceholderText } = render(<ResetPasswordScreen />);
+  it('shows inline errors for invalid input', () => {
+    const { getByTestId, getByPlaceholderText, getByText } = render(<ResetPasswordScreen />);
     const resetButton = getByTestId('reset-button-text');
 
     // Missing OTP
     fireEvent.press(resetButton);
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Vui lòng nhập mã OTP');
+    expect(getByText('Vui lòng nhập mã OTP')).toBeTruthy();
 
     // Short password
     fireEvent.changeText(getByPlaceholderText('Nhập mã OTP'), '123456');
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu mới'), '123');
     fireEvent.press(resetButton);
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Mật khẩu phải ít nhất 6 ký tự');
+    expect(getByText('Mật khẩu phải ít nhất 6 ký tự')).toBeTruthy();
 
     // Mismatched password
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu mới'), 'password123');
     fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'different');
     fireEvent.press(resetButton);
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Mật khẩu xác nhận không khớp');
+    expect(getByText('Mật khẩu xác nhận không khớp')).toBeTruthy();
   });
 
   it('completes reset password flow successfully', async () => {
@@ -80,7 +109,7 @@ describe('ResetPasswordScreen', () => {
       success: true,
     });
 
-    const { getByPlaceholderText, getByTestId } = render(<ResetPasswordScreen />);
+    const { getByPlaceholderText, getByTestId, getByText } = render(<ResetPasswordScreen />);
     fireEvent.changeText(getByPlaceholderText('Nhập mã OTP'), '123456');
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu mới'), 'password123');
     fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'password123');
@@ -99,17 +128,10 @@ describe('ResetPasswordScreen', () => {
     });
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Thành công',
-        'Mật khẩu đã được đặt lại',
-        expect.any(Array)
-      );
+      expect(getByText('Đặt lại mật khẩu thành công')).toBeTruthy();
     });
 
-    // Trigger the OK button callback in the alert
-    // @ts-ignore
-    const alertConfig = Alert.alert.mock.calls[Alert.alert.mock.calls.length - 1][2];
-    alertConfig[0].onPress();
+    fireEvent.press(getByText('OK'));
     expect(navigation.navigate).toHaveBeenCalledWith('Login');
   });
 
@@ -119,14 +141,14 @@ describe('ResetPasswordScreen', () => {
       message: 'OTP invalid',
     });
 
-    const { getByPlaceholderText, getByTestId } = render(<ResetPasswordScreen />);
+    const { getByPlaceholderText, getByTestId, getByText } = render(<ResetPasswordScreen />);
     fireEvent.changeText(getByPlaceholderText('Nhập mã OTP'), 'wrong');
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu mới'), 'password123');
     fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'password123');
     fireEvent.press(getByTestId('reset-button-text'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'OTP invalid');
+      expect(getByText('OTP invalid')).toBeTruthy();
     });
   });
 
@@ -140,14 +162,14 @@ describe('ResetPasswordScreen', () => {
       message: 'Failed to reset',
     });
 
-    const { getByPlaceholderText, getByTestId } = render(<ResetPasswordScreen />);
+    const { getByPlaceholderText, getByTestId, getByText } = render(<ResetPasswordScreen />);
     fireEvent.changeText(getByPlaceholderText('Nhập mã OTP'), '123456');
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu mới'), 'password123');
     fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'password123');
     fireEvent.press(getByTestId('reset-button-text'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Failed to reset');
+      expect(getByText('Failed to reset')).toBeTruthy();
     });
   });
 });

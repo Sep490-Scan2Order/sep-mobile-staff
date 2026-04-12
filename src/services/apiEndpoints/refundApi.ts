@@ -1,30 +1,35 @@
-import axiosPrivate from '../axios/privateClient'; // Trỏ đúng đường dẫn của bạn
+import axiosPrivate from '../axios/privateClient';
+
+// Trong React Native, khi set Content-Type: multipart/form-data + data là FormData,
+// XHR layer tự động append boundary đúng.
+// transformRequest: (data) => data ngăn Axios serialize FormData thành string.
+const MULTIPART_HEADERS = {
+  'Content-Type': 'multipart/form-data',
+};
 
 export const refundApi = {
   createRefund: async (formData: FormData) => {
-    console.log('🚀 CALL API REFUND (AXIOS PRO)');
+    console.log('🚀 CALL API REFUND');
 
     const response = await axiosPrivate.post('/Refund', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      // 👇 Vũ khí chống Stream Closed trên React Native
-      transformRequest: (data) => data, 
+      headers: MULTIPART_HEADERS,
+      transformRequest: (data) => data,
     });
 
-    // Trả về thẳng data để bên component dễ dùng
-    return response.data; 
+    return response.data;
   },
 
   confirmSystemPayment: async (formData: FormData) => {
-    console.log('🚀 CONFIRM SYSTEM PAYMENT (AXIOS PRO)');
+    console.log('🚀 CONFIRM SYSTEM PAYMENT');
 
-    const response = await axiosPrivate.post('/Refund/confirm-system-payment', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+    const response = await axiosPrivate.post(
+      '/Refund/confirm-system-payment',
+      formData,
+      {
+        headers: MULTIPART_HEADERS,
+        transformRequest: (data) => data,
       },
-      transformRequest: (data) => data,
-    });
+    );
 
     return response.data;
   },

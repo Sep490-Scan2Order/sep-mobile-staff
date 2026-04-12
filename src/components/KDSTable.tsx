@@ -5,8 +5,9 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  Alert,
 } from 'react-native';
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { useSnackbar } from '@/hooks/useSnackbar';
 import { Search, X } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store';
@@ -36,6 +37,7 @@ type RootStackParamList = {
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
+  const snackbar = useSnackbar();
 
   const orders = useSelector((state: RootState) => state.order.orders);
 
@@ -90,9 +92,20 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const filteredOrders = useMemo(() => {
     return orders
       .filter(order => isToday(order.createdAt))
-      .filter(order =>
-        statusFilter === -1 ? true : order.status === statusFilter,
-      )
+      .filter(order => {
+        // Tab "Đã hủy" (status 5): Hiện CHỈ ĐƠN HOÀN TIỀN
+        if (statusFilter === 5) {
+          return order.typeOrder === 1;
+        }
+
+        // Các tab khác (không phải 'Tất cả'): Chỉ hiện ĐƠN THƯỜNG (không phải refund log)
+        if (statusFilter !== -1 && order.typeOrder === 1) {
+          return false;
+        }
+
+        // Lọc theo status thông thường
+        return statusFilter === -1 ? true : order.status === statusFilter;
+      })
       .filter(order => {
         if (orderTypeFilter === 'preorder') return order.isPreOrder === true;
         if (orderTypeFilter === 'dinein') return order.isPreOrder !== true;
@@ -113,7 +126,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       })
       .sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [orders, statusFilter, searchText, orderTypeFilter]);
 
@@ -156,7 +169,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       if (updateOrderStatus.rejected.match(result)) {
         const errorMsg =
           (result.payload as string) || 'Cập nhật trạng thái thất bại';
-        Alert.alert('Không thể cập nhật', errorMsg);
+        snackbar.showError(errorMsg);
         return;
       }
 
@@ -165,7 +178,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       }
     } catch (err) {
       console.log('Update status error:', err);
-      Alert.alert('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
+      snackbar.showError('Có lỗi xảy ra khi cập nhật trạng thái');
     }
   };
 
@@ -179,7 +192,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     pickedDate.setHours(selectedHour, selectedMinute, 0, 0);
 
     if (pickedDate.getTime() < Date.now()) {
-      Alert.alert('Lỗi', 'Không thể chọn thời gian trong quá khứ');
+      snackbar.showWarning('Không thể chọn thời gian trong quá khứ');
       return;
     }
 
@@ -199,9 +212,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     if (confirmPickupTime.rejected.match(result)) {
       const errorMsg =
         (result.payload as string) || 'Xác nhận giờ nhận hàng thất bại';
-      Alert.alert('Lỗi', errorMsg);
+      snackbar.showError(errorMsg);
     } else {
-      Alert.alert('Thành công', 'Đã xác nhận giờ nhận hàng');
+      snackbar.showSuccess('Đã xác nhận giờ nhận hàng thành công');
     }
   };
 
@@ -243,7 +256,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{ position: 'relative' }}>
       {/* SEARCH */}
       <View className="px-4 pt-4">
         <View className="flex-row items-center bg-[#E8F3F0] border border-[#226B5D] rounded-xl px-3 py-2">
@@ -316,6 +329,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           orderId={selectedOrder.id}
           orderCode={selectedOrder.orderCode.toString()}
           isUnpaid={selectedOrder.status === 0} // 👈 QUAN TRỌNG
+          orderItems={selectedOrder.items}
+          orderTotalAmount={selectedOrder.totalAmount || 0}
+          orderFinalAmount={selectedOrder.finalAmount || 0}
         />
       )}
 
@@ -334,6 +350,8 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         setSelectedHour={setSelectedHour}
         setSelectedMinute={setSelectedMinute}
       />
+
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
     </View>
   );
 };

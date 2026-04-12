@@ -5,6 +5,7 @@ import { store } from '@/store';
 import {
   updateOrderStatusLocal,
   addOrder,
+  fetchActiveOrders,
 } from '@/store/slices/orderSlice';
 
 import {
@@ -105,6 +106,13 @@ export const initSignalR = async (
       store.dispatch(clearShift());
     } else {
       store.dispatch(setShift(data));
+    }
+  });
+
+  connection.on('ListChanged', () => {
+    console.log('🔔 List changed notification - refreshing orders');
+    if (restaurantId) {
+      store.dispatch(fetchActiveOrders(restaurantId));
     }
   });
 

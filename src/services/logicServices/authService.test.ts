@@ -3,7 +3,7 @@ import { authApi } from '@/services/apiEndpoints/authApi';
 import { tokenStorage } from '@/utils/tokenStorage';
 import { store } from '@/store';
 import { setUser, logout } from '@/store/slices/authSlice';
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 // Mock authApi
 jest.mock('@/services/apiEndpoints/authApi', () => ({
@@ -37,8 +37,10 @@ jest.mock('@/store/slices/authSlice', () => ({
   logout: jest.fn(),
 }));
 
-// Mock Alert
-jest.spyOn(Alert, 'alert');
+// Mock Toast
+jest.mock('react-native-toast-message', () => ({
+  show: jest.fn(),
+}));
 
 describe('authService', () => {
   beforeEach(() => {
@@ -145,11 +147,12 @@ describe('authService', () => {
       await authService.forceLogout();
 
       expect(logoutSpy).toHaveBeenCalled();
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Phiên hết hạn',
-        'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
-        [{ text: 'OK' }]
-      );
+      expect(Toast.show).toHaveBeenCalledWith({
+        type: 'error',
+        text1: 'Phiên đăng nhập hết hạn',
+        text2: 'Vui lòng đăng nhập lại để tiếp tục.',
+        visibilityTime: 4000,
+      });
       logoutSpy.mockRestore();
     });
   });

@@ -15,10 +15,10 @@ describe('refundApi', () => {
     jest.clearAllMocks();
   });
 
-  it('createRefund should call /Refund with FormData and headers', async () => {
+  it('createRefund should call /Refund with FormData', async () => {
     const mockFormData = new FormData();
     mockFormData.append('orderId', 'order-123');
-    
+
     (axiosPrivate.post as jest.Mock).mockResolvedValue({ data: { isSuccess: true } });
 
     await refundApi.createRefund(mockFormData);
@@ -27,19 +27,17 @@ describe('refundApi', () => {
       '/Refund',
       mockFormData,
       {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
         transformRequest: expect.any(Function),
       }
     );
   });
 
-  it('confirmSystemPayment should call /Refund/confirm-system-payment with FormData and headers', async () => {
+  it('confirmSystemPayment should call /Refund/confirm-system-payment with FormData', async () => {
     const mockFormData = new FormData();
     mockFormData.append('orderId', 'order-123');
     mockFormData.append('amount', '100000');
-    
+
     (axiosPrivate.post as jest.Mock).mockResolvedValue({ data: { isSuccess: true } });
 
     await refundApi.confirmSystemPayment(mockFormData);
@@ -48,9 +46,7 @@ describe('refundApi', () => {
       '/Refund/confirm-system-payment',
       mockFormData,
       {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
         transformRequest: expect.any(Function),
       }
     );

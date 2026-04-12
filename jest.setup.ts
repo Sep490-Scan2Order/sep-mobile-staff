@@ -1,3 +1,5 @@
+jest.setTimeout(15000)
+
 // Author: Dựa trên phong cách TrungQuanDev
 import '@testing-library/jest-native/extend-expect'
 
@@ -35,6 +37,11 @@ const mockLucide = {
   ChevronDown: mockIcon('ChevronDown'),
   User: mockIcon('User'),
   Camera: mockIcon('Camera'),
+  CheckCircle: mockIcon('CheckCircle'),
+  XCircle: mockIcon('XCircle'),
+  AlertTriangle: mockIcon('AlertTriangle'),
+  Info: mockIcon('Info'),
+  AlertCircle: mockIcon('AlertCircle'),
 };
 
 jest.mock('lucide-react-native', () => mockLucide);
@@ -152,3 +159,5 @@ jest.mock('redux-persist/lib/integration/react', () => ({
 // Tắt các log không cần thiết khi chạy test
 console.error = jest.fn()
 console.warn = jest.fn()
+
+

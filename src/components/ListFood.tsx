@@ -11,6 +11,7 @@ interface OrderItem {
   discountAmount?: number;
   promotionName?: string;
   subTotal?: number;
+  refundedQuantity?: number;
 }
 
 interface ListFoodProps {
@@ -43,7 +44,7 @@ export const ListFood: React.FC<ListFoodProps> = ({ item }) => {
         {/* Price */}
         <View className="flex-row items-center mt-1">
           <Text className="text-[#226B5D] font-semibold text-sm">
-            {item.price} đ
+            {(item.price ?? 0).toLocaleString()} đ
           </Text>
 
           {item.originalPrice && item.originalPrice > item.price && (
@@ -53,11 +54,22 @@ export const ListFood: React.FC<ListFoodProps> = ({ item }) => {
           )}
         </View>
 
-        {/* Discount */}
+          {/* Discount */}
         {item.discountAmount && item.discountAmount > 0 && (
           <Text className="text-red-500 text-xs mt-1">
             -{item.discountAmount.toLocaleString()} đ khuyến mãi
           </Text>
+        )}
+
+        {/* Refund Status */}
+        {item.refundedQuantity && item.refundedQuantity > 0 && (
+          <View className="mt-1 bg-red-50 self-start px-2 py-0.5 rounded border border-red-100">
+            <Text className="text-red-600 text-[10px] font-bold">
+              {item.refundedQuantity === item.quantity
+                ? 'HOÀN TIỀN TOÀN BỘ'
+                : `ĐÃ HOÀN TIỀN x${item.refundedQuantity}`}
+            </Text>
+          </View>
         )}
       </View>
 

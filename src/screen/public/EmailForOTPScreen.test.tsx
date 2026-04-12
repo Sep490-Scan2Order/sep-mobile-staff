@@ -17,16 +17,44 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+      AppSnackbar: ({ message, visible }: any) => {
+        if (!visible) return null;
+        return <View><Text>{message}</Text></View>;
+      }
+    };
+});
+
+jest.mock('@/components/AppModal', () => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return {
+        AppModal: ({ visible, title, message, buttons }: any) => {
+            if (!visible) return null;
+            return (
+                <View>
+                    <Text>{title}</Text>
+                    <Text>{message}</Text>
+                    {buttons?.map((btn: any, index: number) => (
+                        <TouchableOpacity key={index} onPress={btn.onPress}>
+                            <Text>{btn.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+    }
+});
+
 // Mock lucide icons
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
   return {
     ChevronLeft: () => <View testID="chevron-left" />,
+    AlertCircle: () => <View testID="alert-circle" />,
   };
 });
-
-// Mock Alert
-jest.spyOn(Alert, 'alert');
 
 describe('EmailForOTPScreen', () => {
   const navigation = { navigate: jest.fn(), goBack: jest.fn() };
@@ -42,11 +70,11 @@ describe('EmailForOTPScreen', () => {
     expect(getByPlaceholderText('example@gmail.com')).toBeTruthy();
   });
 
-  it('shows alert if email is empty', () => {
+  it('shows inline error if email is empty', () => {
     const { getByText } = render(<EmailForOTPScreen />);
     const sendButton = getByText('Gửi mã OTP');
     fireEvent.press(sendButton);
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Vui lòng nhập email');
+    expect(getByText('Vui lòng nhập email')).toBeTruthy();
   });
 
   it('calls sendForgotPasswordOtp and handles success correctly', async () => {
@@ -62,17 +90,10 @@ describe('EmailForOTPScreen', () => {
     expect(authService.sendForgotPasswordOtp).toHaveBeenCalledWith('test@example.com');
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Thành công',
-        'OTP sent',
-        expect.any(Array)
-      );
+      expect(getByText('Gửi OTP thành công')).toBeTruthy();
     });
 
-    // Trigger the OK button callback in the alert
-    // @ts-ignore
-    const alertConfig = Alert.alert.mock.calls[0][2];
-    alertConfig[0].onPress();
+    fireEvent.press(getByText('OK'));
     expect(navigation.navigate).toHaveBeenCalledWith('ResetPasswordScreen', {
       email: 'test@example.com',
     });
@@ -89,7 +110,7 @@ describe('EmailForOTPScreen', () => {
     fireEvent.press(getByText('Gửi mã OTP'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Email not found');
+      expect(getByText('Email not found')).toBeTruthy();
     });
   });
 

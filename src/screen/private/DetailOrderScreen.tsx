@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
-  Alert,
 } from 'react-native';
 import { HeaderDetail } from '@/components/HeaderDetail';
 import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
@@ -15,7 +14,6 @@ import {
   useNavigation,
   useRoute,
   RouteProp,
-  NavigatorScreenParams,
   CommonActions,
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +26,10 @@ import {
 } from '@/store/slices/orderSlice';
 import { RootState, AppDispatch } from '@/store';
 import { RootStackParamList } from '@/type';
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { AppModal } from '@/components/AppModal';
+import { useSnackbar } from '@/hooks/useSnackbar';
+import { useAppModal } from '@/hooks/useAppModal';
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -45,6 +47,9 @@ export default function DetailOrderScreen() {
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
+
+  const snackbar = useSnackbar();
+  const modal = useAppModal();
 
   useEffect(() => {
     if (!restaurantId) return;
@@ -69,23 +74,22 @@ export default function DetailOrderScreen() {
     );
   }
 
-  const handlePayment = async () => {
-    try {
-      await dispatch(confirmCashOrder(order.id)).unwrap();
-
-      Alert.alert(
-        'Thanh toán thành công',
-        `Đơn hàng #${order.orderCode} đã được thanh toán`,
-      );
-
-      // Refresh UI - SignalR sẽ gửi OrderConfirmed event để update danh sách
-      dispatch(forceRefresh());
-
-      // Quay lại KDS screen
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert('Lỗi', 'Thanh toán thất bại');
-    }
+  const handlePayment = () => {
+    modal.showConfirm(
+      'Xác nhận thanh toán',
+      `Xác nhận thanh toán đơn hàng #${order.orderCode}?`,
+      async () => {
+        try {
+          await dispatch(confirmCashOrder(order.id)).unwrap();
+          dispatch(forceRefresh());
+          snackbar.showSuccess(`Đơn hàng #${order.orderCode} đã thanh toán thành công`);
+          navigation.goBack();
+        } catch (error) {
+          snackbar.showError('Thanh toán thất bại. Vui lòng thử lại.');
+        }
+      },
+      'Thanh toán',
+    );
   };
 
   return (
@@ -105,7 +109,6 @@ export default function DetailOrderScreen() {
 
           <View className="flex-row justify-between items-center mt-4 pt-4 border-t border-gray-200">
             <Text className="text-gray-600 text-sm">Tổng tiền đơn hàng</Text>
-
             <Text className="text-[#226B5D] text-lg font-semibold">
               {order.amount.toLocaleString()} đ
             </Text>
@@ -123,6 +126,9 @@ export default function DetailOrderScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </View>
   );
 }

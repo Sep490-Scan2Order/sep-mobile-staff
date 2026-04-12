@@ -33,7 +33,7 @@ describe('restaurantApi', () => {
     await restaurantApi.updateReceivingOrders(restaurantId, isReceiving);
 
     expect(axiosPrivate.put).toHaveBeenCalledWith(
-      `/Restaurant/${restaurantId}/receiving-orders?isReceiving=${isReceiving}`
+      `/Restaurant/${restaurantId}/receiving-orders?isReceivingOrders=${isReceiving}`
     );
   });
 });

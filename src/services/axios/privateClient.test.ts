@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 import axiosPrivate from './privateClient';
 import { tokenStorage } from '@/utils/tokenStorage';
 import { logout } from '@/store/slices/authSlice';
@@ -7,8 +7,8 @@ import { authApi } from '@/services/apiEndpoints/authApi';
 import { isTokenExpired } from '@/utils/jwtHelper';
 
 // Mocks
-jest.mock('react-native', () => ({
-  Alert: { alert: jest.fn() },
+jest.mock('react-native-toast-message', () => ({
+  show: jest.fn(),
 }));
 jest.mock('@/utils/tokenStorage', () => ({
   tokenStorage: {
@@ -76,11 +76,12 @@ describe('privateClient', () => {
 
       expect(tokenStorage.clearTokens).toHaveBeenCalled();
       expect(store.dispatch).toHaveBeenCalledWith(logout());
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Phiên đã hết hạn',
-        'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
-        [{ text: 'OK' }]
-      );
+      expect(Toast.show).toHaveBeenCalledWith({
+        type: 'error',
+        text1: 'Phiên đã hết hạn',
+        text2: 'Vui lòng đăng nhập lại để tiếp tục sử dụng.',
+        visibilityTime: 4000,
+      });
     });
 
     it('should return config unchanged if no access token', async () => {

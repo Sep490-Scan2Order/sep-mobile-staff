@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Calendar, Phone, MoreVertical } from 'lucide-react-native';
+import { Calendar, Phone, MoreVertical, RotateCcw } from 'lucide-react-native';
 import { Order } from '@/type';
 
 interface Props {
@@ -72,17 +72,28 @@ export const OrderItemCard: React.FC<Props> = ({
   };
 
   // 👇 NEW: logic hiển thị refund
-  const canRefund = isUnpaid || [1, 2, 3].includes(item.status);
+  const isRefund = item.typeOrder === 1;
+  const canRefund = !isRefund && (isUnpaid || [1, 2, 3].includes(item.status));
+
+  const REFUND_TYPE_LABEL: Record<number, string> = {
+    0: 'Khách quan / Đổi món',
+    1: 'Lỗi nhân viên',
+    2: 'Lỗi hệ thống',
+  };
+
+  const mainColor = isRefund ? '#dc2626' : '#226B5D';
+  const bgColor = isRefund ? 'bg-red-50' : 'bg-gray-100';
+  const borderColor = isRefund ? 'border-red-500' : 'border-[#226B5D]';
 
   return (
-    <View className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6">
+    <View className={`${bgColor} rounded-xl border-2 ${borderColor} overflow-hidden mb-6`}>
       {/* PREORDER */}
-      {isPreOrder && (
-        <View className="flex-row items-center px-4 py-1.5 bg-[#E8F3F0] border-b border-[#226B5D]">
-          <Text className="text-xs font-bold text-[#226B5D]">PRE-ORDER</Text>
+      {isPreOrder && !isRefund && (
+        <View className={`flex-row items-center px-4 py-1.5 ${isRefund ? 'bg-red-100' : 'bg-[#E8F3F0]'} border-b ${borderColor}`}>
+          <Text className={`text-xs font-bold ${isRefund ? 'text-red-700' : 'text-[#226B5D]'}`}>PRE-ORDER</Text>
 
           {item.requestedPickupAt && (
-            <Text className="ml-2 text-xs text-[#226B5D]">
+            <Text className={`ml-2 text-xs ${isRefund ? 'text-red-700' : 'text-[#226B5D]'}`}>
               · Nhận lúc: {formatTime(item.requestedPickupAt)}
             </Text>
           )}
@@ -97,10 +108,14 @@ export const OrderItemCard: React.FC<Props> = ({
 
       {/* HEADER */}
       <View className="flex-row items-center px-4 py-4 border-b border-dashed border-gray-400">
-        <Phone size={20} color="#226B5D" />
+        {isRefund ? (
+          <RotateCcw size={20} color="#dc2626" />
+        ) : (
+          <Phone size={20} color="#226B5D" />
+        )}
 
-        <Text className="flex-1 ml-3 text-base text-gray-700">
-          {item.phone || 'Không có SĐT'}
+        <Text className={`flex-1 ml-3 text-base font-bold ${isRefund ? 'text-red-600' : 'text-gray-700'}`}>
+          {isRefund ? 'ĐƠN HOÀN TIỀN' : (item.phone || 'Không có SĐT')}
         </Text>
 
         <View className="relative">
@@ -109,7 +124,7 @@ export const OrderItemCard: React.FC<Props> = ({
               setActiveMenuId(activeMenuId === item.id ? null : item.id)
             }
           >
-            <MoreVertical size={18} color="#226B5D" />
+            <MoreVertical size={18} color={mainColor} />
           </TouchableOpacity>
 
           {activeMenuId === item.id && (
@@ -147,7 +162,14 @@ export const OrderItemCard: React.FC<Props> = ({
       {/* BODY */}
       <View className="flex-row">
         <View className="flex-1 px-3 py-4 border-r">
-          <Text className="text-lg font-semibold">ORD-{item.orderCode}</Text>
+          <Text className={`text-lg font-semibold ${isRefund ? 'text-red-700' : 'text-black'}`}>ORD-{item.orderCode}</Text>
+          {isRefund && (
+            <View className="mt-2 bg-red-200 self-start px-2 py-1 rounded">
+              <Text className="text-red-800 text-[10px] font-bold">
+                LÝ DO: {REFUND_TYPE_LABEL[item.refundType ?? 0]?.toUpperCase()}
+              </Text>
+            </View>
+          )}
         </View>
 
         <View className="flex-1 px-3 py-4">
@@ -191,7 +213,7 @@ export const OrderItemCard: React.FC<Props> = ({
       )}
 
       {/* ACTION */}
-      {[0, 1, 2, 3].includes(item.status) && (
+      {!isRefund && [0, 1, 2, 3].includes(item.status) && (
         <TouchableOpacity
           className="py-4 items-center border-t border-dashed"
           onPress={() => onUpdateStatus(item)}

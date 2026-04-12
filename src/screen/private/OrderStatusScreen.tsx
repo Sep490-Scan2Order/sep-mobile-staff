@@ -18,6 +18,8 @@ import {
 } from '@/store/slices/restaurantSlice';
 import { Header } from '@/components/Header';
 import { Clock, Store, ShoppingBag } from 'lucide-react-native';
+import { useSnackbar } from '@/hooks/useSnackbar';
+import { AppSnackbar } from '@/components/AppSnackbar';
 
 export const OrderStatusScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -27,6 +29,7 @@ export const OrderStatusScreen = () => {
   const { restaurant, loading, error } = useSelector(
     (state: RootState) => state.restaurant,
   );
+  const snackbar = useSnackbar();
 
   useEffect(() => {
     if (restaurantId > 0) {
@@ -34,27 +37,41 @@ export const OrderStatusScreen = () => {
     }
   }, [dispatch, restaurantId]);
 
-  const handleToggleReceiving = () => {
+  const handleToggleReceiving = async () => {
     if (restaurant && restaurantId > 0) {
       const newValue = !restaurant.isReceivingOrders;
-      dispatch(
-        toggleReceivingOrders({
-          restaurantId: restaurant.id,
-          isReceiving: newValue,
-        }),
-      );
+      try {
+        await dispatch(
+          toggleReceivingOrders({
+            restaurantId: restaurant.id,
+            isReceiving: newValue,
+          }),
+        ).unwrap();
+        snackbar.showSuccess(
+          newValue ? 'Đã bật nhận đơn hàng' : 'Đã tắt nhận đơn hàng'
+        );
+      } catch (err: any) {
+        snackbar.showError(err?.message || 'Không thể cập nhật trạng thái nhận đơn');
+      }
     }
   };
 
-  const handleToggleOpening = () => {
+  const handleToggleOpening = async () => {
     if (restaurant && restaurantId > 0) {
       const newValue = !restaurant.isOpened;
-      dispatch(
-        toggleOpeningStatus({
-          restaurantId: restaurant.id,
-          isOpened: newValue,
-        }),
-      );
+      try {
+        await dispatch(
+          toggleOpeningStatus({
+            restaurantId: restaurant.id,
+            isOpened: newValue,
+          }),
+        ).unwrap();
+        snackbar.showSuccess(
+          newValue ? 'Đã mở cửa hàng' : 'Đã đóng cửa hàng'
+        );
+      } catch (err: any) {
+        snackbar.showError(err?.message || 'Không thể cập nhật trạng thái cửa hàng');
+      }
     }
   };
 
@@ -202,6 +219,7 @@ export const OrderStatusScreen = () => {
           )}
         </View>
       </SafeAreaView>
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
     </View>
   );
 };

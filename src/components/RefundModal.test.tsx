@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import { staffApi } from '@/services/apiEndpoints/staffApi';
 import { refundApi } from '@/services/apiEndpoints/refundApi';
 import Toast from 'react-native-toast-message';
-import { Alert } from 'react-native';
 
 // === MOCKS ===
 
@@ -79,15 +78,18 @@ describe('RefundModal Component', () => {
     orderCode: '101',
     isUnpaid: false,
     paymentStatus: 1,
+    orderItems: [
+      { id: '1', name: 'Item 1', quantity: 2, price: 10000 },
+      { id: '2', name: 'Item 2', quantity: 1, price: 20000 },
+    ],
   };
 
-  beforeEach(() => {
+    beforeEach(() => {
     jest.clearAllMocks();
     (useSelector as unknown as jest.Mock).mockReturnValue(mockUserInfo);
     (staffApi.getStaffByRestaurant as unknown as jest.Mock).mockResolvedValue({
       data: { isSuccess: true, data: mockStaffList },
     });
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -140,6 +142,9 @@ describe('RefundModal Component', () => {
     await act(async () => {
       fireEvent.press(getByText('Xác nhận hoàn tiền'));
     });
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Không thể hoàn tiền. Vui lòng thử lại.');
+    expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'error',
+      text1: 'Hoàn tiền thất bại',
+    }));
   });
 });

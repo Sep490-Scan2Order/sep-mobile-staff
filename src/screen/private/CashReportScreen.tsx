@@ -15,7 +15,7 @@ import { shiftService } from '@/services/logicServices/shiftService';
 import { ShiftReportDto } from '@/type';
 import { HistoryCard } from '@/components/HistoryCard';
 import { Header } from '@/components/Header';
-import { AlertCircle, Clock, ChevronLeft, Calendar } from 'lucide-react-native';
+import { AlertCircle, Clock, ChevronLeft, Calendar, User } from 'lucide-react-native';
 
 const CashReportScreen = ({ route }: any) => {
   const paramShiftId = route?.params?.shiftId;
@@ -123,9 +123,17 @@ const CashReportScreen = ({ route }: any) => {
               <View className="flex-row items-center mt-3">
                 <Calendar size={14} color="#9ca3af" />
                 <Text className="text-gray-400 text-sm ml-2">
-                  {new Date(report.reportDate).toLocaleString('vi-VN')}
+                  {report.reportDate ? new Date(report.reportDate).toLocaleString('vi-VN') : '---'}
                 </Text>
               </View>
+              {report.cashierName && (
+                <View className="flex-row items-center mt-2">
+                  <User size={14} color="#9ca3af" />
+                  <Text className="text-gray-400 text-sm ml-2">
+                    Thu ngân: {report.cashierName}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View className="gap-4">
@@ -250,7 +258,7 @@ const CashReportScreen = ({ route }: any) => {
               onPress={() => setReport(item)}
             >
               <HistoryCard
-                employee={user?.name || 'Nhân viên'}
+                employee={item.cashierName || user?.name || 'Nhân viên'}
                 restaurant={user?.restaurantName || 'Nhà hàng'}
                 {...item}
               />

@@ -20,7 +20,38 @@ jest.mock('lucide-react-native', () => ({
   ChevronLeft: () => null,
   Eye: () => null,
   EyeOff: () => null,
+  AlertCircle: () => null,
 }));
+
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+      AppSnackbar: ({ message, visible }: any) => {
+        if (!visible) return null;
+        return <View><Text>{message}</Text></View>;
+      }
+    };
+});
+
+jest.mock('@/components/AppModal', () => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return {
+        AppModal: ({ visible, title, message, buttons }: any) => {
+            if (!visible) return null;
+            return (
+                <View>
+                    <Text>{title}</Text>
+                    <Text>{message}</Text>
+                    {buttons?.map((btn: any, index: number) => (
+                        <TouchableOpacity key={index} onPress={btn.onPress}>
+                            <Text>{btn.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+    }
+});
 
 describe('ChangePasswordScreen', () => {
   const mockGoBack = jest.fn();
@@ -30,7 +61,6 @@ describe('ChangePasswordScreen', () => {
     jest.clearAllMocks();
     (useNavigation as jest.Mock).mockReturnValue({ goBack: mockGoBack });
     (useRoute as jest.Mock).mockReturnValue({ params: { email: mockEmail } });
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   });
 
   // Helper: get 3 inputs by index (old=0, new=1, confirm=2)
@@ -55,10 +85,7 @@ describe('ChangePasswordScreen', () => {
   it('shows error when oldPassword is empty', () => {
     render(<ChangePasswordScreen />);
     pressSubmit();
-    expect(Alert.alert).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringMatching(/c.+i|old|c/i)
-    );
+    expect(screen.getByText('Vui lòng nhập mật khẩu cũ')).toBeTruthy();
   });
 
   it('shows error when newPassword is shorter than 6 chars', () => {
@@ -67,10 +94,7 @@ describe('ChangePasswordScreen', () => {
     fireEvent.changeText(inputs[1], 'OldPass'); // oldPassword
     fireEvent.changeText(inputs[2], '123');     // newPassword < 6
     pressSubmit();
-    expect(Alert.alert).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringMatching(/6/i)
-    );
+    expect(screen.getByText('Mật khẩu mới phải ít nhất 6 ký tự')).toBeTruthy();
   });
 
   it('shows error when passwords do not match', () => {
@@ -80,10 +104,7 @@ describe('ChangePasswordScreen', () => {
     fireEvent.changeText(inputs[2], 'NewPass123!');
     fireEvent.changeText(inputs[3], 'DiffPass!');
     pressSubmit();
-    expect(Alert.alert).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringMatching(/kh.+p|match/i)
-    );
+    expect(screen.getByText('Mật khẩu xác nhận không khớp')).toBeTruthy();
   });
 
   it('calls authService.changePassword with correct payload', async () => {
@@ -104,7 +125,7 @@ describe('ChangePasswordScreen', () => {
     });
   });
 
-  it('shows success alert and calls goBack when pressing OK', async () => {
+  it('shows success modal and calls goBack when pressing OK', async () => {
     (authService.changePassword as jest.Mock).mockResolvedValue({ success: true });
     render(<ChangePasswordScreen />);
     const inputs = getInputs();
@@ -114,19 +135,14 @@ describe('ChangePasswordScreen', () => {
     pressSubmit();
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        expect.stringMatching(/th.+nh|success/i),
-        expect.any(String),
-        expect.arrayContaining([expect.objectContaining({ text: 'OK' })])
-      );
+      expect(screen.getByText('Đổi mật khẩu thành công')).toBeTruthy();
     });
 
-    const okPress = (Alert.alert as jest.Mock).mock.calls[0][2][0].onPress;
-    okPress();
+    fireEvent.press(screen.getByText('OK'));
     expect(mockGoBack).toHaveBeenCalled();
   });
 
-  it('shows error alert with server message when success is false', async () => {
+  it('shows error snackbar with server message when success is false', async () => {
     (authService.changePassword as jest.Mock).mockResolvedValue({
       success: false,
       message: 'Wrong old password',
@@ -139,10 +155,7 @@ describe('ChangePasswordScreen', () => {
     pressSubmit();
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        expect.any(String),
-        'Wrong old password'
-      );
+      expect(screen.getByText('Wrong old password')).toBeTruthy();
     });
   });
 
@@ -156,10 +169,7 @@ describe('ChangePasswordScreen', () => {
     pressSubmit();
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.stringMatching(/kh.+ng th|unable|cannot/i)
-      );
+      expect(screen.getByText(/Không thể đổi mật khẩu/)).toBeTruthy();
     });
   });
 
@@ -173,10 +183,7 @@ describe('ChangePasswordScreen', () => {
     pressSubmit();
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.stringMatching(/kh.+ng th|cannot/i)
-      );
+      expect(screen.getByText(/Không thể đổi mật khẩu. Vui lòng thử lại./)).toBeTruthy();
     });
   });
 

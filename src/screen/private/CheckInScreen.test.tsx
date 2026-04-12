@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
 import CheckInScreen from './CheckInScreen';
 import {
   checkInShift,
@@ -43,6 +42,36 @@ jest.mock('@/components/Header', () => ({
   Header: () => null,
 }));
 
+jest.mock('@/components/AppSnackbar', () => {
+    const { View, Text } = require('react-native');
+    return {
+      AppSnackbar: ({ message, visible }: any) => {
+        if (!visible) return null;
+        return <View><Text>{message}</Text></View>;
+      }
+    };
+});
+
+jest.mock('@/components/AppModal', () => {
+    const { View, Text, TouchableOpacity } = require('react-native');
+    return {
+        AppModal: ({ visible, title, message, buttons }: any) => {
+            if (!visible) return null;
+            return (
+                <View>
+                    <Text>{title}</Text>
+                    <Text>{message}</Text>
+                    {buttons?.map((btn: any, index: number) => (
+                        <TouchableOpacity key={index} onPress={btn.onPress}>
+                            <Text>{btn.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+    }
+});
+
 describe('CheckInScreen', () => {
   const mockDispatch = jest.fn();
   const mockNavigation = { navigate: jest.fn() };
@@ -57,7 +86,6 @@ describe('CheckInScreen', () => {
     jest.clearAllMocks();
     (useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
     (useNavigation as jest.Mock).mockReturnValue(mockNavigation);
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   });
 
   it('fetches current shift on mount if user exists', () => {
@@ -72,7 +100,7 @@ describe('CheckInScreen', () => {
     expect(mockDispatch).toHaveBeenCalledWith(fetchCurrentShift());
   });
 
-  it('shows validation alert if cash is empty on check-in', () => {
+  it('shows validation snackbar if cash is empty on check-in', async () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
@@ -85,7 +113,9 @@ describe('CheckInScreen', () => {
     
     fireEvent.press(checkInButton);
     
-    expect(Alert.alert).toHaveBeenCalledWith('Thông báo', 'Vui lòng nhập số tiền đầu ca');
+    await waitFor(() => {
+        expect(getByText('Vui lòng nhập số tiền đầu ca')).toBeTruthy();
+    });
   });
 
   it('handles successful check-in', async () => {
@@ -116,7 +146,7 @@ describe('CheckInScreen', () => {
         note: 'Ghi chú test',
       }));
       expect(mockDispatch).toHaveBeenCalledWith(setShift(mockResult));
-      expect(Alert.alert).toHaveBeenCalledWith('Thành công', 'Check-in thành công');
+      expect(getByText('Check-in thành công! Ca làm đã bắt đầu.')).toBeTruthy();
     });
   });
 
@@ -138,6 +168,14 @@ describe('CheckInScreen', () => {
     const checkOutButton = getByText('Kết thúc ca (Check-out)');
     fireEvent.press(checkOutButton);
 
+    // Should show confirmation modal first
+    await waitFor(() => {
+      expect(getByText('Kết thúc ca làm?')).toBeTruthy();
+    });
+
+    // Press "Kết thúc ca" confirm button
+    fireEvent.press(getByText('Kết thúc ca'));
+
     await waitFor(() => {
       expect(shiftService.checkOut).toHaveBeenCalledWith({
         shiftId: 100,
@@ -146,12 +184,14 @@ describe('CheckInScreen', () => {
       });
       expect(mockDispatch).toHaveBeenCalledWith(clearShift());
       
-      // Trigger Alert Press
-      const alertCallback = (Alert.alert as jest.Mock).mock.calls[0][2][0].onPress;
-      alertCallback();
-      
-      expect(mockNavigation.navigate).toHaveBeenCalledWith('CashReport', { shiftId: 100 });
+      // Should show success modal
+      expect(getByText('Checkout thành công')).toBeTruthy();
     });
+
+    // Press OK/Đóng in success modal to navigate
+    fireEvent.press(getByText('OK')); 
+    
+    expect(mockNavigation.navigate).toHaveBeenCalledWith('CashReport', { shiftId: 100 });
   });
 
   it('disables check-in button when shift is already open', () => {
@@ -166,8 +206,6 @@ describe('CheckInScreen', () => {
     const { getByText } = render(<CheckInScreen />);
     const checkInText = getByText(/Bắt đầu ca/i);
     
-    // In React Native, the parent might be several levels up depending on styling wrappers
-    // Let's look for the one that has the 'disabled' prop using a helper or traversal
     let current: any = checkInText;
     while (current && current.props.disabled === undefined) {
       current = current.parent;
@@ -176,7 +214,7 @@ describe('CheckInScreen', () => {
     expect(current?.props.disabled).toBe(true);
   });
 
-  it('shows error alert if user is null on check-in', () => {
+  it('shows error snackbar if user is null on check-in', async () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: null },
@@ -187,8 +225,10 @@ describe('CheckInScreen', () => {
     const { getByText, getByPlaceholderText } = render(<CheckInScreen />);
     fireEvent.changeText(getByPlaceholderText('Nhập số tiền'), '500000');
     fireEvent.press(getByText(/Bắt đầu ca/i));
-    
-    expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Thông tin người dùng không khả dụng');
+
+    await waitFor(() => {
+        expect(getByText('Thông tin người dùng không khả dụng')).toBeTruthy();
+    });
   });
 
   it('handles error when check-in fails', async () => {
@@ -207,11 +247,11 @@ describe('CheckInScreen', () => {
     fireEvent.press(getByText(/Bắt đầu ca/i));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Lỗi check-in');
+      expect(getByText('Lỗi check-in')).toBeTruthy();
     });
   });
 
-  it('shows validation alert if cash is empty on check-out', () => {
+  it('shows validation snackbar if cash is empty on check-out', async () => {
     const mockShift = { id: 100, status: 0 };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
@@ -222,14 +262,14 @@ describe('CheckInScreen', () => {
 
     const { getByText } = render(<CheckInScreen />);
     fireEvent.press(getByText(/Kết thúc ca/i));
-    
-    expect(Alert.alert).toHaveBeenCalledWith('Thông báo', 'Vui lòng nhập tiền cuối ca');
+
+    await waitFor(() => {
+        expect(getByText('Vui lòng nhập tiền cuối ca')).toBeTruthy();
+    });
   });
 
   it('disables check-out button when currentShift has no id', () => {
-    // Since isShiftOpen = !!(currentShift && currentShift.id),
-    // a shift without id means isShiftOpen=false -> checkout button is disabled
-    const mockShift = { status: 0 }; // missing id
+    const mockShift = { status: 0 };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
@@ -240,7 +280,6 @@ describe('CheckInScreen', () => {
     const { getByText } = render(<CheckInScreen />);
     const checkOutText = getByText(/Kết thúc ca/i);
 
-    // Traverse up to find the TouchableOpacity with disabled prop
     let current: any = checkOutText;
     while (current && current.props.disabled === undefined) {
       current = current.parent;
@@ -263,8 +302,13 @@ describe('CheckInScreen', () => {
     fireEvent.changeText(getByPlaceholderText('Nhập số tiền'), '1000000');
     fireEvent.press(getByText(/Kết thúc ca/i));
 
+    // Confirm checkout modal
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Lỗi check-out');
+      fireEvent.press(getByText('Kết thúc ca'));
+    });
+
+    await waitFor(() => {
+      expect(getByText('Lỗi check-out')).toBeTruthy();
     });
   });
 
@@ -276,7 +320,6 @@ describe('CheckInScreen', () => {
       })
     );
 
-    // Reject without a standard Error object to hit the fallback `|| 'Check-in thất bại'`
     const unwrapMock = jest.fn().mockRejectedValue({});
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
 
@@ -285,7 +328,7 @@ describe('CheckInScreen', () => {
     fireEvent.press(getByText(/Bắt đầu ca/i));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Check-in thất bại');
+      expect(getByText('Check-in thất bại')).toBeTruthy();
     });
   });
 
@@ -304,8 +347,13 @@ describe('CheckInScreen', () => {
     fireEvent.changeText(getByPlaceholderText('Nhập số tiền'), '1000000');
     fireEvent.press(getByText(/Kết thúc ca/i));
 
+    // Confirm
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Lỗi', 'Checkout thất bại');
+      fireEvent.press(getByText('Kết thúc ca'));
+    });
+
+    await waitFor(() => {
+      expect(getByText('Checkout thất bại')).toBeTruthy();
     });
   });
 });

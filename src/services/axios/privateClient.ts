@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { tokenStorage } from '@/utils/tokenStorage';
 import { logout } from '@/store/slices/authSlice';
 import { store } from '@/store';
@@ -23,11 +23,12 @@ axiosPrivate.interceptors.request.use(
         await tokenStorage.clearTokens();
         store.dispatch(logout());
 
-        Alert.alert(
-          'Phiên đã hết hạn',
-          'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
-          [{ text: 'OK' }],
-        );
+        Toast.show({
+          type: 'error',
+          text1: 'Phiên đã hết hạn',
+          text2: 'Vui lòng đăng nhập lại để tiếp tục sử dụng.',
+          visibilityTime: 4000,
+        });
 
         return Promise.reject(new Error('Token expired'));
       }
