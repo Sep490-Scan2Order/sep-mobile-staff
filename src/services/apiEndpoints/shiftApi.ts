@@ -11,6 +11,9 @@ export const shiftApi = {
   getReport: (shiftId: number) => {
     return axiosPrivate.get(`/Shift/${shiftId}/report`);
   },
+  getPreview: (shiftId: number) => {
+    return axiosPrivate.get(`/Shift/${shiftId}/preview`);
+  },
   getReportsByStaff: (staffId: string) => {
     return axiosPrivate.get(`/Shift/reports/staff/${staffId}`);
   },

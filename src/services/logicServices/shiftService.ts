@@ -42,6 +42,19 @@ export const shiftService = {
     }
   },
 
+  async getPreview(shiftId: number) {
+    try {
+      const response = await shiftApi.getPreview(shiftId);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Lấy bản xem trước báo cáo thất bại';
+      throw new Error(message);
+    }
+  },
+
   async getReportsByStaff(staffId: string) {
     try {
       const response = await shiftApi.getReportsByStaff(staffId);

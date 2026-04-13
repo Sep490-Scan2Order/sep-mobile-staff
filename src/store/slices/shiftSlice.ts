@@ -78,7 +78,11 @@ const shiftSlice = createSlice({
       })
 
       // ================= LOAD CURRENT SHIFT =================
+      .addCase(fetchCurrentShift.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchCurrentShift.fulfilled, (state, action) => {
+        state.loading = false;
         const shift = action.payload?.data || action.payload;
 
         // Nếu API trả về null hoặc undefined (không có ca) thì reset
@@ -86,6 +90,7 @@ const shiftSlice = createSlice({
         state.currentShiftId = shift?.id || null;
       })
       .addCase(fetchCurrentShift.rejected, (state) => {
+        state.loading = false;
         // Không có ca làm hiện tại → reset về null
         state.currentShift = null;
         state.currentShiftId = null;

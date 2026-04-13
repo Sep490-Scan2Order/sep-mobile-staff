@@ -41,6 +41,12 @@ export default function CheckInScreen() {
   const snackbar = useSnackbar();
   const modal = useAppModal();
 
+  const formatCurrency = (value: any) => {
+    if (value === undefined || value === null) return '0';
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(num) ? '0' : num.toLocaleString('vi-VN');
+  };
+
   useEffect(() => {
     if (!user?.id) return;
     dispatch(fetchCurrentShift());
@@ -88,36 +94,50 @@ export default function CheckInScreen() {
       return;
     }
 
-    const savedShiftId = currentShift.id;
+    try {
+      setLoading(true);
+      const report = await shiftService.getPreview(currentShift.id);
+      setLoading(false);
 
-    modal.showConfirm(
-      'Kết thúc ca làm?',
-      'Bạn có chắc muốn kết thúc ca làm việc hiện tại không?',
-      async () => {
-        try {
-          setLoading(true);
-          await shiftService.checkOut({
-            shiftId: currentShift.id,
-            cashAmount: Number(cash),
-            note: note,
-          });
-          dispatch(clearShift());
-          setCash('');
-          setNote('');
-          // Show success then navigate
-          modal.showSuccess(
-            'Checkout thành công',
-            'Ca làm đã kết thúc. Chuyển đến báo cáo ca.',
-            () => navigation.navigate('CashReport', { shiftId: savedShiftId }),
-          );
-        } catch (error: any) {
-          snackbar.showError(error?.message || 'Checkout thất bại');
-        } finally {
-          setLoading(false);
-        }
-      },
-      'Kết thúc ca',
-    );
+      const expected = report.expectedCashAmount || 0;
+      const actual = Number(cash);
+      const difference = actual - expected;
+
+      const diffPrefix = difference > 0 ? '+' : '';
+      
+      const msg = `Chi tiết ca làm:\n- Doanh thu Tiền mặt: ${formatCurrency(report.totalCashOrder)} đ\n- Doanh thu Chuyển khoản: ${formatCurrency(report.totalTransferOrder)} đ\n- Tổng Hoàn tiền: ${formatCurrency(report.totalRefundAmount)} đ\n\nTiền mặt dự kiến phải có: ${formatCurrency(expected)} đ\nTiền thực tế bạn nhập: ${formatCurrency(actual)} đ\n\n>>> CHÊNH LỆCH: ${diffPrefix}${formatCurrency(difference)} đ <<<\n\nBạn có chắc chắn nộp tiền và kết thúc ca?`;
+
+      modal.showConfirm(
+        'BÁO CÁO KẾT CA',
+        msg,
+        async () => {
+          try {
+            setLoading(true);
+            await shiftService.checkOut({
+              shiftId: currentShift.id,
+              cashAmount: actual,
+              note: note,
+            });
+            dispatch(clearShift());
+            setCash('');
+            setNote('');
+            
+            modal.showSuccess(
+              'Checkout thành công',
+              'Ca làm đã kết thúc. Vui lòng check-in để bắt đầu ca mới.',
+            );
+          } catch (error: any) {
+            snackbar.showError(error?.message || 'Checkout thất bại');
+          } finally {
+            setLoading(false);
+          }
+        },
+        'Xác nhận kết ca',
+      );
+    } catch (error: any) {
+      setLoading(false);
+      snackbar.showError('Không thể tải báo cáo ca trước khi checkout. Vui lòng thử lại.');
+    }
   };
 
   const isShiftOpen = !!(currentShift && currentShift.id);

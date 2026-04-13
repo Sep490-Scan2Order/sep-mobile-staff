@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
+import { fetchCurrentShift } from '@/store/slices/shiftSlice';
 
 import BottomTabs from '@/navigation/BottomTabs';
 import AuthNavigator from '@/navigation/AuthNavigator';
@@ -11,6 +12,7 @@ import DetailOrderScreen from '@/screen/private/DetailOrderScreen';
 import ChangePasswordScreen from '@/screen/private/ChangePasswordScreen';
 import ScanDeliveryScreen from '@/screen/private/ScanDeliveryScreen';
 import { RootStackParamList } from '@/type';
+import { GlobalCheckInModal } from '@/components/GlobalCheckInModal';
 
 import {
   initSignalR,
@@ -20,6 +22,7 @@ import {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
+  const dispatch = useDispatch<any>();
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.accessToken,
   );
@@ -34,15 +37,17 @@ export default function RootNavigator() {
           await stopSignalR();
           return;
         }
+        dispatch(fetchCurrentShift());
         await initSignalR(user.restaurantId, user.id);
       } catch (err) {
         console.log('⚠️ SignalR init error', err);
       }
     };
     init();
-  }, [user]);
+  }, [user, dispatch]);
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
         <Stack.Group>
           <Stack.Screen name="MainApp" component={BottomTabs} />
@@ -68,5 +73,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Auth" component={AuthNavigator} />
       )}
     </Stack.Navigator>
+      <GlobalCheckInModal />
+    </>
   );
 }
