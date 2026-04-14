@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
 import {
   View,
@@ -7,6 +6,8 @@ import {
   Modal,
   TextInput,
   TouchableOpacity,
+  Alert,
+  Switch,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
@@ -22,6 +23,7 @@ interface Props {
   discountedPrice?: number;
   promotionName?: string | null;
   hasPromotion?: boolean;
+  quantity?: number;
 }
 
 export const FoodItemCard: React.FC<Props> = ({
@@ -34,6 +36,7 @@ export const FoodItemCard: React.FC<Props> = ({
   discountedPrice,
   promotionName,
   hasPromotion,
+  quantity: stockQuantity,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -66,12 +69,36 @@ export const FoodItemCard: React.FC<Props> = ({
   };
 
   const handleSoldOut = () => {
+    Alert.alert(
+      'Xác nhận',
+      `Bạn có chắc chắn muốn chuyển món "${name}" sang báo hết hàng?`,
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Đồng ý',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(
+              toggleSoldOutThunk({
+                restaurantId,
+                id,
+                isSoldOut: true,
+                quantity: stockQuantity || 0,
+              }),
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleTurnOn = () => {
     dispatch(
       toggleSoldOutThunk({
         restaurantId,
         id,
-        isSoldOut: true,
-        quantity: 0,
+        isSoldOut: false,
+        quantity: stockQuantity || 0,
       }),
     );
   };
@@ -88,11 +115,11 @@ export const FoodItemCard: React.FC<Props> = ({
         <View className="flex-row items-center p-3">
           <Image source={{ uri: image }} className="w-14 h-14 rounded-lg" />
 
-          <View className="flex-1 ml-3">
-            <Text className="font-medium text-gray-800">{name}</Text>
+          <View className="flex-1 ml-3 relative">
+            <Text className="font-medium text-gray-800 flex-wrap mr-10">{name}</Text>
 
             {hasPromotion && originalPrice && discountedPrice ? (
-              <View>
+              <View className="mt-0.5">
                 <View className="flex-row items-center">
                   <Text className="text-xs text-gray-500 line-through mr-2">
                     {originalPrice.toLocaleString()} đ
@@ -103,42 +130,60 @@ export const FoodItemCard: React.FC<Props> = ({
                 </View>
 
                 {promotionName && (
-                  <Text className="text-xs text-orange-600 mt-1">
+                  <Text className="text-[10px] text-orange-600 mt-0.5">
                     {promotionName}
                   </Text>
                 )}
               </View>
             ) : (
-              <Text className="text-sm text-gray-700">{price}</Text>
+              <Text className="text-sm text-gray-700 mt-0.5">{price}</Text>
             )}
+
+            <View className="flex-row flex-wrap items-center mt-1">
+              <Text className={`text-[11px] font-semibold mr-2 ${active ? 'text-green-700' : 'text-red-600'}`}>
+                {active ? '● Đang bán' : '● Hết hàng'}
+              </Text>
+              <Text className="text-[11px] text-emerald-700 font-medium mr-2">
+                Kho: {stockQuantity ?? 0}
+              </Text>
+            </View>
           </View>
 
-          {active ? (
-            <TouchableOpacity
-              onPress={handleSoldOut}
-              className="bg-green-600 px-3 py-1 rounded-lg"
-            >
-              <Text className="text-white text-xs">Đang bán</Text>
-            </TouchableOpacity>
-          ) : (
+          <View className="items-end justify-center ml-1">
+            <Switch
+              trackColor={{ false: '#fca5a5', true: '#6ee7b7' }}
+              thumbColor={active ? '#059669' : '#dc2626'}
+              ios_backgroundColor="#fca5a5"
+              onValueChange={(val) => {
+                if (!val) {
+                  handleSoldOut();
+                } else {
+                  handleTurnOn();
+                }
+              }}
+              value={active}
+              style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+            />
+            
             <TouchableOpacity
               onPress={openModal}
-              className="bg-red-600 px-3 py-1 rounded-lg"
+              className="bg-teal-600 px-2 py-1 rounded-md mt-2"
+              activeOpacity={0.7}
             >
-              <Text className="text-white text-xs">Hết hàng</Text>
+              <Text className="text-white text-[10px] font-medium">Nhập SL</Text>
             </TouchableOpacity>
-          )}
+          </View>
         </View>
 
         {!active && (
           <View
-            className="px-3 py-2 border-t"
+            className="px-3 py-1.5 border-t bg-rose-50"
             style={{
-              borderTopColor: 'rgba(34, 107, 93, 0.44)',
+              borderTopColor: 'rgba(34, 107, 93, 0.2)',
             }}
           >
-            <Text className="text-xs text-red-700">
-              Món ăn tạm hết - Nhấn "Hết hàng" để nhập lại số lượng
+            <Text className="text-[11px] text-red-600 italic">
+              Món ăn tạm ngưng phục vụ - Bạn có thể bật lại công tắc để bán tiếp.
             </Text>
           </View>
         )}

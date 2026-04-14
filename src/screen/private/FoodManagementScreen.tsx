@@ -104,6 +104,7 @@ const FoodManagementScreen = () => {
                       discountedPrice={item.discountedPrice}
                       promotionName={item.promotionName}
                       hasPromotion={item.hasPromotion}
+                      quantity={item.quantity}
                     />
                   ))}
                 </ScrollView>

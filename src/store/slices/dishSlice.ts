@@ -23,7 +23,7 @@ export const toggleSoldOutThunk = createAsyncThunk(
         quantity
       );
 
-      return { id, isSoldOut };
+      return { id, isSoldOut, quantity };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Toggle failed'
@@ -70,11 +70,14 @@ const dishSlice = createSlice({
       .addCase(toggleSoldOutThunk.fulfilled, (state, action) => {
         state.loading = false;
 
-        const { id, isSoldOut } = action.payload;
+        const { id, isSoldOut, quantity } = action.payload;
 
         const dish = state.dishes.find(d => d.id === id);
         if (dish) {
           dish.isSoldOut = isSoldOut;
+          if (quantity !== undefined) {
+             dish.quantity = quantity;
+          }
         }
       })
       .addCase(toggleSoldOutThunk.rejected, (state, action) => {

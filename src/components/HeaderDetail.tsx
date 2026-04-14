@@ -25,7 +25,7 @@ export const HeaderDetail: React.FC<HeaderDetailProps> = ({
   return (
     <View
       style={[{ height }, style]}
-      className="bg-[#226B5D] pt-14 px-4 rounded-b-2xl -mb-10"
+      className="bg-[#226B5D] pt-14 px-4 rounded-b-2xl -mb-20"
     >
       <View className="flex-row items-center mb-4">
         <TouchableOpacity onPress={onBack} activeOpacity={0.7}>

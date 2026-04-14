@@ -22,6 +22,7 @@ export const dishService = {
         promotionName: dish.promotionName,
         promotionLabel: dish.promotionLabel,
         hasPromotion: dish.hasPromotion,
+        quantity: dish.dishAvailabilityStock,
       }))
     );
 

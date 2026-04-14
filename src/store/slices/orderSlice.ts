@@ -48,32 +48,50 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
       const data = await orderService.getActiveOrders(restaurantId);
 
       // Manual mapping to fix field naming mismatches (e.g., PascalCase from API)
-      return data.map((order: any) => ({
-        id: order.id,
-        phone: order.phone,
-        orderCode: order.orderCode,
-        createdAt: order.createdAt,
-        amount: order.amount,
-        finalAmount: order.finalAmount,
-        totalAmount: order.totalAmount,
-        status: order.status,
-        type: order.type,
-        typeOrder: order.typeOrder,
-        isPreOrder: order.isPreOrder,
-        requestedPickupAt: order.requestedPickupAt,
-        confirmedPickupAt: order.confirmedPickupAt,
-        items: order.items.map((item: any) => ({
-          id: item.id?.toString(),
-          name: item.name,
-          price: item.discountedPrice, // Use discounted price as the Selling Price
-          quantity: item.quantity,
-          originalPrice: item.originalPrice,
-          discountedPrice: item.discountedPrice,
-          promotionAmount: item.promotionAmount,
-          refundedQuantity: item.refundedQuantity || 0,
-          image: item.image,
-        })),
-      }));
+      return data.map((order: any) => {
+        const isRefund = order.typeOrder === 1;
+        let amount = order.amount;
+        let finalAmount = order.finalAmount;
+
+        if (!isRefund) {
+          amount = order.items.reduce(
+            (sum: number, item: any) =>
+              sum + (item.discountedPrice || 0) * (item.quantity || 0),
+            0,
+          );
+          finalAmount = amount - (order.promotionDiscount || 0);
+        }
+
+        return {
+          id: order.id,
+          phone: order.phone,
+          orderCode: order.orderCode,
+          createdAt: order.createdAt,
+          amount: amount,
+          finalAmount: finalAmount,
+          totalAmount: order.totalAmount,
+          promotionDiscount: order.promotionDiscount,
+          promotionName: order.promotionName,
+          status: order.status,
+          type: order.type,
+          typeOrder: order.typeOrder,
+          isPreOrder: order.isPreOrder,
+          requestedPickupAt: order.requestedPickupAt,
+          confirmedPickupAt: order.confirmedPickupAt,
+          originalOrderCode: order.originalOrderCode,
+          items: order.items.map((item: any) => ({
+            id: item.id?.toString(),
+            name: item.name,
+            price: item.discountedPrice, // Use discounted price as the Selling Price
+            quantity: item.quantity,
+            originalPrice: item.originalPrice,
+            discountedPrice: item.discountedPrice,
+            promotionAmount: item.promotionAmount,
+            refundedQuantity: item.refundedQuantity || 0,
+            image: item.image,
+          })),
+        };
+      });
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -86,26 +104,44 @@ export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
     try {
       const data = await orderService.getPendingCashOrders();
 
-      return data.map((order: any) => ({
-        id: order.id,
-        phone: order.phone,
-        orderCode: order.orderCode,
-        createdAt: order.createdAt,
-        amount: order.amount,
-        status: order.status,
-        type: order.type,
-        tableName: order.tableName,
-        items: order.items.map((item: any) => ({
-          id: item.dishId.toString(),
-          name: item.dishName,
-          price: item.price,
-          quantity: item.quantity,
-          originalPrice: item.originalPrice,
-          discountAmount: item.discountAmount,
-          promotionName: item.promotionName,
-          subTotal: item.subTotal,
-        })),
-      }));
+      return data.map((order: any) => {
+        const isRefund = order.typeOrder === 1;
+        let amount = order.amount;
+        let finalAmount = order.finalAmount;
+
+        if (!isRefund) {
+          amount = order.items.reduce(
+            (sum: number, item: any) =>
+              sum + (item.price || 0) * (item.quantity || 0),
+            0,
+          );
+          finalAmount = amount - (order.promotionDiscount || 0);
+        }
+
+        return {
+          id: order.id,
+          phone: order.phone,
+          amount: amount,
+          finalAmount: finalAmount,
+          totalAmount: order.totalAmount,
+          promotionDiscount: order.promotionDiscount,
+          promotionName: order.promotionName,
+          status: order.status,
+          type: order.type,
+          tableName: order.tableName,
+          originalOrderCode: order.originalOrderCode,
+          items: order.items.map((item: any) => ({
+            id: item.dishId.toString(),
+            name: item.dishName,
+            price: item.price,
+            quantity: item.quantity,
+            originalPrice: item.originalPrice,
+            discountAmount: item.discountAmount,
+            promotionName: item.promotionName,
+            subTotal: item.subTotal,
+          })),
+        };
+      });
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

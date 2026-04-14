@@ -3,6 +3,7 @@ import { View, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { HeaderDetail } from '@/components/HeaderDetail';
 import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
 import { Border } from '@/components/Border';
+import { Order } from '@/type';
 
 interface DetailPaymentProps {
   order: Order;
@@ -15,16 +16,16 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
   paymentMethod,
   onConfirm,
 }) => {
-  const voucher = 125000; // giả sử demo
-  const total = order.amount - voucher;
+  const voucher = order.promotionDiscount || 0;
+  const total = order.finalAmount || (order.amount - voucher);
 
   return (
     <View className="flex-1">
       <HeaderDetail />
-      <ScrollView className="px-7 -mt-90" style={{ marginTop: -175 }}>
+      <ScrollView className="px-7" style={{ marginTop: -165 }}>
         <CustomerDetailBorder order={order} />
 
-        <Border>
+        <Border className="mt-5">
           <View className="flex-row justify-between mb-3">
             <Text className="text-lg font-medium">Phương thức:</Text>
             <Text className="text-lg font-medium">
@@ -33,25 +34,29 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
           </View>
         </Border>
 
-        <Border>
-          <View className="mt-4">
+        <Border className="mt-5">
+          <View className="mt-2">
             <Text className="font-semibold text-2xl mb-4">
               Chi tiết thanh toán
             </Text>
 
             <View className="flex-row justify-between mb-3">
               <Text className="text-lg font-medium">Tạm tính:</Text>
-              <Text className="text-lg font-medium">
+              <Text className="text-lg font-medium text-gray-800">
                 {order.amount.toLocaleString()} VND
               </Text>
             </View>
 
-            <View className="flex-row justify-between mb-3">
-              <Text className="text-lg font-medium text-red-500">Voucher:</Text>
-              <Text className="text-lg font-medium text-red-500">
-                - {voucher.toLocaleString()} VND
-              </Text>
-            </View>
+            {voucher > 0 && (
+              <View className="flex-row justify-between mb-3">
+                <Text className="text-lg font-medium text-red-500">
+                  {order.promotionName || 'Voucher'}:
+                </Text>
+                <Text className="text-lg font-medium text-red-500">
+                  - {voucher.toLocaleString()} VND
+                </Text>
+              </View>
+            )}
 
             <View className="border-t border-gray-300 my-3" />
 

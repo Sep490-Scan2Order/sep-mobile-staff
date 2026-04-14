@@ -115,7 +115,11 @@ export const OrderItemCard: React.FC<Props> = ({
         )}
 
         <Text className={`flex-1 ml-3 text-base font-bold ${isRefund ? 'text-red-600' : 'text-gray-700'}`}>
-          {isRefund ? 'ĐƠN HOÀN TIỀN' : (item.phone || 'Không có SĐT')}
+          {isRefund
+            ? item.originalOrderCode
+              ? `HOÀN TIỀN CHO ORD-${item.originalOrderCode}`
+              : 'ĐƠN HOÀN TIỀN'
+            : item.phone || 'Không có SĐT'}
         </Text>
 
         <View className="relative">

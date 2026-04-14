@@ -78,6 +78,7 @@ export interface Dish {
   promotionName?: string | null;
   promotionLabel?: string | null;
   hasPromotion?: boolean;
+  quantity?: number;
 }
 
 export interface DishState {
@@ -128,7 +129,9 @@ export interface Order {
   typeOrder?: number;
   totalAmount?: number;
   promotionDiscount?: number;
+  promotionName?: string | null;
   finalAmount?: number;
+  originalOrderCode?: number;
 }
 
 export interface OrderState {

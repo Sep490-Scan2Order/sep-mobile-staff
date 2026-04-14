@@ -33,6 +33,9 @@ readyForPickup: (orderCode: number) => {
       confirmedPickupAt,
     });
   },
+  getAvailablePromotions: (cartId: string, phone: string) => {
+    return axiosPrivate.get(`/Order/available-promotions?cartId=${cartId}&phone=${phone}`);
+  },
 };
 export const scanQrApi = async (
   qrContent: string,

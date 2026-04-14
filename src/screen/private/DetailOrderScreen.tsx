@@ -107,11 +107,31 @@ export default function DetailOrderScreen() {
             renderItem={({ item }) => <ListFood item={item} />}
           />
 
-          <View className="flex-row justify-between items-center mt-4 pt-4 border-t border-gray-200">
-            <Text className="text-gray-600 text-sm">Tổng tiền đơn hàng</Text>
-            <Text className="text-[#226B5D] text-lg font-semibold">
-              {order.amount.toLocaleString()} đ
-            </Text>
+          <View className="mt-4 pt-4 border-t border-gray-200">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-gray-500 text-sm">Tạm tính</Text>
+              <Text className="text-gray-800 text-sm font-medium">
+                {order.amount.toLocaleString()} đ
+              </Text>
+            </View>
+
+            {order.promotionDiscount ? (
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-red-500 text-sm">
+                  {order.promotionName || 'Khuyến mãi đơn hàng'}
+                </Text>
+                <Text className="text-red-500 text-sm font-medium">
+                  - {order.promotionDiscount.toLocaleString()} đ
+                </Text>
+              </View>
+            ) : null}
+
+            <View className="flex-row justify-between items-center mt-1">
+              <Text className="text-gray-900 text-base font-bold">Tổng thanh toán</Text>
+              <Text className="text-[#226B5D] text-xl font-bold">
+                {order.finalAmount?.toLocaleString()} đ
+              </Text>
+            </View>
           </View>
         </Border>
       </ScrollView>
