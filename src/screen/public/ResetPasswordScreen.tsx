@@ -13,6 +13,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { authService } from '@/services/logicServices/authService';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { InlineError } from '@/components/InlineError';
+import { validatePasswordPattern } from '@/utils/validation';
 import { AppSnackbar } from '@/components/AppSnackbar';
 import { AppModal } from '@/components/AppModal';
 import { useSnackbar } from '@/hooks/useSnackbar';
@@ -47,8 +48,9 @@ export default function ResetPasswordScreen() {
       setOtpError('Vui lòng nhập mã OTP');
       valid = false;
     }
-    if (newPassword.length < 6) {
-      setNewPasswordError('Mật khẩu phải ít nhất 6 ký tự');
+    const passwordError = validatePasswordPattern(newPassword);
+    if (passwordError) {
+      setNewPasswordError(passwordError);
       valid = false;
     }
     if (newPassword !== confirmPassword) {
