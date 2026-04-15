@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
+  Image,
 } from 'react-native';
 import { HeaderDetail } from '@/components/HeaderDetail';
 import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
@@ -96,10 +97,12 @@ export default function DetailOrderScreen() {
     <View className="flex-1 bg-gray-100">
       <HeaderDetail onBack={() => navigation.goBack()} />
 
-      <ScrollView className="px-7 -mt-90" style={{ marginTop: -165 }}>
+      <View className="px-7" style={{ marginTop: -165 }}>
         <CustomerDetailBorder order={order} />
-
-        <Border className="mt-5">
+      </View>
+      
+      <ScrollView className="px-7 mt-5">
+        <Border>
           <FlatList
             data={order.items}
             keyExtractor={item => item.id}
@@ -134,6 +137,26 @@ export default function DetailOrderScreen() {
             </View>
           </View>
         </Border>
+
+        {order.note ? (
+          <Border className="mt-5">
+            <Text className="text-gray-700 font-bold mb-1">Ghi chú</Text>
+            <Text className="text-gray-600">{order.note}</Text>
+          </Border>
+        ) : null}
+
+        {order.paymentProofUrl && (
+          <Border className="mt-5">
+            <Text className="text-gray-700 font-bold mb-3">
+              Ảnh bằng chứng (Hoàn tiền/Thanh toán)
+            </Text>
+            <Image
+              source={{ uri: order.paymentProofUrl }}
+              className="w-full h-64 rounded-xl bg-gray-200"
+              resizeMode="contain"
+            />
+          </Border>
+        )}
       </ScrollView>
 
       <View className="px-4 pb-6 bg-gray-100">

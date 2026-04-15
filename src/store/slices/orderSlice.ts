@@ -79,6 +79,8 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
           requestedPickupAt: order.requestedPickupAt,
           confirmedPickupAt: order.confirmedPickupAt,
           originalOrderCode: order.originalOrderCode,
+          paymentProofUrl: order.paymentProofUrl,
+          note: order.note,
           items: order.items.map((item: any) => ({
             id: item.id?.toString(),
             name: item.name,
@@ -130,6 +132,7 @@ export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
           type: order.type,
           tableName: order.tableName,
           originalOrderCode: order.originalOrderCode,
+          paymentProofUrl: order.paymentProofUrl,
           items: order.items.map((item: any) => ({
             id: item.dishId.toString(),
             name: item.dishName,

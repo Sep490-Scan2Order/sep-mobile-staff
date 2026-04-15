@@ -11,12 +11,12 @@ describe('staffApi', () => {
     jest.clearAllMocks();
   });
 
-  it('getStaffByRestaurant should call /Staff/restaurant/{id}', async () => {
+  it('getStaffByRestaurant should call /Staff/restaurant?restaurantId={id}', async () => {
     const restaurantId = 123;
     (axiosPrivate.get as jest.Mock).mockResolvedValue({ data: { isSuccess: true, data: [] } });
 
     await staffApi.getStaffByRestaurant(restaurantId);
 
-    expect(axiosPrivate.get).toHaveBeenCalledWith(`/Staff/restaurant/${restaurantId}`);
+    expect(axiosPrivate.get).toHaveBeenCalledWith(`/Staff/restaurant?restaurantId=${restaurantId}`);
   });
 });

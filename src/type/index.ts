@@ -132,6 +132,8 @@ export interface Order {
   promotionName?: string | null;
   finalAmount?: number;
   originalOrderCode?: number;
+  paymentProofUrl?: string;
+  note?: string;
 }
 
 export interface OrderState {

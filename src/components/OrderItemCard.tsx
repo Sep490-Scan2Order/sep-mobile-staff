@@ -185,7 +185,7 @@ export const OrderItemCard: React.FC<Props> = ({
           </View>
 
           <Text className="text-sm text-gray-600">
-            {item.amount.toLocaleString()} đ
+            {(item.finalAmount ?? item.amount).toLocaleString()} đ
           </Text>
 
           {/* STATUS */}

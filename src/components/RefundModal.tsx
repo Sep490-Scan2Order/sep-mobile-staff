@@ -270,12 +270,14 @@ export const RefundModal: React.FC<RefundModalProps> = ({
         text2: 'Đã tạo yêu cầu hoàn tiền',
       });
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.log('❌ FINAL ERROR:', err);
+      const errorMessage =
+        err.response?.data?.message || 'Không thể hoàn tiền. Vui lòng thử lại.';
       Toast.show({
         type: 'error',
         text1: 'Hoàn tiền thất bại',
-        text2: 'Không thể hoàn tiền. Vui lòng thử lại.',
+        text2: errorMessage,
       });
     } finally {
       setLoading(false);
