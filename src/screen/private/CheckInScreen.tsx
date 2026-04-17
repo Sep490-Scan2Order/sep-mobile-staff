@@ -126,7 +126,7 @@ export default function CheckInScreen() {
   const isShiftOpen = !!(currentShift && currentShift.id);
   return (
     <View className="flex-1 bg-teal-700">
-      <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
+      <StatusBar barStyle="light-content" backgroundColor="#0f766e" />
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
         <View className="flex-1 bg-white p-6">

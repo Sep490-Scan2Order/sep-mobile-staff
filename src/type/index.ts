@@ -11,6 +11,7 @@ export interface UserInfo {
   avatar: string | null;
   isActive: boolean;
   createdAt: string;
+  phone?: string;
 }
 export interface AuthState {
   accessToken: string | null;

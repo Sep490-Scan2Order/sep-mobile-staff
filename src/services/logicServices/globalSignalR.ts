@@ -43,7 +43,17 @@ export const initSignalR = async (
   connection.on('ReceiveOrder', (order: any) => {
     if (!order) return;
     playNotificationSound();
-    const items = order.items ?? order.Items ?? [];
+    const rawItems = order.items ?? order.Items ?? [];
+    const items = rawItems.map((item: any) => ({
+      id: (item.id ?? item.DishId ?? item.dishId)?.toString() ?? '',
+      name: item.name ?? item.dishName ?? item.DishName ?? 'Món ăn',
+      price: item.price ?? item.Price ?? item.discountedPrice ?? 0,
+      quantity: item.quantity ?? item.Quantity ?? 1,
+      image: item.image ?? item.dishImageUrl ?? item.DishImageUrl ?? '',
+      originalPrice: item.originalPrice ?? item.OriginalPrice ?? 0,
+      discountAmount: item.discountAmount ?? item.DiscountAmount ?? 0,
+    }));
+
     const mappedOrder = {
       id: order.id ?? order.Id,
       phone: order.phone ?? order.Phone ?? '',
@@ -59,6 +69,9 @@ export const initSignalR = async (
       status: order.status ?? order.Status ?? 0,
       type: order.type ?? order.Type ?? null,
       items,
+      note: order.note ?? order.Note ?? '',
+      tableName: order.tableName ?? order.TableName ?? '',
+      paymentProofUrl: order.paymentProofUrl ?? order.PaymentProofUrl ?? '',
       isPreOrder: order.isPreOrder ?? order.IsPreOrder ?? false,
       requestedPickupAt:
         order.requestedPickupAt ?? order.RequestedPickupAt ?? null,

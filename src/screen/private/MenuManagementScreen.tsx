@@ -24,8 +24,8 @@ const MenuItem = ({
       className="bg-white rounded-2xl p-4 flex-row items-center justify-between mb-4 shadow-sm"
     >
       <View className="flex-row items-center gap-3">
-        <View className="bg-emerald-100 p-2 rounded-xl">
-          <Icon size={22} color="#065f46" />
+        <View className="bg-teal-100 p-2 rounded-xl">
+          <Icon size={22} color="#0d9488" />
         </View>
         <View>
           <Text className="text-base font-semibold text-gray-800">{title}</Text>
@@ -50,20 +50,24 @@ export default function MenuScreen() {
     );
   }
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-white">
       {}
-      <View className="bg-emerald-700 pt-16 pb-8 items-center rounded-b-3xl">
-        <Image
-          source={{
-            uri: userInfo.avatar ?? '',
-          }}
-          className="w-24 h-24 rounded-full border-4 border-white"
-        />
+      <View className="bg-teal-700 pt-16 pb-8 items-center rounded-b-3xl">
+        {userInfo.avatar ? (
+          <Image
+            source={{ uri: userInfo.avatar }}
+            className="w-24 h-24 rounded-full border-4 border-white"
+          />
+        ) : (
+          <View className="w-24 h-24 rounded-full border-4 border-white bg-teal-600 items-center justify-center">
+            <User size={48} color="white" />
+          </View>
+        )}
         <Text className="text-white text-lg font-semibold mt-3">
           {userInfo.name}
         </Text>
-        <Text className="text-emerald-100 text-sm">
-          ID: {userInfo.accountId}
+        <Text className="text-teal-100 text-sm">
+          {userInfo.role} • {userInfo.email}
         </Text>
       </View>
       {}

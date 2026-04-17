@@ -28,11 +28,13 @@ export const OrderStatusScreen = () => {
     (state: RootState) => state.restaurant,
   );
   const snackbar = useSnackbar();
+  const refreshCount = useSelector((state: RootState) => state.order.refreshCount);
+
   useEffect(() => {
     if (restaurantId > 0) {
       dispatch(fetchRestaurantById(restaurantId));
     }
-  }, [dispatch, restaurantId]);
+  }, [dispatch, restaurantId, refreshCount]);
   const handleToggleReceiving = async () => {
     if (restaurant && restaurantId > 0) {
       const newValue = !restaurant.isReceivingOrders;
@@ -94,11 +96,11 @@ export const OrderStatusScreen = () => {
     );
   }
   return (
-    <View className="flex-1 bg-teal-900">
-      <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
+    <View className="flex-1 bg-teal-700">
+      <StatusBar barStyle="light-content" backgroundColor="#0f766e" />
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
-        <View className="flex-1 bg-slate-50 rounded-t-[40px] mt-4 overflow-hidden">
+        <View className="flex-1 bg-white">
           {loading && !restaurant ? (
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color="#0f766e" />

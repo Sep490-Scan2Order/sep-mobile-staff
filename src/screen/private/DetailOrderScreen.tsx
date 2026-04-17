@@ -72,10 +72,12 @@ export default function DetailOrderScreen() {
         try {
           await dispatch(confirmCashOrder(order.id)).unwrap();
           dispatch(forceRefresh());
-          snackbar.showSuccess(`Đơn hàng #${order.orderCode} đã thanh toán thành công`);
+          snackbar.showSuccess(
+            `Đơn hàng #${order.orderCode} đã thanh toán thành công`,
+          );
           navigation.goBack();
-        } catch (error) {
-          snackbar.showError('Thanh toán thất bại. Vui lòng thử lại.');
+        } catch (error: any) {
+          snackbar.showError(error?.message || 'Thanh toán thất bại');
         }
       },
       'Thanh toán',

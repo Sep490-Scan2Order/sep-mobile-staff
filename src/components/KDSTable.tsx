@@ -15,26 +15,35 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import {
   updateOrderStatus,
   confirmPickupTime,
+  confirmCashOrder,
+  forceRefresh,
 } from '@/store/slices/orderSlice';
+import { useAppModal } from '@/hooks/useAppModal';
+import { AppModal } from '@/components/AppModal';
 import { Order } from '@/type';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { RefundModal } from '@/components/RefundModal';
 import { isToday } from '@/utils/dateUtils';
 import { TimePickerModal } from '@/components/TimePickerModal';
 import { OrderItemCard } from '@/components/OrderItemCard';
+import { PaymentDetailModal } from '@/components/PaymentDetailModal';
 import { orderService } from '@/services/logicServices/orderService';
 import { playAudioUrl } from '@/services/logicServices/playAudioUrl';
+
 interface SDKTableProps {
   statusFilter: number;
 }
+
 type RootStackParamList = {
   DetailOrderScreen: { orderId: string };
   ScanDeliveryScreen: { orderNumber: number };
 };
+
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const snackbar = useSnackbar();
+  const modal = useAppModal();
   const orders = useSelector((state: RootState) => state.order.orders);
   const [searchText, setSearchText] = useState('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -46,20 +55,29 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const [showConfirmPickupModal, setShowConfirmPickupModal] = useState(false);
   const [pickupOrderId, setPickupOrderId] = useState<string | null>(null);
   const [confirmingPickup, setConfirmingPickup] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] =
+    useState<Order | null>(null);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
+
   const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
   const initNow = new Date();
   const [selectedHour, setSelectedHour] = useState(initNow.getHours());
   const [selectedMinute, setSelectedMinute] = useState(
     Math.floor(initNow.getMinutes() / 5) * 5,
   );
+
   const hourListRef = useRef<FlatList>(null);
   const minuteListRef = useRef<FlatList>(null);
+
   const scrollToHour = useCallback((h: number) => {
     hourListRef.current?.scrollToIndex({ index: h, animated: true });
   }, []);
+
   const scrollToMinute = useCallback((mIdx: number) => {
     minuteListRef.current?.scrollToIndex({ index: mIdx, animated: true });
   }, []);
+
   const getNextStatus = (status: number) => {
     switch (status) {
       case 1:
@@ -72,6 +90,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         return status;
     }
   };
+
   const filteredOrders = useMemo(() => {
     return orders
       .filter(order => isToday(order.createdAt))
@@ -105,7 +124,14 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [orders, statusFilter, searchText, orderTypeFilter]);
+
   const handleUpdateStatus = async (order: Order) => {
+    if (order.status === 0) {
+      setSelectedOrderForPayment(order);
+      setShowPaymentModal(true);
+      return;
+    }
+
     const newStatus = getNextStatus(order.status);
     try {
       if (order.status === 2) {
@@ -145,6 +171,22 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       snackbar.showError('Có lỗi xảy ra khi cập nhật trạng thái');
     }
   };
+
+  const handleConfirmPayment = async (orderId: string) => {
+    try {
+      setConfirmingPayment(true);
+      await dispatch(confirmCashOrder(orderId)).unwrap();
+      dispatch(forceRefresh());
+      snackbar.showSuccess('Xác nhận thanh toán thành công');
+      setShowPaymentModal(false);
+      setSelectedOrderForPayment(null);
+    } catch (error: any) {
+      snackbar.showError(error?.message || 'Thanh toán thất bại');
+    } finally {
+      setConfirmingPayment(false);
+    }
+  };
+
   const handleConfirmPickup = async () => {
     if (!pickupOrderId) return;
     const pickedDate = new Date();
@@ -171,6 +213,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       snackbar.showSuccess('Đã xác nhận giờ nhận hàng thành công');
     }
   };
+
   const renderItem = ({ item }: { item: Order }) => (
     <OrderItemCard
       item={item}
@@ -202,9 +245,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       }}
     />
   );
+
   return (
     <View className="flex-1" style={{ position: 'relative' }}>
-      {}
       <View className="px-4 pt-4">
         <View className="flex-row items-center bg-[#E8F3F0] border border-[#226B5D] rounded-xl px-3 py-2">
           <Search size={18} color="#226B5D" />
@@ -222,7 +265,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           )}
         </View>
       </View>
-      {}
+
       <View className="flex-row px-4 pt-3 gap-2">
         {['all', 'preorder', 'dinein'].map(type => (
           <TouchableOpacity
@@ -248,7 +291,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           </TouchableOpacity>
         ))}
       </View>
-      {}
+
       <FlatList
         data={filteredOrders}
         keyExtractor={item => item.id}
@@ -260,7 +303,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           </View>
         }
       />
-      {}
+
       {selectedOrder && (
         <RefundModal
           isVisible={showRefundModal}
@@ -276,6 +319,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           orderFinalAmount={selectedOrder.finalAmount || 0}
         />
       )}
+
       <TimePickerModal
         visible={showConfirmPickupModal}
         onClose={() => {
@@ -291,7 +335,22 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         setSelectedHour={setSelectedHour}
         setSelectedMinute={setSelectedMinute}
       />
+
+      <PaymentDetailModal
+        visible={showPaymentModal}
+        order={selectedOrderForPayment}
+        onClose={() => {
+          if (!confirmingPayment) {
+            setShowPaymentModal(false);
+            setSelectedOrderForPayment(null);
+          }
+        }}
+        onConfirm={handleConfirmPayment}
+        loading={confirmingPayment}
+      />
+
       <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </View>
   );
 };

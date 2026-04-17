@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { orderService } from '@/services/logicServices/orderService';
 import { isToday } from '@/utils/dateUtils';
 import { Order, OrderItem, OrderState } from '@/type';
+
 const initialState: OrderState = {
   orders: [],
   loading: false,
@@ -16,13 +17,16 @@ const initialState: OrderState = {
     4: 0,
   },
 };
+
 const increaseUnread = (state: OrderState, order: Order) => {
   if (!isToday(order.createdAt)) return;
   state.unread.all += 1;
-  if (state.unread[order.status as 0 | 1 | 2 | 3 | 4] !== undefined) {
-    state.unread[order.status as 0 | 1 | 2 | 3 | 4] += 1;
+  const status = order.status as 0 | 1 | 2 | 3 | 4;
+  if (state.unread[status] !== undefined) {
+    state.unread[status] += 1;
   }
 };
+
 export const fetchActiveOrders = createAsyncThunk<Order[], number>(
   'order/fetchActiveOrders',
   async (restaurantId, { rejectWithValue }) => {
@@ -62,7 +66,7 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
           items: order.items.map((item: any) => ({
             id: item.id?.toString(),
             name: item.name,
-            price: item.discountedPrice, 
+            price: item.discountedPrice,
             quantity: item.quantity,
             originalPrice: item.originalPrice,
             discountedPrice: item.discountedPrice,
@@ -77,6 +81,7 @@ export const fetchActiveOrders = createAsyncThunk<Order[], number>(
     }
   }
 );
+
 export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
   'order/fetchPendingCashOrders',
   async (_, { rejectWithValue }) => {
@@ -124,6 +129,7 @@ export const fetchPendingCashOrders = createAsyncThunk<Order[]>(
     }
   }
 );
+
 export const updateOrderStatus = createAsyncThunk(
   'order/updateOrderStatus',
   async (
@@ -138,6 +144,7 @@ export const updateOrderStatus = createAsyncThunk(
     }
   }
 );
+
 export const confirmCashOrder = createAsyncThunk(
   'order/confirmCashOrder',
   async (orderId: string, { rejectWithValue }) => {
@@ -149,6 +156,7 @@ export const confirmCashOrder = createAsyncThunk(
     }
   }
 );
+
 export const confirmPickupTime = createAsyncThunk(
   'order/confirmPickupTime',
   async (
@@ -163,6 +171,7 @@ export const confirmPickupTime = createAsyncThunk(
     }
   }
 );
+
 const orderSlice = createSlice({
   name: 'order',
   initialState,
@@ -197,8 +206,9 @@ const orderSlice = createSlice({
       if (status === -1) {
         state.unread = { all: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
       } else {
-        if (state.unread[status as 0 | 1 | 2 | 3 | 4] !== undefined) {
-          state.unread[status as 0 | 1 | 2 | 3 | 4] = 0;
+        const s = status as 0 | 1 | 2 | 3 | 4;
+        if (state.unread[s] !== undefined) {
+          state.unread[s] = 0;
         }
       }
     },
@@ -229,30 +239,30 @@ const orderSlice = createSlice({
       })
       .addCase(confirmCashOrder.fulfilled, (state, action) => {
         const orderId = action.payload;
-        state.orders = state.orders.filter(order => order.id !== orderId);
+        state.orders = state.orders.map(order =>
+          order.id === orderId ? { ...order, status: 1 } : order,
+        );
       })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const { orderId, newStatus } = action.payload;
         state.orders = state.orders.map(order =>
-          order.id === orderId
-            ? { ...order, status: newStatus }
-            : order
+          order.id === orderId ? { ...order, status: newStatus } : order,
         );
       })
       .addCase(confirmPickupTime.fulfilled, (state, action) => {
         const { orderId, confirmedPickupAt } = action.payload;
         state.orders = state.orders.map(order =>
-          order.id === orderId
-            ? { ...order, confirmedPickupAt }
-            : order
+          order.id === orderId ? { ...order, confirmedPickupAt } : order,
         );
       });
   },
 });
+
 export const {
   addOrder,
   updateOrderStatusLocal,
   clearUnreadByStatus,
   forceRefresh,
 } = orderSlice.actions;
+
 export default orderSlice.reducer;

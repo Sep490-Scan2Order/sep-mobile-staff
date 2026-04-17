@@ -16,16 +16,20 @@ const KDSScreen: React.FC = () => {
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
+  const refreshCount = useSelector((state: RootState) => state.order.refreshCount);
+
   const [activeSidebarIndex, setActiveSidebarIndex] = useState(-1);
+
   useEffect(() => {
     if (!restaurantId) return;
     dispatch(fetchActiveOrders(restaurantId));
-  }, [restaurantId, dispatch]);
+  }, [restaurantId, dispatch, refreshCount]);
+
   useFocusEffect(
     useCallback(() => {
       if (!restaurantId) return;
       dispatch(fetchActiveOrders(restaurantId));
-    }, [restaurantId, dispatch]),
+    }, [restaurantId, dispatch, refreshCount]),
   );
   const handleSidebarPress = useCallback(
     (status: number) => {

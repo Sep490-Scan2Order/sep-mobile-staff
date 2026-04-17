@@ -48,6 +48,7 @@ export const OrderItemCard: React.FC<Props> = ({
     5: 'Đã hủy',
   };
   const ACTION_LABEL: Record<number, string> = {
+    0: 'Thanh toán',
     1: 'Nhận đơn',
     2: 'Làm xong',
     3: 'Giao hàng',
