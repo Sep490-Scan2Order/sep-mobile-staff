@@ -4,13 +4,11 @@ import { HeaderDetail } from '@/components/HeaderDetail';
 import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
 import { Border } from '@/components/Border';
 import { Order } from '@/type';
-
 interface DetailPaymentProps {
   order: Order;
   paymentMethod: 'cash' | 'transfer';
   onConfirm: () => void;
 }
-
 export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
   order,
   paymentMethod,
@@ -18,13 +16,11 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
 }) => {
   const voucher = order.promotionDiscount || 0;
   const total = order.finalAmount || (order.amount - voucher);
-
   return (
     <View className="flex-1">
       <HeaderDetail />
       <ScrollView className="px-7" style={{ marginTop: -165 }}>
         <CustomerDetailBorder order={order} />
-
         <Border className="mt-5">
           <View className="flex-row justify-between mb-3">
             <Text className="text-lg font-medium">Phương thức:</Text>
@@ -33,20 +29,17 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
             </Text>
           </View>
         </Border>
-
         <Border className="mt-5">
           <View className="mt-2">
             <Text className="font-semibold text-2xl mb-4">
               Chi tiết thanh toán
             </Text>
-
             <View className="flex-row justify-between mb-3">
               <Text className="text-lg font-medium">Tạm tính:</Text>
               <Text className="text-lg font-medium text-gray-800">
                 {order.amount.toLocaleString()} VND
               </Text>
             </View>
-
             {voucher > 0 && (
               <View className="flex-row justify-between mb-3">
                 <Text className="text-lg font-medium text-red-500">
@@ -57,9 +50,7 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
                 </Text>
               </View>
             )}
-
             <View className="border-t border-gray-300 my-3" />
-
             <View className="flex-row justify-between">
               <Text className="text-xl font-bold">Tổng tiền:</Text>
               <Text className="text-xl font-bold text-[#226B5D]">
@@ -69,7 +60,6 @@ export const DetailPaymentComponent: React.FC<DetailPaymentProps> = ({
           </View>
         </Border>
       </ScrollView>
-
       <View className="px-4 pb-6 bg-gray-100">
         <TouchableOpacity
           onPress={onConfirm}

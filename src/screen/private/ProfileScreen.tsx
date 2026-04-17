@@ -2,10 +2,8 @@ import React from 'react';
 import { View, Text, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-
 export default function ProfileScreen() {
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-  console.log('ProfileScreen - userInfo:', userInfo);
   if (!userInfo) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -13,7 +11,6 @@ export default function ProfileScreen() {
       </View>
     );
   }
-
   return (
     <View className="flex-1 bg-gray-100">
       <View className="bg-emerald-700 pt-16 pb-8 items-center rounded-b-3xl">
@@ -23,18 +20,15 @@ export default function ProfileScreen() {
           }}
           className="w-24 h-24 rounded-full border-4 border-white"
         />
-
         <Text className="text-white text-lg font-semibold mt-3">
           {userInfo.name}
         </Text>
       </View>
-
       <View className="p-4 gap-4 mt-4">
         <View className="bg-white rounded-2xl p-4 shadow-sm">
           <Text className="text-gray-500">Account ID</Text>
           <Text className="font-semibold">{userInfo.accountId}</Text>
         </View>
-
         <View className="bg-white rounded-2xl p-4 shadow-sm">
           <Text className="text-gray-500">Trạng thái</Text>
           <Text

@@ -9,20 +9,16 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
-
 interface Props {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
   confirming: boolean;
-
   selectedHour: number;
   selectedMinute: number;
-
   setSelectedHour: (h: number) => void;
   setSelectedMinute: (m: number) => void;
 }
-
 export const TimePickerModal: React.FC<Props> = ({
   visible,
   onClose,
@@ -36,51 +32,41 @@ export const TimePickerModal: React.FC<Props> = ({
   const ITEM_HEIGHT = 48;
   const VISIBLE_ITEMS = 5;
   const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
-
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
   const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-
   const hourListRef = useRef<FlatList>(null);
   const minuteListRef = useRef<FlatList>(null);
-
   const scrollToHour = (h: number) => {
     hourListRef.current?.scrollToOffset({
       offset: h * ITEM_HEIGHT,
       animated: true,
     });
   };
-
   const scrollToMinute = (idx: number) => {
     minuteListRef.current?.scrollToOffset({
       offset: idx * ITEM_HEIGHT,
       animated: true,
     });
   };
-
-  // 👉 Auto scroll đúng vị trí khi mở modal
   useEffect(() => {
     if (visible) {
       const minuteIdx = MINUTES.indexOf(selectedMinute);
-
       setTimeout(() => {
         scrollToHour(selectedHour);
         scrollToMinute(minuteIdx === -1 ? 0 : minuteIdx);
       }, 50);
     }
   }, [visible]);
-
   const onHourScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
     const clamped = Math.max(0, Math.min(idx, HOURS.length - 1));
     setSelectedHour(HOURS[clamped]);
   };
-
   const onMinuteScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
     const clamped = Math.max(0, Math.min(idx, MINUTES.length - 1));
     setSelectedMinute(MINUTES[clamped]);
   };
-
   return (
     <Modal
       visible={visible}
@@ -96,7 +82,6 @@ export const TimePickerModal: React.FC<Props> = ({
           <Text className="text-sm text-gray-500 mb-5">
             Chọn thời gian xác nhận nhận hàng cho đơn pre-order
           </Text>
-
           <View
             style={{
               flexDirection: 'row',
@@ -104,12 +89,11 @@ export const TimePickerModal: React.FC<Props> = ({
               marginBottom: 20,
             }}
           >
-            {/* HOURS */}
+            {}
             <View style={{ flex: 1 }}>
               <Text className="text-center text-xs text-gray-400 mb-1 font-semibold">
                 Giờ
               </Text>
-
               <FlatList
                 ref={hourListRef}
                 data={HOURS}
@@ -129,7 +113,6 @@ export const TimePickerModal: React.FC<Props> = ({
                 }}
                 renderItem={({ item }) => {
                   const isActive = selectedHour === item;
-
                   return (
                     <TouchableOpacity
                       onPress={() => {
@@ -159,18 +142,15 @@ export const TimePickerModal: React.FC<Props> = ({
                 }}
               />
             </View>
-
-            {/* : */}
+            {}
             <View className="w-6 justify-center items-center">
               <Text className="text-xl font-bold text-[#226B5D] mt-4">:</Text>
             </View>
-
-            {/* MINUTES */}
+            {}
             <View style={{ flex: 1 }}>
               <Text className="text-center text-xs text-gray-400 mb-1 font-semibold">
                 Phút
               </Text>
-
               <FlatList
                 ref={minuteListRef}
                 data={MINUTES}
@@ -190,7 +170,6 @@ export const TimePickerModal: React.FC<Props> = ({
                 }}
                 renderItem={({ item }) => {
                   const isActive = selectedMinute === item;
-
                   return (
                     <TouchableOpacity
                       onPress={() => {
@@ -221,8 +200,7 @@ export const TimePickerModal: React.FC<Props> = ({
               />
             </View>
           </View>
-
-          {/* ACTION */}
+          {}
           <View className="flex-row gap-3">
             <TouchableOpacity
               className="flex-1 py-3 rounded-xl border border-gray-300 items-center"
@@ -231,7 +209,6 @@ export const TimePickerModal: React.FC<Props> = ({
             >
               <Text className="text-gray-600 font-semibold">Hủy</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               className="flex-1 py-3 rounded-xl bg-[#226B5D] items-center"
               onPress={onConfirm}

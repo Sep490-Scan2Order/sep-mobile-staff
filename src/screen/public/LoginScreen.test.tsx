@@ -2,18 +2,11 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { authService } from '@/services/logicServices/authService';
 import LoginScreen from './LoginScreen';
-
-// Mock authService
 jest.mock('@/services/logicServices/authService', () => ({
   authService: {
     login: jest.fn(),
   },
 }));
-
-
-
-
-
 jest.mock('@/components/InlineError', () => {
   const { Text } = require('react-native');
   return {
@@ -23,7 +16,6 @@ jest.mock('@/components/InlineError', () => {
     }
   };
 });
-
 jest.mock('@/components/AppSnackbar', () => {
     const { View, Text } = require('react-native');
     return {
@@ -33,7 +25,6 @@ jest.mock('@/components/AppSnackbar', () => {
       }
     };
 });
-
 jest.mock('@/components/AppModal', () => {
     const { View, Text, TouchableOpacity } = require('react-native');
     return {
@@ -53,67 +44,44 @@ jest.mock('@/components/AppModal', () => {
         }
     }
 });
-
-// Mock Navigation
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
-
-// Mock lucide icons
 jest.mock('lucide-react-native', () => ({
   Eye: () => null,
   EyeOff: () => null,
   ChevronLeft: () => null,
 }));
-
 describe('LoginScreen', () => {
   const navigation = { navigate: jest.fn() };
-
   beforeEach(() => {
     jest.clearAllMocks();
     (require('@react-navigation/native').useNavigation as jest.Mock).mockReturnValue(navigation);
   });
-
   it('renders all UI elements correctly', () => {
     const { getByPlaceholderText, getAllByText } = render(<LoginScreen />);
-    
     expect(getByPlaceholderText('Nhập email')).toBeTruthy();
     expect(getByPlaceholderText('Nhập mật khẩu')).toBeTruthy();
-    // Check if both header and button text exist
     expect(getAllByText('Đăng nhập').length).toBe(2);
   });
-
   it('shows inline errors if email and password are empty', async () => {
     const { getByText, getAllByText } = render(<LoginScreen />);
     const loginButton = getAllByText('Đăng nhập')[1];
-
     fireEvent.press(loginButton);
-
     expect(getByText('Vui lòng nhập email')).toBeTruthy();
     expect(getByText('Vui lòng nhập mật khẩu')).toBeTruthy();
   });
-
   it('toggles password visibility when eye icon is pressed', () => {
     const { getByPlaceholderText, getByRole } = render(<LoginScreen />);
     const passwordInput = getByPlaceholderText('Nhập mật khẩu');
-    
-    // Default state: secureTextEntry is true
     expect(passwordInput.props.secureTextEntry).toBe(true);
-    
-    // The toggle button is a TouchableOpacity. Since it doesn't have a label or testID, 
-    // it might be hard to find. However, in this specific layout, it's one of the few touchables.
-    // Given the component, we can try to find it by its child icon mock 'EyeOff' if we mocked it as a string
   });
-
   it('calls authService.login and handles success correctly', async () => {
     (authService.login as jest.Mock).mockResolvedValue({ success: true });
-
     const { getByPlaceholderText, getAllByText } = render(<LoginScreen />);
-    
     fireEvent.changeText(getByPlaceholderText('Nhập email'), 'test@example.com');
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu'), 'password123');
     fireEvent.press(getAllByText('Đăng nhập')[1]);
-
     await waitFor(() => {
       expect(authService.login).toHaveBeenCalledWith({
         email: 'test@example.com',
@@ -121,28 +89,21 @@ describe('LoginScreen', () => {
       });
     });
   });
-
   it('calls authService.login and handles failure correctly', async () => {
     const errorMessage = 'Sai tài khoản hoặc mật khẩu';
     (authService.login as jest.Mock).mockResolvedValue({ success: false, message: errorMessage });
-
     const { getByPlaceholderText, getAllByText, getByText } = render(<LoginScreen />);
-    
     fireEvent.changeText(getByPlaceholderText('Nhập email'), 'wrong@example.com');
     fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu'), 'wrongpass');
     fireEvent.press(getAllByText('Đăng nhập')[1]);
-
     await waitFor(() => {
       expect(getByText(errorMessage)).toBeTruthy();
     });
   });
-
   it('navigates to EmailForOTPScreen when "Quên mật khẩu?" is pressed', () => {
     const { getByText } = render(<LoginScreen />);
     const forgotPasswordLink = getByText('Quên mật khẩu?');
-    
     fireEvent.press(forgotPasswordLink);
-    
     expect(navigation.navigate).toHaveBeenCalledWith('EmailForOTPScreen');
   });
 });

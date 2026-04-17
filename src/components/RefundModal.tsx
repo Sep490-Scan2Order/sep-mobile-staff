@@ -25,13 +25,11 @@ import { staffApi } from '@/services/apiEndpoints/staffApi';
 import Toast from 'react-native-toast-message';
 import { Camera, useCameraDevice, PhotoFile } from 'react-native-vision-camera';
 import ImageResizer from 'react-native-image-resizer';
-
 interface Staff {
   id: string;
   name: string;
   email: string;
 }
-
 interface RefundModalProps {
   isVisible: boolean;
   onClose: () => void;
@@ -42,7 +40,6 @@ interface RefundModalProps {
   orderTotalAmount: number;
   orderFinalAmount: number;
 }
-
 export const RefundModal: React.FC<RefundModalProps> = ({
   isVisible,
   onClose,
@@ -66,23 +63,15 @@ export const RefundModal: React.FC<RefundModalProps> = ({
   const [selectedRefundItems, setSelectedRefundItems] = useState<
     Record<string, number>
   >({});
-
-  // Cache để tránh fetch staff mỗi lần mở modal
   const staffCacheRef = React.useRef<Staff[]>([]);
-
   const cameraRef = React.useRef<Camera>(null);
   const device = useCameraDevice('back');
-
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-
-  // Tỉ lệ thanh toán thực tế (Dùng để hoàn tiền theo tỉ trọng)
   const paymentRatio = orderTotalAmount > 0 ? orderFinalAmount / orderTotalAmount : 1;
-  const isDiscounted = paymentRatio < 0.999; // Coi như có giảm giá nếu < 100%
-
+  const isDiscounted = paymentRatio < 0.999; 
   React.useEffect(() => {
     if (isVisible && userInfo?.restaurantId) {
       setSelectedStaffId(userInfo.id);
-      // Chỉ gọi API nếu chưa có cache
       if (staffCacheRef.current.length > 0) {
         setStaffList(staffCacheRef.current);
       } else {
@@ -90,7 +79,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       }
     }
   }, [isVisible, userInfo]);
-
   const fetchStaff = async () => {
     try {
       const response = await staffApi.getStaffByRestaurant(
@@ -104,13 +92,11 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       console.error('Fetch staff error:', error);
     }
   };
-
   const filteredStaff = staffList.filter(
     staff =>
       staff.name?.toLowerCase().includes(staffSearchText.toLowerCase()) ||
       staff.email?.toLowerCase().includes(staffSearchText.toLowerCase()),
   );
-  console.log('🔍 Refund types:', isUnpaid);
   const refundTypes = [
     ...(isUnpaid
       ? [{ label: 'Lỗi Hệ thống (System Error)', value: 2 }]
@@ -119,7 +105,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
           { label: 'Lỗi Nhân viên (Staff pay)', value: 1 },
         ]),
   ];
-
   const handleTakePhoto = async () => {
     const permission = await Camera.requestCameraPermission();
     if (permission !== 'granted') {
@@ -133,7 +118,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
     }
     setShowCamera(true);
   };
-
   const takePhoto = async () => {
     if (cameraRef.current) {
       try {
@@ -160,7 +144,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       return newItems;
     });
   };
-
   const updateItemQty = (itemId: string, delta: number, availableQty: number) => {
     setSelectedRefundItems(prev => {
       const current = prev[itemId] || 0;
@@ -169,101 +152,74 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       return { ...prev, [itemId]: next };
     });
   };
-
   const handleSubmit = async () => {
-    setLoading(true); // Bật loading ngay từ đầu để chặn spam click
+    setLoading(true); 
     try {
       if (isUnpaid) {
-        // ConfirmSystemPaymentRequest chỉ có: OrderId, ResponsibleStaffId, Note, ImageFile
         const formData = new FormData();
         formData.append('OrderId', orderId.trim());
         formData.append('ResponsibleStaffId', selectedStaffId.trim());
         formData.append('Note', note.trim());
-
         if (capturedPhoto) {
           const rawPath = capturedPhoto.path.startsWith('file://')
             ? capturedPhoto.path
             : `file://${capturedPhoto.path}`;
-          console.log('🔄 Đang nén ảnh...');
           const resizedImage = await ImageResizer.createResizedImage(
             rawPath, 600, 600, 'JPEG', 50, 0, undefined, false,
             { mode: 'contain', onlyScaleDown: true },
           );
-          console.log('✅ Đã nén ảnh xong. URI mới:', resizedImage.uri);
           formData.append('ImageFile', {
             uri: resizedImage.uri,
             type: 'image/jpeg',
             name: `refund_${Date.now()}.jpg`,
           } as any);
         }
-
-        console.log('🚀 GỌI API CONFIRM SYSTEM PAYMENT...');
         const startTime = Date.now();
         const res = await refundApi.confirmSystemPayment(formData);
-        console.log(`✅ THÀNH CÔNG (${Date.now() - startTime}ms):`, res);
-
         Toast.show({ type: 'success', text1: 'Thành công', text2: 'Đã xác nhận thanh toán hệ thống' });
         onClose();
         return;
       }
-
-      // RefundRequest: OrderId, RefundType, ResponsibleStaffId, Note, ImageFile, RefundItems, IsFullRefund
       const formData = new FormData();
       formData.append('OrderId', orderId.trim());
       formData.append('RefundType', String(refundType));
       formData.append('ResponsibleStaffId', selectedStaffId.trim());
       formData.append('Note', note.trim());
       formData.append('IsFullRefund', String(isFullRefund));
-
       if (!isFullRefund) {
-        // Gửi dưới dạng JSON array: [{"orderDetailId":1,"quantityToRefund":2}]
         const refundItemsArray = Object.entries(selectedRefundItems).map(
           ([id, qty]) => ({
             orderDetailId: parseInt(id),
             quantityToRefund: qty,
           }),
         );
-        console.log(
-          '📦 RefundItems JSON array:',
-          JSON.stringify(refundItemsArray),
-        );
         formData.append('RefundItems', JSON.stringify(refundItemsArray));
       } else {
         formData.append('RefundItems', '[]');
       }
-
       if (capturedPhoto) {
         const rawPath = capturedPhoto.path.startsWith('file://')
           ? capturedPhoto.path
           : `file://${capturedPhoto.path}`;
-        console.log('🔄 Đang nén ảnh...');
         const resizedImage = await ImageResizer.createResizedImage(
           rawPath,
-          600,  // maxWidth - giảm để upload nhanh hơn
-          600,  // maxHeight
+          600,  
+          600,  
           'JPEG',
-          50,   // Chất lượng 50% - đủ rõ cho bằng chứng
+          50,   
           0,
           undefined,
           false,
           { mode: 'contain', onlyScaleDown: true },
         );
-        console.log('✅ Đã nén ảnh xong. URI mới:', resizedImage.uri);
         formData.append('ImageFile', {
           uri: resizedImage.uri,
           type: 'image/jpeg',
           name: `refund_${Date.now()}.jpg`,
         } as any);
       }
-
-      console.log('🚀 GỌI API REFUND (Bắt đầu gửi)...');
       const startTime = Date.now();
       const res = await refundApi.createRefund(formData);
-
-      console.log(
-        `✅ THÀNH CÔNG (Thời gian upload: ${Date.now() - startTime}ms):`,
-        res,
-      );
       Toast.show({
         type: 'success',
         text1: 'Thành công',
@@ -271,7 +227,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       });
       onClose();
     } catch (err: any) {
-      console.log('❌ FINAL ERROR:', err);
       const errorMessage =
         err.response?.data?.message || 'Không thể hoàn tiền. Vui lòng thử lại.';
       Toast.show({
@@ -283,7 +238,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       setLoading(false);
     }
   };
-
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
       <View className="flex-1 justify-end bg-black/50">
@@ -296,7 +250,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
               <X size={24} color="#333" />
             </TouchableOpacity>
           </View>
-
           <ScrollView showsVerticalScrollIndicator={false}>
             <View className="mb-4">
               <Text className="text-gray-500 mb-1">Mã đơn hàng</Text>
@@ -304,8 +257,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 ORD-{orderCode}
               </Text>
             </View>
-
-            {/* FINANCIAL BANNER */}
+            {}
             {!isUnpaid && isDiscounted && (
               <View className="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100 flex-row items-center">
                 <View className="bg-blue-100 p-2 rounded-full mr-3">
@@ -321,7 +273,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </View>
               </View>
             )}
-
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-2">
                 Nhân viên chịu trách nhiệm
@@ -339,7 +290,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </View>
                 <ChevronDown size={20} color="#666" />
               </TouchableOpacity>
-
               {showStaffPicker && (
                 <View className="mt-2 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm max-h-64">
                   <View className="p-2 border-b border-gray-100 bg-gray-50">
@@ -389,7 +339,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </View>
               )}
             </View>
-
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-3">
                 Loại hoàn tiền
@@ -418,8 +367,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 ))}
               </View>
             </View>
-
-            {/* FULL OR PARTIAL TOGGLE */}
+            {}
             {!isUnpaid && (
               <View className="mb-6">
                 <Text className="text-gray-700 font-medium mb-3">
@@ -465,8 +413,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </View>
               </View>
             )}
-
-            {/* ITEM SELECTION FOR PARTIAL REFUND */}
+            {}
             {!isFullRefund && !isUnpaid && (
               <View className="mb-6">
                 <Text className="text-gray-700 font-medium mb-2">
@@ -478,7 +425,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                     const refundedQty = item.refundedQuantity || 0;
                     const availableQty = item.quantity - refundedQty;
                     const isFullyRefunded = availableQty <= 0;
-
                     return (
                       <View
                         key={item.id}
@@ -524,7 +470,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                               </View>
                             </View>
                           </TouchableOpacity>
-
                           {isSelected && (
                             <View className="flex-row items-center bg-white border border-gray-200 rounded-lg">
                               <TouchableOpacity
@@ -557,7 +502,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </View>
               </View>
             )}
-
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-2">Ghi chú</Text>
               <TextInput
@@ -569,7 +513,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 onChangeText={setNote}
               />
             </View>
-
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-2">
                 Ảnh bằng chứng
@@ -600,8 +543,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </TouchableOpacity>
               )}
             </View>
-
-            {/* SUMMARY FOOTER */}
+            {}
             {!isUnpaid && !isFullRefund && Object.keys(selectedRefundItems).length > 0 && (
               <View className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <View className="flex-row justify-between mb-1">
@@ -638,7 +580,6 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 </View>
               </View>
             )}
-
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={loading}
@@ -650,12 +591,10 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 {loading ? 'Đang nén & Gửi...' : 'Xác nhận hoàn tiền'}
               </Text>
             </TouchableOpacity>
-
             <View className="h-10" />
           </ScrollView>
         </View>
       </View>
-
       {showCamera && device && (
         <View className="absolute inset-0 bg-black z-[100]">
           <Camera

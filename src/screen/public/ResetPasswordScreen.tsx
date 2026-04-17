@@ -18,32 +18,25 @@ import { AppSnackbar } from '@/components/AppSnackbar';
 import { AppModal } from '@/components/AppModal';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useAppModal } from '@/hooks/useAppModal';
-
 export default function ResetPasswordScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { email } = route.params;
-
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Inline validation errors
   const [otpError, setOtpError] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-
   const snackbar = useSnackbar();
   const modal = useAppModal();
-
   const validate = () => {
     let valid = true;
     setOtpError('');
     setNewPasswordError('');
     setConfirmPasswordError('');
-
     if (!otp.trim()) {
       setOtpError('Vui lòng nhập mã OTP');
       valid = false;
@@ -59,10 +52,8 @@ export default function ResetPasswordScreen() {
     }
     return valid;
   };
-
   const handleResetPassword = async () => {
     if (!validate()) return;
-
     setIsLoading(true);
     try {
       const verifyResult = await authService.verifyForgotPasswordOtp(email, otp.trim());
@@ -71,14 +62,12 @@ export default function ResetPasswordScreen() {
         setIsLoading(false);
         return;
       }
-
       const resetToken = verifyResult.resetToken;
       const result = await authService.completeForgotPassword({
         email,
         newPassword,
         resetToken,
       });
-
       if (result.success) {
         modal.showSuccess(
           'Đặt lại mật khẩu thành công',
@@ -94,7 +83,6 @@ export default function ResetPasswordScreen() {
       setIsLoading(false);
     }
   };
-
   return (
     <SafeAreaView className="flex-1 bg-[#226B5D]">
       <TouchableOpacity
@@ -103,7 +91,6 @@ export default function ResetPasswordScreen() {
       >
         <ChevronLeft size={30} color="white" />
       </TouchableOpacity>
-
       <KeyboardAvoidingView behavior={'height'} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-6">
           <View className="mt-6 mb-10 items-center">
@@ -114,7 +101,6 @@ export default function ResetPasswordScreen() {
               Vui lòng nhập mã OTP gửi tới {email} và mật khẩu mới
             </Text>
           </View>
-
           <View className="bg-white rounded-3xl p-6 shadow-lg mb-10">
             <Text className="text-lg font-semibold text-gray-800 mb-2">Mã OTP</Text>
             <TextInput
@@ -127,7 +113,6 @@ export default function ResetPasswordScreen() {
               editable={!isLoading}
             />
             <InlineError message={otpError} />
-
             <Text className="text-lg font-semibold text-gray-800 mb-2">Mật khẩu mới</Text>
             <View className="relative">
               <TextInput
@@ -150,7 +135,6 @@ export default function ResetPasswordScreen() {
               </TouchableOpacity>
             </View>
             <InlineError message={newPasswordError} />
-
             <Text className="text-lg font-semibold text-gray-800 mb-2">Xác nhận mật khẩu</Text>
             <TextInput
               className={`bg-gray-200 rounded-2xl px-4 py-3 text-gray-800 ${confirmPasswordError ? 'border border-red-400' : 'mb-6'}`}
@@ -161,7 +145,6 @@ export default function ResetPasswordScreen() {
               editable={!isLoading}
             />
             <InlineError message={confirmPasswordError} />
-
             <TouchableOpacity
               onPress={handleResetPassword}
               disabled={isLoading}
@@ -178,7 +161,6 @@ export default function ResetPasswordScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
       <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
       <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </SafeAreaView>

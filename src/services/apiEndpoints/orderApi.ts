@@ -1,5 +1,4 @@
 import axiosPrivate from '@/services/axios/privateClient';
-
 export const orderApi = {
   getActiveOrders: (restaurantId: number) => {
     return axiosPrivate.get(
@@ -45,6 +44,5 @@ export const scanQrApi = async (
     qrContent,
     orderNumber,
   });
-
-  return res.data.data; // ✅ lấy audioUrl
+  return res.data.data; 
 };

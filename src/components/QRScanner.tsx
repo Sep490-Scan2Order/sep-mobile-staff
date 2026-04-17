@@ -5,23 +5,19 @@ import {
   useCameraDevice,
   useCodeScanner,
 } from 'react-native-vision-camera';
-
 interface Props {
   onScan: (qrContent: string) => void;
 }
-
 export default function QRScanner({ onScan }: Props) {
   const device = useCameraDevice('back');
   const [hasPermission, setHasPermission] = useState(false);
   const [qrValue, setQrValue] = useState<string | null>(null);
-
   useEffect(() => {
     (async () => {
       const permission = await Camera.requestCameraPermission();
       setHasPermission(permission === 'granted');
     })();
   }, []);
-
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
     onCodeScanned: codes => {
@@ -31,26 +27,22 @@ export default function QRScanner({ onScan }: Props) {
       }
     },
   });
-
   const handleCapture = () => {
     if (qrValue) {
       onScan(qrValue);
     }
   };
-
   if (!device || !hasPermission) return null;
-
   return (
     <View style={{ flex: 1 }}>
-      {/* Camera */}
+      {}
       <Camera
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={true}
         codeScanner={codeScanner}
       />
-
-      {/* Overlay button */}
+      {}
       <View style={styles.overlay}>
         <TouchableOpacity
           style={[styles.button, !qrValue && styles.buttonDisabled]}
@@ -63,7 +55,6 @@ export default function QRScanner({ onScan }: Props) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',

@@ -1,7 +1,5 @@
 import { shiftApi } from '@/services/apiEndpoints/shiftApi';
 import { CheckInRequest, CheckOutRequest } from '@/type';
-
-
 export const shiftService = {
   async checkIn(data: CheckInRequest) {
     try {
@@ -15,7 +13,6 @@ export const shiftService = {
       throw new Error(message);
     }
   },
-
   async checkOut(data: CheckOutRequest) {
     try {
       const response = await shiftApi.checkOut(data);
@@ -28,7 +25,6 @@ export const shiftService = {
       throw new Error(message);
     }
   },
-
   async getReport(shiftId: number) {
     try {
       const response = await shiftApi.getReport(shiftId);
@@ -41,7 +37,6 @@ export const shiftService = {
       throw new Error(message);
     }
   },
-
   async getPreview(shiftId: number) {
     try {
       const response = await shiftApi.getPreview(shiftId);
@@ -54,14 +49,11 @@ export const shiftService = {
       throw new Error(message);
     }
   },
-
   async getReportsByStaff(staffId: string) {
     try {
       const response = await shiftApi.getReportsByStaff(staffId);
       const raw = response.data?.data ?? response.data;
-      // Đảm bảo trả về array dù API wrapped hay không
       return Array.isArray(raw) ? raw : (raw?.items ?? raw?.data ?? []);
-
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||

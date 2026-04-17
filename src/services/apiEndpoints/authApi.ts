@@ -2,7 +2,6 @@ import publicClient from '@/services/axios/publicClient';
 import axiosPrivate from '@/services/axios/privateClient';
 import { API_BASE_URL } from '@/config/apiConfig';
 import privateClient from '../axios';
-
 export const authApi = {
   staffLogin: (credentials: { email: string; password: string }) => {
     return publicClient.post(
@@ -10,24 +9,20 @@ export const authApi = {
       credentials
     );
   },
-
   refreshToken: (refreshToken: string) => {
     return publicClient.post(
       `${API_BASE_URL}/Auth/refresh-token`,
       { refreshToken }
     );
   },
-
   sendForgotPasswordOtp: (email: string) => {
     return publicClient.post(`${API_BASE_URL}/Auth/send-forgot-password-staff-otp?email=${email}`);
   },
-
   verifyForgotPasswordOtp: (email: string, otp: string) => {
     return publicClient.post(
       `${API_BASE_URL}/Auth/verify-forgot-password-staff-otp?email=${email}&otp=${otp}`
     );
   },
-
   completeForgotPasswordStaff: (data: {
     email: string;
     newPassword: string;
@@ -38,7 +33,6 @@ export const authApi = {
       data
     );
   },
-
   changePasswordStaff: (data: {
     email: string;
     oldPassword: string;

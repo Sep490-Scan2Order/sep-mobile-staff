@@ -12,7 +12,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { toggleSoldOutThunk } from '@/store/slices/dishSlice';
-
 interface Props {
   id: number;
   name: string;
@@ -25,7 +24,6 @@ interface Props {
   hasPromotion?: boolean;
   quantity?: number;
 }
-
 export const FoodItemCard: React.FC<Props> = ({
   id,
   name,
@@ -39,22 +37,16 @@ export const FoodItemCard: React.FC<Props> = ({
   quantity: stockQuantity,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-
-  // lấy restaurantId từ redux auth
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
-
   const [modalVisible, setModalVisible] = useState(false);
   const [quantity, setQuantity] = useState('');
-
   const openModal = () => {
     setModalVisible(true);
   };
-
   const handleSubmit = () => {
     const qty = Number(quantity);
-
     dispatch(
       toggleSoldOutThunk({
         restaurantId,
@@ -63,11 +55,9 @@ export const FoodItemCard: React.FC<Props> = ({
         quantity: qty,
       }),
     );
-
     setModalVisible(false);
     setQuantity('');
   };
-
   const handleSoldOut = () => {
     Alert.alert(
       'Xác nhận',
@@ -91,7 +81,6 @@ export const FoodItemCard: React.FC<Props> = ({
       ],
     );
   };
-
   const handleTurnOn = () => {
     dispatch(
       toggleSoldOutThunk({
@@ -102,7 +91,6 @@ export const FoodItemCard: React.FC<Props> = ({
       }),
     );
   };
-
   return (
     <>
       <View
@@ -114,10 +102,8 @@ export const FoodItemCard: React.FC<Props> = ({
       >
         <View className="flex-row items-center p-3">
           <Image source={{ uri: image }} className="w-14 h-14 rounded-lg" />
-
           <View className="flex-1 ml-3 relative">
             <Text className="font-medium text-gray-800 flex-wrap mr-10">{name}</Text>
-
             {hasPromotion && originalPrice && discountedPrice ? (
               <View className="mt-0.5">
                 <View className="flex-row items-center">
@@ -128,7 +114,6 @@ export const FoodItemCard: React.FC<Props> = ({
                     {discountedPrice.toLocaleString()} đ
                   </Text>
                 </View>
-
                 {promotionName && (
                   <Text className="text-[10px] text-orange-600 mt-0.5">
                     {promotionName}
@@ -138,7 +123,6 @@ export const FoodItemCard: React.FC<Props> = ({
             ) : (
               <Text className="text-sm text-gray-700 mt-0.5">{price}</Text>
             )}
-
             <View className="flex-row flex-wrap items-center mt-1">
               <Text className={`text-[11px] font-semibold mr-2 ${active ? 'text-green-700' : 'text-red-600'}`}>
                 {active ? '● Đang bán' : '● Hết hàng'}
@@ -148,7 +132,6 @@ export const FoodItemCard: React.FC<Props> = ({
               </Text>
             </View>
           </View>
-
           <View className="items-end justify-center ml-1">
             <Switch
               trackColor={{ false: '#fca5a5', true: '#6ee7b7' }}
@@ -164,7 +147,6 @@ export const FoodItemCard: React.FC<Props> = ({
               value={active}
               style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
             />
-            
             <TouchableOpacity
               onPress={openModal}
               className="bg-teal-600 px-2 py-1 rounded-md mt-2"
@@ -174,7 +156,6 @@ export const FoodItemCard: React.FC<Props> = ({
             </TouchableOpacity>
           </View>
         </View>
-
         {!active && (
           <View
             className="px-3 py-1.5 border-t bg-rose-50"
@@ -188,8 +169,7 @@ export const FoodItemCard: React.FC<Props> = ({
           </View>
         )}
       </View>
-
-      {/* Modal nhập số lượng */}
+      {}
       <Modal transparent visible={modalVisible} animationType="fade">
         <View
           style={{
@@ -203,7 +183,6 @@ export const FoodItemCard: React.FC<Props> = ({
             <Text className="text-lg font-semibold mb-3">
               Nhập số lượng món
             </Text>
-
             <TextInput
               value={quantity}
               onChangeText={setQuantity}
@@ -211,7 +190,6 @@ export const FoodItemCard: React.FC<Props> = ({
               placeholder="Nhập số lượng"
               className="border p-2 rounded mb-4"
             />
-
             <View className="flex-row justify-end">
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
@@ -219,7 +197,6 @@ export const FoodItemCard: React.FC<Props> = ({
               >
                 <Text className="text-gray-600">Huỷ</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 onPress={handleSubmit}
                 className="bg-green-600 px-3 py-1 rounded"

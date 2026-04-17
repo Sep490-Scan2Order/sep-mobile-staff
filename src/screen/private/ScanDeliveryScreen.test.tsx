@@ -4,9 +4,6 @@ import ScanDeliveryScreen from './ScanDeliveryScreen';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { orderService } from '@/services/logicServices/orderService';
 import { playAudioUrl } from '@/services/logicServices/playAudioUrl';
-
-// === MOCKS ===
-
 jest.mock('@/components/AppSnackbar', () => {
     const { View, Text } = require('react-native');
     return {
@@ -16,7 +13,6 @@ jest.mock('@/components/AppSnackbar', () => {
       }
     };
 });
-
 jest.mock('@/components/AppModal', () => {
     const { View, Text, TouchableOpacity } = require('react-native');
     return {
@@ -36,22 +32,18 @@ jest.mock('@/components/AppModal', () => {
         }
     }
 });
-
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
 }));
-
 jest.mock('@/services/logicServices/orderService', () => ({
   orderService: {
     scanOrderQr: jest.fn(),
   },
 }));
-
 jest.mock('@/services/logicServices/playAudioUrl', () => ({
   playAudioUrl: jest.fn(),
 }));
-
 jest.mock('@/components/QRScanner', () => {
     const { TouchableOpacity, Text } = require('react-native');
     const React = require('react');
@@ -61,26 +53,20 @@ jest.mock('@/components/QRScanner', () => {
         </TouchableOpacity>
     );
 });
-
 describe('ScanDeliveryScreen', () => {
   const mockNavigate = jest.fn();
   const mockGoBack = jest.fn();
   const mockParams = { orderNumber: 101 };
-
   beforeEach(() => {
     jest.clearAllMocks();
     (useNavigation as jest.Mock).mockReturnValue({ navigate: mockNavigate, goBack: mockGoBack });
     (useRoute as jest.Mock).mockReturnValue({ params: mockParams });
     jest.spyOn(console, 'log').mockImplementation(() => {});
   });
-
   it('handles successful QR scan', async () => {
     (orderService.scanOrderQr as jest.Mock).mockResolvedValue('test-audio-url');
-    
     const { getByTestId, getByText } = render(<ScanDeliveryScreen />);
-    
     fireEvent.press(getByTestId('mock-qr-scanner'));
-    
     await waitFor(() => {
       expect(orderService.scanOrderQr).toHaveBeenCalledWith('mock-qr-content', 101);
       expect(getByText('Giao hàng thành công!')).toBeTruthy();
@@ -88,28 +74,20 @@ describe('ScanDeliveryScreen', () => {
       expect(mockGoBack).toHaveBeenCalled();
     });
   });
-
   it('handles invalid QR code (no audioUrl)', async () => {
     (orderService.scanOrderQr as jest.Mock).mockResolvedValue(null);
-    
     const { getByTestId, getByText } = render(<ScanDeliveryScreen />);
-    
     fireEvent.press(getByTestId('mock-qr-scanner'));
-    
     await waitFor(() => {
       expect(getByText(/QR không hợp lệ/i)).toBeTruthy();
       expect(playAudioUrl).not.toHaveBeenCalled();
       expect(mockGoBack).not.toHaveBeenCalled();
     });
   });
-
   it('handles service errors', async () => {
     (orderService.scanOrderQr as jest.Mock).mockRejectedValue(new Error('Network Fail'));
-    
     const { getByTestId, getByText } = render(<ScanDeliveryScreen />);
-    
     fireEvent.press(getByTestId('mock-qr-scanner'));
-    
     await waitFor(() => {
       expect(getByText('Network Fail')).toBeTruthy();
     });

@@ -13,32 +13,24 @@ import { Eye, EyeOff } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/type';
-
 import { authService } from '@/services/logicServices/authService';
 import { InlineError } from '@/components/InlineError';
 import { AppSnackbar } from '@/components/AppSnackbar';
 import { useSnackbar } from '@/hooks/useSnackbar';
-
 export default function LoginScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Inline validation errors
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
   const snackbar = useSnackbar();
-
   const validate = () => {
     let valid = true;
     setEmailError('');
     setPasswordError('');
-
     if (!email.trim()) {
       setEmailError('Vui lòng nhập email');
       valid = false;
@@ -49,19 +41,15 @@ export default function LoginScreen() {
     }
     return valid;
   };
-
   const handleLogin = async () => {
     if (!validate()) return;
-
     setIsLoading(true);
     try {
       const result = await authService.login({
         email: email.trim(),
         password: password,
       });
-
       if (result.success) {
-        // TODO: navigate or store token
       } else {
         snackbar.showError(result.message || 'Sai tài khoản hoặc mật khẩu');
       }
@@ -71,7 +59,6 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
-
   return (
     <SafeAreaView className="flex-1 bg-[#226B5D] justify-center">
       <KeyboardAvoidingView behavior={'height'} className="flex-1">
@@ -85,7 +72,6 @@ export default function LoginScreen() {
               <View className="items-center mb-20">
                 <Text className="text-5xl font-bold text-white">Đăng nhập</Text>
               </View>
-
               <View className="bg-white rounded-3xl p-6 shadow-lg">
                 <Text className="text-lg font-semibold text-gray-800 mb-3">
                   Tên đăng nhập
@@ -101,7 +87,6 @@ export default function LoginScreen() {
                   editable={!isLoading}
                 />
                 <InlineError message={emailError} />
-
                 <Text className="text-lg font-semibold text-gray-800 mb-3">
                   Mật khẩu
                 </Text>
@@ -127,7 +112,6 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 </View>
                 <InlineError message={passwordError} />
-
                 <TouchableOpacity
                   onPress={() =>
                     navigation.navigate('EmailForOTPScreen' as any)
@@ -138,7 +122,6 @@ export default function LoginScreen() {
                     Quên mật khẩu?
                   </Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity
                   onPress={handleLogin}
                   disabled={isLoading}
@@ -159,7 +142,6 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
       <AppSnackbar
         {...snackbar.config}
         onDismiss={snackbar.hide}

@@ -1,23 +1,18 @@
 import Sound from "react-native-sound";
 import { Platform } from "react-native";
-
 Sound.setCategory("Playback", true);
 Sound.setActive(true);
-
 let whoosh: Sound | null = null;
 let isLoading = false;
 let loadPromise: Promise<Sound | null> | null = null;
-
 const loadSound = (): Promise<Sound | null> => {
   if (loadPromise) return loadPromise;
   if (whoosh !== null) return Promise.resolve(whoosh);
-
   loadPromise = new Promise((resolve) => {
     isLoading = true;
     const attempts = Platform.OS === "android" 
       ? ["whoosh", "whoosh.mp3", "notification"] 
       : ["whoosh", "whoosh.m4a", "whoosh.wav"];
-
     const loadWithAttempts = (index: number) => {
       if (index >= attempts.length) {
         isLoading = false;
@@ -25,7 +20,6 @@ const loadSound = (): Promise<Sound | null> => {
         resolve(null);
         return;
       }
-
       const sound = new Sound(attempts[index], Sound.MAIN_BUNDLE, (error) => {
         if (error) {
           loadWithAttempts(index + 1);
@@ -39,13 +33,10 @@ const loadSound = (): Promise<Sound | null> => {
         resolve(whoosh);
       });
     };
-
     loadWithAttempts(0);
   });
-
   return loadPromise;
 };
-
 export const playNotificationSound = async () => {
   try {
     const sound = await loadSound();
@@ -55,9 +46,7 @@ export const playNotificationSound = async () => {
     }
   } catch (err) {}
 };
-
 export const getWhoosh = () => loadSound();
-
 export const releaseSound = () => {
   if (whoosh) {
     try {
@@ -69,7 +58,6 @@ export const releaseSound = () => {
     loadPromise = null;
   }
 };
-
 export const playAudioFromUrl = (audioUrl: string) => {
   if (!audioUrl) return;
   const sound = new Sound(audioUrl, undefined, (error) => {

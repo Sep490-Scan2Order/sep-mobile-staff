@@ -1,13 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-
 interface Props {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
-
 const TABS = ['Tất cả', 'Đang bán', 'Đã bán hết'];
-
 export const TabBar: React.FC<Props> = ({ activeTab, setActiveTab }) => {
   return (
     <View
@@ -16,7 +13,6 @@ export const TabBar: React.FC<Props> = ({ activeTab, setActiveTab }) => {
     >
       {TABS.map(tab => {
         const isActive = activeTab === tab;
-
         return (
           <TouchableOpacity
             key={tab}

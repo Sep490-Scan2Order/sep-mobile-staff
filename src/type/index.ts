@@ -1,14 +1,5 @@
-/**
- * CENTRAL TYPE DEFINITION FILE
- * All shared models, DTOs, and navigation types are consolidated here.
- */
 
 import { NavigatorScreenParams } from '@react-navigation/native';
-
-/* ==========================================================================
-   AUTH & USER TYPES
-   ========================================================================== */
-
 export interface UserInfo {
   id: string;
   accountId: string;
@@ -21,18 +12,12 @@ export interface UserInfo {
   isActive: boolean;
   createdAt: string;
 }
-
 export interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   userInfo: UserInfo | null;
   isAuthenticated: boolean;
 }
-
-/* ==========================================================================
-   RESTAURANT TYPES
-   ========================================================================== */
-
 export interface Restaurant {
   id: number;
   tenantId: string;
@@ -55,17 +40,11 @@ export interface Restaurant {
   openTime?: string;
   closeTime?: string;
 }
-
 export interface RestaurantState {
   restaurant: Restaurant | null;
   loading: boolean;
   error: string | null;
 }
-
-/* ==========================================================================
-   DISH TYPES
-   ========================================================================== */
-
 export interface Dish {
   id: number;
   restaurantName: string;
@@ -80,24 +59,17 @@ export interface Dish {
   hasPromotion?: boolean;
   quantity?: number;
 }
-
 export interface DishState {
   dishes: Dish[];
   loading: boolean;
   error: string | null;
 }
-
 export interface TogglePayload {
   restaurantId: number;
   id: number;
   isSoldOut: boolean;
   quantity: number;
 }
-
-/* ==========================================================================
-   ORDER TYPES
-   ========================================================================== */
-
 export interface OrderItem {
   id: string;
   name: string;
@@ -110,7 +82,6 @@ export interface OrderItem {
   image?: string;
   refundedQuantity?: number;
 }
-
 export interface Order {
   id: string;
   phone: string;
@@ -135,7 +106,6 @@ export interface Order {
   paymentProofUrl?: string;
   note?: string;
 }
-
 export interface OrderState {
   orders: Order[];
   loading: boolean;
@@ -150,24 +120,17 @@ export interface OrderState {
     4: number;
   };
 }
-
-/* ==========================================================================
-   SHIFT TYPES
-   ========================================================================== */
-
 export interface CheckInRequest {
   restaurantId: number;
   staffId: string;
   openingCashAmount: number;
   note: string | null;
 }
-
 export interface CheckOutRequest {
   shiftId: number;
   cashAmount: number;
   note: string | null;
 }
-
 export interface ShiftReportDto {
   id: number;
   shiftId: number;
@@ -182,7 +145,6 @@ export interface ShiftReportDto {
   note: string;
   cashierName?: string;
 }
-
 export interface RefundRequest {
   orderId: string;
   refundType: number;
@@ -192,18 +154,13 @@ export interface RefundRequest {
   isFullRefund: boolean;
   refundItems: { orderDetailId: number; quantityToRefund: number }[];
 }
-
 export interface ShiftState {
   currentShift: any | null;
   currentShiftId: number | null;
   loading: boolean;
   error: string | null;
+  hasFetchedStatus: boolean;
 }
-
-/* ==========================================================================
-   NAVIGATION TYPES
-   ========================================================================== */
-
 export type BottomTabParamList = {
   KDS: undefined;
   Foods: undefined;
@@ -212,7 +169,6 @@ export type BottomTabParamList = {
   CheckIn: undefined;
   CashReport: undefined;
 };
-
 export type RootStackParamList = {
   Auth: undefined;
   MainApp: NavigatorScreenParams<BottomTabParamList>;

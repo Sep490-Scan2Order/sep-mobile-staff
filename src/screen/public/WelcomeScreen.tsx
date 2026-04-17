@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Image, Text } from 'react-native';
-
 export default function WelcomePage() {
   return (
     <View className="flex-1 justify-center items-center bg-[#226B5D]">
@@ -11,7 +10,6 @@ export default function WelcomePage() {
         className="w-64 h-64"
         resizeMode="contain"
       />
-
     </View>
   );
 }

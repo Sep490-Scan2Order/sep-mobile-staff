@@ -18,32 +18,25 @@ import { AppSnackbar } from '@/components/AppSnackbar';
 import { AppModal } from '@/components/AppModal';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useAppModal } from '@/hooks/useAppModal';
-
 export default function ChangePasswordScreen() {
   const route = useRoute<any>();
   const { email } = route.params;
   const navigation = useNavigation();
-
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Inline validation errors
   const [oldPasswordError, setOldPasswordError] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-
   const snackbar = useSnackbar();
   const modal = useAppModal();
-
   const validate = () => {
     let valid = true;
     setOldPasswordError('');
     setNewPasswordError('');
     setConfirmPasswordError('');
-
     if (!oldPassword.trim()) {
       setOldPasswordError('Vui lòng nhập mật khẩu cũ');
       valid = false;
@@ -59,10 +52,8 @@ export default function ChangePasswordScreen() {
     }
     return valid;
   };
-
   const handleChangePassword = async () => {
     if (!validate()) return;
-
     setIsLoading(true);
     try {
       const result = await authService.changePassword({
@@ -70,7 +61,6 @@ export default function ChangePasswordScreen() {
         oldPassword,
         newPassword,
       });
-
       if (result.success) {
         modal.showSuccess(
           'Đổi mật khẩu thành công',
@@ -86,7 +76,6 @@ export default function ChangePasswordScreen() {
       setIsLoading(false);
     }
   };
-
   return (
     <SafeAreaView className="flex-1 bg-[#226B5D]">
       <TouchableOpacity
@@ -95,7 +84,6 @@ export default function ChangePasswordScreen() {
       >
         <ChevronLeft size={30} color="white" />
       </TouchableOpacity>
-
       <KeyboardAvoidingView behavior={'height'} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-6">
           <View className="mt-6 mb-10 items-center">
@@ -103,7 +91,6 @@ export default function ChangePasswordScreen() {
               Đổi mật khẩu
             </Text>
           </View>
-
           <View className="bg-white rounded-3xl p-6 shadow-lg">
             <Text className="text-lg font-semibold text-gray-800 mb-2">Email</Text>
             <TextInput
@@ -111,7 +98,6 @@ export default function ChangePasswordScreen() {
               editable={false}
               className="bg-gray-100 rounded-2xl px-4 py-3 mb-4 text-gray-500"
             />
-
             <Text className="text-lg font-semibold text-gray-800 mb-2">Mật khẩu cũ</Text>
             <TextInput
               placeholder="Nhập mật khẩu cũ"
@@ -122,7 +108,6 @@ export default function ChangePasswordScreen() {
               editable={!isLoading}
             />
             <InlineError message={oldPasswordError} />
-
             <Text className="text-lg font-semibold text-gray-800 mb-2">Mật khẩu mới</Text>
             <View className="relative">
               <TextInput
@@ -145,7 +130,6 @@ export default function ChangePasswordScreen() {
               </TouchableOpacity>
             </View>
             <InlineError message={newPasswordError} />
-
             <Text className="text-lg font-semibold text-gray-800 mb-2">Xác nhận mật khẩu mới</Text>
             <TextInput
               placeholder="Nhập lại mật khẩu mới"
@@ -156,7 +140,6 @@ export default function ChangePasswordScreen() {
               editable={!isLoading}
             />
             <InlineError message={confirmPasswordError} />
-
             <TouchableOpacity
               onPress={handleChangePassword}
               disabled={isLoading}
@@ -173,7 +156,6 @@ export default function ChangePasswordScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
       <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
       <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </SafeAreaView>

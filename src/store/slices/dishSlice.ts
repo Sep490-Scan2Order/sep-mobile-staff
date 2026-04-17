@@ -1,14 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { dishService } from '@/services/logicServices/dishService';
 import { Dish, DishState, TogglePayload } from '@/type';
-
 const initialState: DishState = {
   dishes: [],
   loading: false,
   error: null,
 };
-
-
 export const toggleSoldOutThunk = createAsyncThunk(
   'dish/toggleSoldOut',
   async (
@@ -22,7 +19,6 @@ export const toggleSoldOutThunk = createAsyncThunk(
         isSoldOut,
         quantity
       );
-
       return { id, isSoldOut, quantity };
     } catch (error: any) {
       return rejectWithValue(
@@ -31,7 +27,6 @@ export const toggleSoldOutThunk = createAsyncThunk(
     }
   }
 );
-
 export const fetchDishesByRestaurant = createAsyncThunk(
   'dish/fetchByRestaurant',
   async (restaurantId: number, { rejectWithValue }) => {
@@ -42,15 +37,12 @@ export const fetchDishesByRestaurant = createAsyncThunk(
     }
   }
 );
-
-
 const dishSlice = createSlice({
   name: 'dish',
   initialState,
   reducers: {},
   extraReducers: builder => {
     builder
-
       .addCase(fetchDishesByRestaurant.pending, state => {
         state.loading = true;
         state.error = null;
@@ -63,15 +55,12 @@ const dishSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
       .addCase(toggleSoldOutThunk.pending, state => {
         state.loading = true;
       })
       .addCase(toggleSoldOutThunk.fulfilled, (state, action) => {
         state.loading = false;
-
         const { id, isSoldOut, quantity } = action.payload;
-
         const dish = state.dishes.find(d => d.id === id);
         if (dish) {
           dish.isSoldOut = isSoldOut;
@@ -86,5 +75,4 @@ const dishSlice = createSlice({
       });
   },
 });
-
 export default dishSlice.reducer;

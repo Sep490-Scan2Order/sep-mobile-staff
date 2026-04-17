@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, TouchableOpacity } from 'react-native';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react-native';
-
 export type SnackbarType = 'success' | 'error' | 'warning' | 'info';
-
 export interface SnackbarConfig {
   message: string;
   type?: SnackbarType;
@@ -11,12 +9,10 @@ export interface SnackbarConfig {
   actionLabel?: string;
   onAction?: () => void;
 }
-
 interface AppSnackbarProps extends SnackbarConfig {
   visible: boolean;
   onDismiss: () => void;
 }
-
 const CONFIG = {
   success: {
     bg: '#1A7A5E',
@@ -43,7 +39,6 @@ const CONFIG = {
     textColor: '#EFF6FF',
   },
 };
-
 export const AppSnackbar: React.FC<AppSnackbarProps> = ({
   visible,
   message,
@@ -56,14 +51,11 @@ export const AppSnackbar: React.FC<AppSnackbarProps> = ({
   const translateY = useRef(new Animated.Value(100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const config = CONFIG[type];
   const IconComponent = config.icon;
-
   useEffect(() => {
     if (visible) {
       if (timerRef.current) clearTimeout(timerRef.current);
-
       Animated.parallel([
         Animated.spring(translateY, {
           toValue: 0,
@@ -77,19 +69,16 @@ export const AppSnackbar: React.FC<AppSnackbarProps> = ({
           useNativeDriver: true,
         }),
       ]).start();
-
       timerRef.current = setTimeout(() => {
         hide();
       }, duration);
     } else {
       hide();
     }
-
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [visible]);
-
   const hide = () => {
     Animated.parallel([
       Animated.timing(translateY, {
@@ -104,9 +93,7 @@ export const AppSnackbar: React.FC<AppSnackbarProps> = ({
       }),
     ]).start(() => onDismiss());
   };
-
   if (!visible) return null;
-
   return (
     <Animated.View
       style={[
@@ -131,7 +118,6 @@ export const AppSnackbar: React.FC<AppSnackbarProps> = ({
     </Animated.View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',

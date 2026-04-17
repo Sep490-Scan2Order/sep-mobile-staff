@@ -1,15 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { restaurantService } from '@/services/logicServices/restaurantService';
 import { RestaurantState } from '@/type';
-
 const initialState: RestaurantState = {
   restaurant: null,
   loading: false,
   error: null,
 };
-
-// ================== API ==================
-
 export const fetchRestaurantById = createAsyncThunk(
   'restaurant/fetchById',
   async (restaurantId: number, { rejectWithValue }) => {
@@ -20,7 +16,6 @@ export const fetchRestaurantById = createAsyncThunk(
     }
   }
 );
-
 export const toggleReceivingOrders = createAsyncThunk(
   'restaurant/toggleReceivingOrders',
   async (
@@ -32,14 +27,12 @@ export const toggleReceivingOrders = createAsyncThunk(
         restaurantId,
         isReceiving
       );
-
       return { isReceiving };
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
   }
 );
-
 export const toggleOpeningStatus = createAsyncThunk(
   'restaurant/toggleOpeningStatus',
   async (
@@ -54,14 +47,10 @@ export const toggleOpeningStatus = createAsyncThunk(
     }
   }
 );
-
-// ================== SLICE ==================
-
 const restaurantSlice = createSlice({
   name: 'restaurant',
   initialState,
   reducers: {
-    // ✅ 🔥 realtime update
     updateReceivingOrdersLocal: (state, action) => {
       if (state.restaurant) {
         state.restaurant.isReceivingOrders = action.payload;
@@ -78,7 +67,6 @@ const restaurantSlice = createSlice({
   },
   extraReducers: builder => {
     builder
-      // fetch
       .addCase(fetchRestaurantById.pending, state => {
         state.loading = true;
         state.error = null;
@@ -91,15 +79,11 @@ const restaurantSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-      // toggle
       .addCase(toggleReceivingOrders.pending, state => {
         state.loading = true;
       })
       .addCase(toggleReceivingOrders.fulfilled, (state, action) => {
         state.loading = false;
-
-        // ⚠️ vẫn update để tránh delay nếu SignalR chậm
         if (state.restaurant) {
           state.restaurant.isReceivingOrders = action.payload.isReceiving;
         }
@@ -108,7 +92,6 @@ const restaurantSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // toggle opening
       .addCase(toggleOpeningStatus.pending, state => {
         state.loading = true;
       })
@@ -127,7 +110,5 @@ const restaurantSlice = createSlice({
       });
   },
 });
-
 export const { updateReceivingOrdersLocal } = restaurantSlice.actions;
-
 export default restaurantSlice.reducer;

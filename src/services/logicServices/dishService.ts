@@ -1,14 +1,11 @@
 import { dishApi } from '@/services/apiEndpoints/dishApi';
-
 export const dishService = {
   async getBranchDishes(restaurantId: number) {
     const axiosResponse = await dishApi.getRestaurantMenu(restaurantId);
     const response = axiosResponse.data;
-
     if (!response?.isSuccess) {
       throw new Error(response?.message || 'Không lấy được danh sách món');
     }
-
     const flattenedDishes = (response.data || []).flatMap((category: any) =>
       (category.dishes || []).map((dish: any) => ({
         id: dish.dishId,
@@ -25,7 +22,6 @@ export const dishService = {
         quantity: dish.dishAvailabilityStock,
       }))
     );
-
     return flattenedDishes;
   },
   async toggleSoldOut(
@@ -40,7 +36,6 @@ export const dishService = {
       isSoldOut,
       quantity
     );
-
     return response.data;
   }
 };

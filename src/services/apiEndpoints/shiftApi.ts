@@ -1,6 +1,5 @@
 import axiosPrivate from '@/services/axios/privateClient';
 import { CheckInRequest, CheckOutRequest, ShiftReportDto } from '@/type';
-
 export const shiftApi = {
   checkIn: (data: CheckInRequest) => {
     return axiosPrivate.post('/Shift/check-in', data);

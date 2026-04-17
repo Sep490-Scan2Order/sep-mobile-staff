@@ -17,23 +17,19 @@ import { AppSnackbar } from '@/components/AppSnackbar';
 import { AppModal } from '@/components/AppModal';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useAppModal } from '@/hooks/useAppModal';
-
 export default function EmailForOTPScreen() {
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
-
   const snackbar = useSnackbar();
   const modal = useAppModal();
-
   const handleSendOtp = async () => {
     setEmailError('');
     if (!email.trim()) {
       setEmailError('Vui lòng nhập email');
       return;
     }
-
     setIsLoading(true);
     try {
       const result = await authService.sendForgotPasswordOtp(email.trim());
@@ -52,7 +48,6 @@ export default function EmailForOTPScreen() {
       setIsLoading(false);
     }
   };
-
   return (
     <SafeAreaView className="flex-1 bg-[#226B5D]">
       <TouchableOpacity
@@ -61,7 +56,6 @@ export default function EmailForOTPScreen() {
       >
         <ChevronLeft size={30} color="white" />
       </TouchableOpacity>
-
       <KeyboardAvoidingView behavior={'height'} className="flex-1">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-6">
           <View className="mt-10 mb-20 items-center">
@@ -72,7 +66,6 @@ export default function EmailForOTPScreen() {
               Nhập email để nhận mã OTP khôi phục mật khẩu
             </Text>
           </View>
-
           <View className="bg-white rounded-3xl p-6 shadow-lg">
             <Text className="text-lg font-semibold text-gray-800 mb-3">
               Email của bạn
@@ -88,7 +81,6 @@ export default function EmailForOTPScreen() {
               editable={!isLoading}
             />
             <InlineError message={emailError} />
-
             <TouchableOpacity
               onPress={handleSendOtp}
               disabled={isLoading}
@@ -105,7 +97,6 @@ export default function EmailForOTPScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
       <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
       <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </SafeAreaView>

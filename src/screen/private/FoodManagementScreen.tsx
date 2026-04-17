@@ -11,46 +11,36 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { fetchDishesByRestaurant } from '@/store/slices/dishSlice';
 import { Dish } from '@/type';
-
 import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { TabBar } from '@/components/TabBar';
 import { FoodItemCard } from '@/components/FoodItemCard';
-
 const FoodManagementScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
-
   const { dishes, loading, error } = useSelector(
     (state: RootState) => state.dish,
   );
-
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const restaurantId = userInfo?.restaurantId;
-
   const [activeTab, setActiveTab] = useState('Tất cả');
-
   useEffect(() => {
     if (restaurantId) {
       dispatch(fetchDishesByRestaurant(restaurantId));
     }
   }, [dispatch, restaurantId]);
-
   const total = dishes.length;
   const selling = dishes.filter(d => !d.isSoldOut).length;
   const stopped = dishes.filter(d => d.isSoldOut).length;
-
   const filteredDishes = dishes.filter(d => {
     if (activeTab === 'Đang bán') return !d.isSoldOut;
     if (activeTab === 'Đã bán hết') return d.isSoldOut;
     return true;
   });
-
   return (
     <View className="flex-1 bg-teal-700">
       <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
-
         <View className="flex-1 bg-white pb-5">
           {!restaurantId ? (
             <View className="flex-1 items-center justify-center">
@@ -65,9 +55,7 @@ const FoodManagementScreen = () => {
                 <StatCard number={selling} label="Đang bán" />
                 <StatCard number={stopped} label="Đã bán hết" />
               </View>
-
               <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
-
               {loading ? (
                 <View className="flex-1 items-center justify-center">
                   <ActivityIndicator size="large" color="#0d9488" />
@@ -116,5 +104,4 @@ const FoodManagementScreen = () => {
     </View>
   );
 };
-
 export default FoodManagementScreen;

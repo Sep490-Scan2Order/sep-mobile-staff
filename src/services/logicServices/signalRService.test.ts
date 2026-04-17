@@ -1,8 +1,6 @@
 import * as signalR from '@microsoft/signalr';
 import { createSignalRConnection } from './signalRService';
 import { SIGNALR_URL } from '@/config/apiConfig';
-
-// Mock HubConnectionBuilder from @microsoft/signalr
 jest.mock('@microsoft/signalr', () => {
   const mockBuilder = {
     withUrl: jest.fn().mockReturnThis(),
@@ -15,13 +13,10 @@ jest.mock('@microsoft/signalr', () => {
     LogLevel: { Information: 1 },
   };
 });
-
 describe('signalRService', () => {
   it('should create and build a SignalR connection with correct parameters', () => {
     const connection = createSignalRConnection();
-    
     const builderInstance = new (signalR.HubConnectionBuilder as jest.Mock)();
-    
     expect(builderInstance.withUrl).toHaveBeenCalledWith(
         `${SIGNALR_URL}scan2order-hub`
     );

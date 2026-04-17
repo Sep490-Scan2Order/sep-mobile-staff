@@ -4,12 +4,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
 import { logout } from '@/store/slices/authSlice';
 import { User, LogOut, ChevronRight, Lock } from 'lucide-react-native';
-
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { authService } from '@/services/logicServices/authService';
-
 import { RootStackParamList } from '@/type';
-
 const MenuItem = ({
   icon: Icon,
   title,
@@ -30,7 +27,6 @@ const MenuItem = ({
         <View className="bg-emerald-100 p-2 rounded-xl">
           <Icon size={22} color="#065f46" />
         </View>
-
         <View>
           <Text className="text-base font-semibold text-gray-800">{title}</Text>
           {subtitle && (
@@ -38,18 +34,14 @@ const MenuItem = ({
           )}
         </View>
       </View>
-
       <ChevronRight size={20} color="#9ca3af" />
     </TouchableOpacity>
   );
 };
-
 export default function MenuScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-  console.log('MenuScreen - userInfo:', userInfo);
   if (!userInfo) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -57,10 +49,9 @@ export default function MenuScreen() {
       </View>
     );
   }
-
   return (
     <View className="flex-1 bg-gray-100">
-      {/* Header */}
+      {}
       <View className="bg-emerald-700 pt-16 pb-8 items-center rounded-b-3xl">
         <Image
           source={{
@@ -68,17 +59,14 @@ export default function MenuScreen() {
           }}
           className="w-24 h-24 rounded-full border-4 border-white"
         />
-
         <Text className="text-white text-lg font-semibold mt-3">
           {userInfo.name}
         </Text>
-
         <Text className="text-emerald-100 text-sm">
           ID: {userInfo.accountId}
         </Text>
       </View>
-
-      {/* Content */}
+      {}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16 }}
@@ -99,7 +87,7 @@ export default function MenuScreen() {
             });
           }}
         />
-        {/* Logout */}
+        {}
         <TouchableOpacity
           onPress={() => dispatch(logout())}
           className="bg-red-500 rounded-2xl p-4 flex-row items-center justify-center gap-2 mt-6"

@@ -8,15 +8,12 @@ import {
   StyleSheet,
 } from 'react-native';
 import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react-native';
-
 export type AppModalType = 'success' | 'error' | 'warning' | 'info';
-
 export interface AppModalButton {
   label: string;
   onPress: () => void;
   style?: 'primary' | 'secondary' | 'danger';
 }
-
 interface AppModalProps {
   visible: boolean;
   type?: AppModalType;
@@ -25,7 +22,6 @@ interface AppModalProps {
   buttons?: AppModalButton[];
   onDismiss?: () => void;
 }
-
 const TYPE_CONFIG = {
   success: {
     icon: CheckCircle,
@@ -52,7 +48,6 @@ const TYPE_CONFIG = {
     borderColor: '#93C5FD',
   },
 };
-
 const BUTTON_STYLES: Record<string, object> = {
   primary: {
     backgroundColor: '#226B5D',
@@ -64,13 +59,11 @@ const BUTTON_STYLES: Record<string, object> = {
     backgroundColor: '#DC2626',
   },
 };
-
 const BUTTON_TEXT_STYLES: Record<string, object> = {
   primary: { color: '#FFFFFF' },
   secondary: { color: '#374151' },
   danger: { color: '#FFFFFF' },
 };
-
 export const AppModal: React.FC<AppModalProps> = ({
   visible,
   type = 'info',
@@ -81,10 +74,8 @@ export const AppModal: React.FC<AppModalProps> = ({
 }) => {
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-
   const config = TYPE_CONFIG[type];
   const IconComponent = config.icon;
-
   useEffect(() => {
     if (visible) {
       Animated.parallel([
@@ -105,7 +96,6 @@ export const AppModal: React.FC<AppModalProps> = ({
       opacity.setValue(0);
     }
   }, [visible]);
-
   const defaultButtons: AppModalButton[] = buttons ?? [
     {
       label: 'Đóng',
@@ -113,23 +103,20 @@ export const AppModal: React.FC<AppModalProps> = ({
       style: 'primary',
     },
   ];
-
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onDismiss}>
       <View style={styles.backdrop}>
         <Animated.View
           style={[styles.card, { transform: [{ scale }], opacity }]}
         >
-          {/* Icon header */}
+          {}
           <View style={[styles.iconWrapper, { backgroundColor: config.bgColor, borderColor: config.borderColor }]}>
             <IconComponent size={40} color={config.iconColor} />
           </View>
-
-          {/* Content */}
+          {}
           <Text style={styles.title}>{title}</Text>
           {!!message && <Text style={styles.message}>{message}</Text>}
-
-          {/* Buttons */}
+          {}
           <View style={[styles.btnRow, defaultButtons.length === 1 && styles.btnSingle]}>
             {defaultButtons.map((btn, idx) => (
               <TouchableOpacity
@@ -153,7 +140,6 @@ export const AppModal: React.FC<AppModalProps> = ({
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
