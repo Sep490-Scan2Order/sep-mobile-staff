@@ -12,7 +12,7 @@ export const dishService = {
         restaurantName: '',
         dishName: dish.dishName,
         dishImageUrl: dish.imageUrl,
-        isSelling: !dish.isSoldOut,
+        isSelling: dish.isSelling,
         price: dish.price,
         isSoldOut: dish.isSoldOut,
         discountedPrice: dish.discountedPrice,
@@ -20,6 +20,12 @@ export const dishService = {
         promotionLabel: dish.promotionLabel,
         hasPromotion: dish.hasPromotion,
         quantity: dish.dishAvailabilityStock,
+        description: dish.description ?? null,
+        type: dish.type ?? 0,
+        promoType: dish.promoType ?? 0,
+        expiredAt: dish.expiredAt ?? null,
+        comboItems: dish.comboItems ?? [],
+        isCombo: Array.isArray(dish.comboItems) && dish.comboItems.length > 0,
       }))
     );
     return flattenedDishes;

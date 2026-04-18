@@ -46,6 +46,12 @@ export interface RestaurantState {
   loading: boolean;
   error: string | null;
 }
+export interface ComboItem {
+  dishId: number;
+  dishName: string;
+  imageUrl?: string;
+  quantity: number;
+}
 export interface Dish {
   id: number;
   restaurantName: string;
@@ -59,6 +65,12 @@ export interface Dish {
   promotionLabel?: string | null;
   hasPromotion?: boolean;
   quantity?: number;
+  isCombo?: boolean;
+  comboItems?: ComboItem[];
+  description?: string | null;
+  type?: number;
+  promoType?: number;
+  expiredAt?: string | null;
 }
 export interface DishState {
   dishes: Dish[];
@@ -181,4 +193,19 @@ export type RootStackParamList = {
   Login: undefined;
   EmailForOTPScreen: undefined;
   ResetPasswordScreen: { email: string };
+  FoodDetailScreen: {
+    id: number;
+    name: string;
+    price: string;
+    image: string;
+    active: boolean;
+    originalPrice?: number;
+    discountedPrice?: number;
+    promotionName?: string | null;
+    hasPromotion?: boolean;
+    stockQuantity?: number;
+    isCombo?: boolean;
+    comboItems?: ComboItem[];
+    description?: string | null;
+  };
 };

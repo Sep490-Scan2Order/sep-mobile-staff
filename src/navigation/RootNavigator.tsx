@@ -9,6 +9,7 @@ import ProfileScreen from '@/screen/private/ProfileScreen';
 import DetailOrderScreen from '@/screen/private/DetailOrderScreen';
 import ChangePasswordScreen from '@/screen/private/ChangePasswordScreen';
 import ScanDeliveryScreen from '@/screen/private/ScanDeliveryScreen';
+import FoodDetailScreen from '@/screen/private/FoodDetailScreen';
 import { RootStackParamList } from '@/type';
 import { GlobalCheckInModal } from '@/components/GlobalCheckInModal';
 import {
@@ -55,6 +56,10 @@ export default function RootNavigator() {
           <Stack.Screen
             name="ScanDeliveryScreen"
             component={ScanDeliveryScreen}
+          />
+          <Stack.Screen
+            name="FoodDetailScreen"
+            component={FoodDetailScreen}
           />
         </Stack.Group>
       ) : (
