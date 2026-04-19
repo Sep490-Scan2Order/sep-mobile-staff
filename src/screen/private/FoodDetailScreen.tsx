@@ -186,7 +186,10 @@ export default function FoodDetailScreen() {
               }}>
                 MÔ TẢ
               </Text>
-              <Text style={{
+              <Text 
+                numberOfLines={3}
+                ellipsizeMode="tail"
+                style={{
                 fontSize: 14, color: '#6b7280',
                 lineHeight: 22, letterSpacing: 0.1,
               }}>

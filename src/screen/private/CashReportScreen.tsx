@@ -171,7 +171,7 @@ const CashReportScreen = ({ route }: any) => {
                 </View>
               </View>
               <View
-                className={`mt-4 p-5 items-center ${
+                className={`mt-4 p-5 items-start ${
                   report.difference == 0
                     ? 'bg-emerald-50'
                     : Number(report.difference) > 0
