@@ -80,9 +80,10 @@ const FoodManagementScreen = () => {
                   contentContainerStyle={{ paddingBottom: 40 }}
                   showsVerticalScrollIndicator={false}
                 >
-                  {filteredDishes.map(item => (
+                  {filteredDishes.map((item, index) => (
                     <FoodItemCard
                       key={item.id}
+                      index={index}
                       name={item.dishName}
                       price={`${item.price.toLocaleString()} VND`}
                       image={item.dishImageUrl}

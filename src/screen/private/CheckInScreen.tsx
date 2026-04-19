@@ -23,6 +23,7 @@ import { AppSnackbar } from '@/components/AppSnackbar';
 import { AppModal } from '@/components/AppModal';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useAppModal } from '@/hooks/useAppModal';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 export default function CheckInScreen() {
   const dispatch = useDispatch<any>();
   const navigation = useNavigation<any>();
@@ -133,7 +134,10 @@ export default function CheckInScreen() {
           <Text className="text-2xl font-black text-teal-700 text-center mb-6">
             QUẢN LÝ CA LÀM
           </Text>
-          <View className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm">
+          <Animated.View 
+            entering={FadeInDown.duration(400).springify()}
+            className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm"
+          >
             <Text className="text-lg font-bold text-gray-800">
               Nhân viên: {user?.name}
             </Text>
@@ -185,7 +189,7 @@ export default function CheckInScreen() {
                 <Text className="text-white font-bold">Kết thúc ca (Check-out)</Text>
               )}
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       </SafeAreaView>
       <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />

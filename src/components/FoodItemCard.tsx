@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -23,6 +24,7 @@ interface ComboItemProp {
 }
 
 interface Props {
+  index?: number;
   id: number;
   name: string;
   price: string;
@@ -39,6 +41,7 @@ interface Props {
 }
 
 export const FoodItemCard: React.FC<Props> = ({
+  index = 0,
   id,
   name,
   price,
@@ -135,7 +138,8 @@ export const FoodItemCard: React.FC<Props> = ({
   return (
     <>
       {/* Card */}
-      <View
+      <Animated.View
+        entering={FadeInDown.delay(index * 50).duration(400)}
         className="mx-6 mt-4 rounded-xl overflow-hidden border"
         style={{
           backgroundColor: 'rgba(34, 107, 93, 0.3)',
@@ -221,7 +225,7 @@ export const FoodItemCard: React.FC<Props> = ({
             </Text>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Quantity Input Modal */}
 

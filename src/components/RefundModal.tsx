@@ -570,7 +570,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 )}
                 <View className="border-t border-gray-100 my-2" />
                 <View className="flex-row justify-between items-center">
-                  <Text className="font-bold text-gray-800">DỰ KIẾN THỰC HOÀN:</Text>
+                  <Text className="font-bold text-gray-800">TỔNG TIỀN HOÀN LẠI:</Text>
                   <Text className="text-[#226B5D] font-bold text-lg">
                     {Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
                       const item = orderItems.find(i => i.id === id);
