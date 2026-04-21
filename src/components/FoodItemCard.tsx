@@ -40,7 +40,7 @@ interface Props {
   description?: string | null;
 }
 
-export const FoodItemCard: React.FC<Props> = ({
+export const FoodItemCard: React.FC<Props> = React.memo(({
   index = 0,
   id,
   name,
@@ -137,7 +137,7 @@ export const FoodItemCard: React.FC<Props> = ({
 
   return (
     <>
-      {/* Card */}
+      {}
       <Animated.View
         entering={FadeInDown.delay(index * 50).duration(400)}
         className="mx-6 mt-4 rounded-xl overflow-hidden border"
@@ -227,8 +227,6 @@ export const FoodItemCard: React.FC<Props> = ({
         )}
       </Animated.View>
 
-      {/* Quantity Input Modal */}
-
       <Modal transparent visible={modalVisible} animationType="fade">
         <View
           style={{
@@ -268,4 +266,4 @@ export const FoodItemCard: React.FC<Props> = ({
       </Modal>
     </>
   );
-};
+});

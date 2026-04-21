@@ -20,11 +20,6 @@ const KDSScreen: React.FC = () => {
 
   const [activeSidebarIndex, setActiveSidebarIndex] = useState(-1);
 
-  useEffect(() => {
-    if (!restaurantId) return;
-    dispatch(fetchActiveOrders(restaurantId));
-  }, [restaurantId, dispatch, refreshCount]);
-
   useFocusEffect(
     useCallback(() => {
       if (!restaurantId) return;

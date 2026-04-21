@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
-  ScrollView,
   ActivityIndicator,
   Text,
   StatusBar,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,6 +15,7 @@ import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { TabBar } from '@/components/TabBar';
 import { FoodItemCard } from '@/components/FoodItemCard';
+
 const FoodManagementScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { dishes, loading, error } = useSelector(
@@ -23,19 +24,42 @@ const FoodManagementScreen = () => {
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const restaurantId = userInfo?.restaurantId;
   const [activeTab, setActiveTab] = useState('Tất cả');
+
   useEffect(() => {
     if (restaurantId) {
       dispatch(fetchDishesByRestaurant(restaurantId));
     }
   }, [dispatch, restaurantId]);
+
   const total = dishes.length;
   const selling = dishes.filter(d => !d.isSoldOut).length;
   const stopped = dishes.filter(d => d.isSoldOut).length;
+
   const filteredDishes = dishes.filter(d => {
     if (activeTab === 'Đang bán') return !d.isSoldOut;
     if (activeTab === 'Đã bán hết') return d.isSoldOut;
     return true;
   });
+
+  const renderItem = useCallback(({ item, index }: { item: Dish; index: number }) => (
+    <FoodItemCard
+      index={index}
+      name={item.dishName}
+      price={`${item.price.toLocaleString()} VND`}
+      image={item.dishImageUrl}
+      active={!item.isSoldOut}
+      id={item.id}
+      originalPrice={item.price}
+      discountedPrice={item.discountedPrice}
+      promotionName={item.promotionName}
+      hasPromotion={item.hasPromotion}
+      quantity={item.quantity}
+      isCombo={item.isCombo}
+      comboItems={item.comboItems}
+      description={item.description}
+    />
+  ), []);
+
   return (
     <View className="flex-1 bg-teal-700">
       <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
@@ -76,30 +100,16 @@ const FoodManagementScreen = () => {
                   </Text>
                 </View>
               ) : (
-                <ScrollView
+                <FlatList
+                  data={filteredDishes}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.id}
                   contentContainerStyle={{ paddingBottom: 40 }}
                   showsVerticalScrollIndicator={false}
-                >
-                  {filteredDishes.map((item, index) => (
-                    <FoodItemCard
-                      key={item.id}
-                      index={index}
-                      name={item.dishName}
-                      price={`${item.price.toLocaleString()} VND`}
-                      image={item.dishImageUrl}
-                      active={!item.isSoldOut}
-                      id={item.id}
-                      originalPrice={item.price}
-                      discountedPrice={item.discountedPrice}
-                      promotionName={item.promotionName}
-                      hasPromotion={item.hasPromotion}
-                      quantity={item.quantity}
-                      isCombo={item.isCombo}
-                      comboItems={item.comboItems}
-                      description={item.description}
-                    />
-                  ))}
-                </ScrollView>
+                  initialNumToRender={10}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
+                />
               )}
             </>
           )}

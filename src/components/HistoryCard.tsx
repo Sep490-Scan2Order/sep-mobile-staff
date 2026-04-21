@@ -12,7 +12,7 @@ interface Props {
   difference: number;
   note?: string;
 }
-export const HistoryCard: React.FC<Props> = ({
+export const HistoryCard: React.FC<Props> = React.memo(({
   employee,
   restaurant,
   totalCashOrder,
@@ -96,4 +96,4 @@ export const HistoryCard: React.FC<Props> = ({
       </View>
     </View>
   );
-};
+});

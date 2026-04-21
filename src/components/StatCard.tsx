@@ -4,7 +4,7 @@ interface Props {
   number: number;
   label: string;
 }
-export const StatCard: React.FC<Props> = ({ number, label }) => {
+export const StatCard: React.FC<Props> = React.memo(({ number, label }) => {
   return (
     <View className="flex-1 bg-teal-50/50 rounded-2xl py-4 items-center mx-1 border border-teal-700 shadow-sm ">
       <Text className="text-teal-700 text-2xl font-black">{number}</Text>
@@ -13,4 +13,4 @@ export const StatCard: React.FC<Props> = ({ number, label }) => {
       </Text>
     </View>
   );
-};
+});

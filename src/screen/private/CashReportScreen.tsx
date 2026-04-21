@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   StatusBar,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -202,6 +203,19 @@ const CashReportScreen = ({ route }: any) => {
       </ScrollView>
     </View>
   );
+  const renderHistoryItem = useCallback(({ item }: { item: ShiftReportDto }) => (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => setReport(item)}
+    >
+      <HistoryCard
+        employee={item.cashierName || user?.name || 'Nhân viên'}
+        restaurant={user?.restaurantName || 'Nhà hàng'}
+        {...item}
+      />
+    </TouchableOpacity>
+  ), [user]);
+
   const renderHistory = () => (
     <View className="flex-1 bg-white">
       <View className="px-6 mt-5 mb-4 flex-row items-center justify-between">
@@ -215,7 +229,10 @@ const CashReportScreen = ({ route }: any) => {
           {history.length} CA
         </Text>
       </View>
-      <ScrollView
+      <FlatList
+        data={history}
+        renderItem={renderHistoryItem}
+        keyExtractor={(_, index) => index.toString()}
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
@@ -226,30 +243,18 @@ const CashReportScreen = ({ route }: any) => {
             tintColor="#0f766e"
           />
         }
-      >
-        {history.length === 0 ? (
+        ListEmptyComponent={
           <View className="mt-20 items-center px-10">
             <Clock size={60} color="#e5e7eb" />
             <Text className="text-gray-400 text-center mt-4 text-base font-medium">
               Không có dữ liệu lịch sử ca làm.
             </Text>
           </View>
-        ) : (
-          history.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              activeOpacity={0.85}
-              onPress={() => setReport(item)}
-            >
-              <HistoryCard
-                employee={item.cashierName || user?.name || 'Nhân viên'}
-                restaurant={user?.restaurantName || 'Nhà hàng'}
-                {...item}
-              />
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
+        }
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+      />
     </View>
   );
   return (

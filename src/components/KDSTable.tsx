@@ -125,7 +125,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       );
   }, [orders, statusFilter, searchText, orderTypeFilter]);
 
-  const handleUpdateStatus = async (order: Order) => {
+  const handleUpdateStatus = useCallback(async (order: Order) => {
     if (order.status === 0) {
       setSelectedOrderForPayment(order);
       setShowPaymentModal(true);
@@ -170,9 +170,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     } catch (err) {
       snackbar.showError('Có lỗi xảy ra khi cập nhật trạng thái');
     }
-  };
+  }, [dispatch, navigation, snackbar]);
 
-  const handleConfirmPayment = async (orderId: string) => {
+  const handleConfirmPayment = useCallback(async (orderId: string) => {
     try {
       setConfirmingPayment(true);
       await dispatch(confirmCashOrder(orderId)).unwrap();
@@ -185,9 +185,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     } finally {
       setConfirmingPayment(false);
     }
-  };
+  }, [dispatch, snackbar]);
 
-  const handleConfirmPickup = async () => {
+  const handleConfirmPickup = useCallback(async () => {
     if (!pickupOrderId) return;
     const pickedDate = new Date();
     pickedDate.setHours(selectedHour, selectedMinute, 0, 0);
@@ -212,9 +212,9 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     } else {
       snackbar.showSuccess('Đã xác nhận giờ nhận hàng thành công');
     }
-  };
+  }, [dispatch, pickupOrderId, selectedHour, selectedMinute, snackbar]);
 
-  const renderItem = ({ item }: { item: Order }) => (
+  const renderItem = useCallback(({ item }: { item: Order }) => (
     <OrderItemCard
       item={item}
       activeMenuId={activeMenuId}
@@ -244,7 +244,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         }, 120);
       }}
     />
-  );
+  ), [activeMenuId, handleUpdateStatus, navigation, scrollToHour, scrollToMinute]);
 
   return (
     <View className="flex-1" style={{ position: 'relative' }}>
@@ -252,7 +252,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         <View className="flex-row items-center bg-[#E8F3F0] border border-[#226B5D] rounded-xl px-3 py-2">
           <Search size={18} color="#226B5D" />
           <TextInput
-            placeholder="Tìm món ăn / SĐT / mã đơn..."
+            placeholder="SĐT / mã đơn..."
             placeholderTextColor="#6b7280"
             value={searchText}
             onChangeText={setSearchText}
@@ -302,6 +302,10 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
             <Text className="text-gray-400">Không tìm thấy kết quả</Text>
           </View>
         }
+        initialNumToRender={5}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
       />
 
       {selectedOrder && (
@@ -313,7 +317,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           }}
           orderId={selectedOrder.id}
           orderCode={selectedOrder.orderCode.toString()}
-          isUnpaid={selectedOrder.status === 0} 
+          isUnpaid={selectedOrder.status === 0}
           orderItems={selectedOrder.items}
           orderTotalAmount={selectedOrder.totalAmount || 0}
           orderFinalAmount={selectedOrder.finalAmount || 0}

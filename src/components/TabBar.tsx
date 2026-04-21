@@ -6,7 +6,7 @@ interface Props {
   setActiveTab: (tab: string) => void;
 }
 const TABS = ['Tất cả', 'Đang bán', 'Đã bán hết'];
-export const TabBar: React.FC<Props> = ({ activeTab, setActiveTab }) => {
+export const TabBar: React.FC<Props> = React.memo(({ activeTab, setActiveTab }) => {
   return (
     <View
       className="flex-row bg-gray-200 rounded-xl mx-6 p-1"
@@ -39,4 +39,4 @@ export const TabBar: React.FC<Props> = ({ activeTab, setActiveTab }) => {
       })}
     </View>
   );
-};
+});

@@ -11,7 +11,7 @@ interface Props {
   onUpdateStatus: (order: Order) => void;
   onOpenPickup: (order: Order) => void;
 }
-export const OrderItemCard: React.FC<Props> = ({
+export const OrderItemCard: React.FC<Props> = React.memo(({
   item,
   activeMenuId,
   setActiveMenuId,
@@ -193,4 +193,4 @@ export const OrderItemCard: React.FC<Props> = ({
       )}
     </View>
   );
-};
+});

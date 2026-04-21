@@ -15,7 +15,7 @@ interface OrderItem {
 interface ListFoodProps {
   item: OrderItem;
 }
-export const ListFood: React.FC<ListFoodProps> = ({ item }) => {
+export const ListFood: React.FC<ListFoodProps> = React.memo(({ item }) => {
   return (
     <View className="flex-row bg-white rounded-2xl p-4 mb-3 border border-gray-100">
       {}
@@ -78,4 +78,4 @@ export const ListFood: React.FC<ListFoodProps> = ({ item }) => {
       </View>
     </View>
   );
-};
+});
