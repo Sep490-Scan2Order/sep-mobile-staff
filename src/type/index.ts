@@ -1,14 +1,5 @@
-/**
- * CENTRAL TYPE DEFINITION FILE
- * All shared models, DTOs, and navigation types are consolidated here.
- */
 
 import { NavigatorScreenParams } from '@react-navigation/native';
-
-/* ==========================================================================
-   AUTH & USER TYPES
-   ========================================================================== */
-
 export interface UserInfo {
   id: string;
   accountId: string;
@@ -20,19 +11,14 @@ export interface UserInfo {
   avatar: string | null;
   isActive: boolean;
   createdAt: string;
+  phone?: string;
 }
-
 export interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   userInfo: UserInfo | null;
   isAuthenticated: boolean;
 }
-
-/* ==========================================================================
-   RESTAURANT TYPES
-   ========================================================================== */
-
 export interface Restaurant {
   id: number;
   tenantId: string;
@@ -55,17 +41,17 @@ export interface Restaurant {
   openTime?: string;
   closeTime?: string;
 }
-
 export interface RestaurantState {
   restaurant: Restaurant | null;
   loading: boolean;
   error: string | null;
 }
-
-/* ==========================================================================
-   DISH TYPES
-   ========================================================================== */
-
+export interface ComboItem {
+  dishId: number;
+  dishName: string;
+  imageUrl?: string;
+  quantity: number;
+}
 export interface Dish {
   id: number;
   restaurantName: string;
@@ -78,25 +64,25 @@ export interface Dish {
   promotionName?: string | null;
   promotionLabel?: string | null;
   hasPromotion?: boolean;
+  quantity?: number;
+  isCombo?: boolean;
+  comboItems?: ComboItem[];
+  description?: string | null;
+  type?: number;
+  promoType?: number;
+  expiredAt?: string | null;
 }
-
 export interface DishState {
   dishes: Dish[];
   loading: boolean;
   error: string | null;
 }
-
 export interface TogglePayload {
   restaurantId: number;
   id: number;
   isSoldOut: boolean;
   quantity: number;
 }
-
-/* ==========================================================================
-   ORDER TYPES
-   ========================================================================== */
-
 export interface OrderItem {
   id: string;
   name: string;
@@ -107,8 +93,8 @@ export interface OrderItem {
   promotionName?: string;
   subTotal?: number;
   image?: string;
+  refundedQuantity?: number;
 }
-
 export interface Order {
   id: string;
   phone: string;
@@ -123,8 +109,16 @@ export interface Order {
   requestedPickupAt?: string | null;
   confirmedPickupAt?: string | null;
   restaurantId?: number;
+  refundOrderId?: string;
+  typeOrder?: number;
+  totalAmount?: number;
+  promotionDiscount?: number;
+  promotionName?: string | null;
+  finalAmount?: number;
+  originalOrderCode?: number;
+  paymentProofUrl?: string;
+  note?: string;
 }
-
 export interface OrderState {
   orders: Order[];
   loading: boolean;
@@ -139,24 +133,17 @@ export interface OrderState {
     4: number;
   };
 }
-
-/* ==========================================================================
-   SHIFT TYPES
-   ========================================================================== */
-
 export interface CheckInRequest {
   restaurantId: number;
   staffId: string;
   openingCashAmount: number;
   note: string | null;
 }
-
 export interface CheckOutRequest {
   shiftId: number;
   cashAmount: number;
   note: string | null;
 }
-
 export interface ShiftReportDto {
   id: number;
   shiftId: number;
@@ -169,27 +156,24 @@ export interface ShiftReportDto {
   difference: number;
   expectedTotalAmount: number;
   note: string;
+  cashierName?: string;
 }
-
 export interface RefundRequest {
   orderId: string;
   refundType: number;
   responsibleStaffId: string;
   note: string;
-  imageFile?: any; // Added for image evidence support
+  imageFile?: any; 
+  isFullRefund: boolean;
+  refundItems: { orderDetailId: number; quantityToRefund: number }[];
 }
-
 export interface ShiftState {
   currentShift: any | null;
   currentShiftId: number | null;
   loading: boolean;
   error: string | null;
+  hasFetchedStatus: boolean;
 }
-
-/* ==========================================================================
-   NAVIGATION TYPES
-   ========================================================================== */
-
 export type BottomTabParamList = {
   KDS: undefined;
   Foods: undefined;
@@ -198,7 +182,6 @@ export type BottomTabParamList = {
   CheckIn: undefined;
   CashReport: undefined;
 };
-
 export type RootStackParamList = {
   Auth: undefined;
   MainApp: NavigatorScreenParams<BottomTabParamList>;
@@ -210,4 +193,19 @@ export type RootStackParamList = {
   Login: undefined;
   EmailForOTPScreen: undefined;
   ResetPasswordScreen: { email: string };
+  FoodDetailScreen: {
+    id: number;
+    name: string;
+    price: string;
+    image: string;
+    active: boolean;
+    originalPrice?: number;
+    discountedPrice?: number;
+    promotionName?: string | null;
+    hasPromotion?: boolean;
+    stockQuantity?: number;
+    isCombo?: boolean;
+    comboItems?: ComboItem[];
+    description?: string | null;
+  };
 };

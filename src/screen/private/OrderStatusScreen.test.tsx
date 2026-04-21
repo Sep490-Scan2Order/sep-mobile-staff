@@ -1,119 +1,135 @@
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, screen } from '@testing-library/react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import OrderStatusScreen from './OrderStatusScreen';
 import {
   fetchRestaurantById,
   toggleReceivingOrders,
-  updateReceivingOrdersLocal,
+  toggleOpeningStatus,
 } from '@/store/slices/restaurantSlice';
-
-// Mock Redux
 jest.mock('react-redux', () => ({
   useDispatch: jest.fn(),
   useSelector: jest.fn(),
 }));
-
-// Mock thunks and actions
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+}));
 jest.mock('@/store/slices/restaurantSlice', () => ({
   fetchRestaurantById: jest.fn(),
   toggleReceivingOrders: jest.fn(),
-  updateReceivingOrdersLocal: jest.fn(),
+  toggleOpeningStatus: jest.fn(),
 }));
-
-// Mock sub-components
+jest.mock('lucide-react-native', () => {
+    const { View } = require('react-native');
+    return {
+        Clock: () => <View testID="clock-icon" />,
+        Store: () => <View testID="store-icon" />,
+        ShoppingBag: () => <View testID="bag-icon" />,
+    };
+});
 jest.mock('@/components/Header', () => ({
-  Header: () => null,
+    Header: () => null,
 }));
-
-jest.mock('@/components/RestaurantCard', () => {
-  const { View } = require('react-native');
+jest.mock('@/components/AppSnackbar', () => {
+  const { View, Text } = require('react-native');
   return {
-    RestaurantCard: () => <View testID="restaurant-card" />,
+    AppSnackbar: ({ message, visible }: any) => {
+      if (!visible) return null;
+      return <View><Text>{message}</Text></View>;
+    }
   };
 });
-
-jest.mock('@/components/OrderStatusCard', () => {
-  const { TouchableOpacity } = require('react-native');
-  return {
-    OrderStatusCard: ({ onToggle }: { onToggle: () => void }) => (
-      <TouchableOpacity testID="order-status-card" onPress={onToggle} />
-    ),
-  };
-});
-
 describe('OrderStatusScreen', () => {
-  const dispatch = jest.fn();
+  const mockDispatch = jest.fn();
+  const mockRestaurantId = 58;
   const mockRestaurant = {
     id: 58,
     restaurantName: 'Test Restaurant',
     address: '123 Test St',
     isOpened: true,
-    image: 'test-image.jpg',
     isReceivingOrders: true,
+    openTime: '08:00',
+    closeTime: '22:00',
   };
-
   beforeEach(() => {
     jest.clearAllMocks();
-    (useDispatch as unknown as jest.Mock).mockReturnValue(dispatch);
+    (useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
+    const mockState = {
+      auth: { userInfo: { id: 'u1', restaurantId: mockRestaurantId } },
+      restaurant: {
+        restaurant: mockRestaurant,
+        loading: false,
+        error: null,
+      },
+    };
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector(mockState));
   });
-
-  const setupSelector = (state: any) => {
-    (useSelector as unknown as jest.Mock).mockImplementation((selector: any) => selector({ restaurant: state }));
-  };
-
-  it('dispatches fetchRestaurantById(58) on mount', () => {
-    setupSelector({ restaurant: null, loading: false, error: null });
+  it('renders restaurant info correctly', () => {
     render(<OrderStatusScreen />);
-    expect(fetchRestaurantById).toHaveBeenCalledWith(58);
+    expect(screen.getByText('Test Restaurant')).toBeTruthy();
+    expect(screen.getByText('123 Test St')).toBeTruthy();
+    expect(screen.getByText('08:00 - 22:00')).toBeTruthy();
   });
-
-  it('shows ActivityIndicator when loading and no restaurant data', () => {
-    setupSelector({ restaurant: null, loading: true, error: null });
+  it('dispatches fetchRestaurantById on mount', () => {
     render(<OrderStatusScreen />);
-    // ActivityIndicator is the only thing shown in this state
-    // We can't easily find ActivityIndicator by text, so we check it's not showing the "not found" text
-    expect(screen.queryByText(/Không tìm thấy thông tin nhà hàng/i)).toBeNull();
+    expect(fetchRestaurantById).toHaveBeenCalledWith(mockRestaurantId);
   });
-
-  it('shows error message when error occurs', () => {
-    const errorMessage = 'Something went wrong';
-    setupSelector({ restaurant: null, loading: false, error: errorMessage });
+  it('handles toggle opening status success', async () => {
+    const unwrapMock = jest.fn().mockResolvedValue({});
+    mockDispatch.mockReturnValue({ unwrap: unwrapMock });
     render(<OrderStatusScreen />);
-    expect(screen.getByText(`Lỗi: ${errorMessage}`)).toBeTruthy();
+    const openingSwitch = screen.getAllByRole('switch')[0];
+    fireEvent(openingSwitch, 'valueChange', false);
+    expect(toggleOpeningStatus).toHaveBeenCalledWith({
+      restaurantId: mockRestaurant.id,
+      isOpened: false,
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Đã đóng cửa hàng')).toBeTruthy();
+    });
   });
-
-  it('shows "not found" message when restaurant is null after loading', () => {
-    setupSelector({ restaurant: null, loading: false, error: null });
+  it('handles toggle receiving orders success', async () => {
+    const unwrapMock = jest.fn().mockResolvedValue({});
+    mockDispatch.mockReturnValue({ unwrap: unwrapMock });
     render(<OrderStatusScreen />);
-    expect(screen.getByText(/Không tìm thấy thông tin nhà hàng/i)).toBeTruthy();
-  });
-
-  it('renders RestaurantCard and OrderStatusCard when data is loaded', () => {
-    setupSelector({ restaurant: mockRestaurant, loading: false, error: null });
-    render(<OrderStatusScreen />);
-    
-    // Check if the mock components are rendered with correct data
-    // We can use UNSAFE_getByType or search by name if we didn't mock them as custom elements
-    // Since we mocked them, we can check for the mocked content
-    expect(screen.getByTestId('restaurant-card')).toBeTruthy();
-    expect(screen.getByTestId('order-status-card')).toBeTruthy();
-  });
-
-  it('handles toggle logic correctly', () => {
-    setupSelector({ restaurant: mockRestaurant, loading: false, error: null });
-    render(<OrderStatusScreen />);
-
-    const orderStatusCard = screen.getByTestId('order-status-card');
-    fireEvent(orderStatusCard, 'press');
-
-    // Should dispatch updateReceivingOrdersLocal with the opposite value (!true = false)
-    expect(updateReceivingOrdersLocal).toHaveBeenCalledWith(false);
-
-    // Should dispatch toggleReceivingOrders with correct payload
+    const receivingSwitch = screen.getAllByRole('switch')[1];
+    fireEvent(receivingSwitch, 'valueChange', false);
     expect(toggleReceivingOrders).toHaveBeenCalledWith({
       restaurantId: mockRestaurant.id,
       isReceiving: false,
     });
+    await waitFor(() => {
+      expect(screen.getByText('Đã tắt nhận đơn hàng')).toBeTruthy();
+    });
+  });
+  it('handles toggle failure with snackbar', async () => {
+    const errorMsg = 'Update failed';
+    const unwrapMock = jest.fn().mockRejectedValue({ message: errorMsg });
+    mockDispatch.mockReturnValue({ unwrap: unwrapMock });
+    render(<OrderStatusScreen />);
+    const openingSwitch = screen.getAllByRole('switch')[0];
+    fireEvent(openingSwitch, 'valueChange', false);
+    await waitFor(() => {
+        expect(screen.getByText(errorMsg)).toBeTruthy();
+    });
+  });
+  it('shows loading state', () => {
+    const mockLoadingState = {
+        auth: { userInfo: { restaurantId: mockRestaurantId } },
+        restaurant: { restaurant: null, loading: true, error: null },
+    };
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector(mockLoadingState));
+    render(<OrderStatusScreen />);
+    expect(screen.getByText('Đang tải dữ liệu...')).toBeTruthy();
+  });
+  it('shows error state when initial load fails', () => {
+    const mockErrorState = {
+        auth: { userInfo: { restaurantId: mockRestaurantId } },
+        restaurant: { restaurant: null, loading: false, error: 'Load Error' },
+    };
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector(mockErrorState));
+    render(<OrderStatusScreen />);
+    expect(screen.getByText('Load Error')).toBeTruthy();
+    expect(screen.getByText('Thử lại')).toBeTruthy();
   });
 });

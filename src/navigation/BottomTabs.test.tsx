@@ -3,13 +3,9 @@ import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import BottomTabs from './BottomTabs';
-
-// === MOCKS ===
-
 jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
 }));
-
 jest.mock('@/screen/private/KDSScreen', () => {
     const React = require('react');
     const { View, Text } = require('react-native');
@@ -40,7 +36,6 @@ jest.mock('@/screen/private/CashReportScreen', () => {
     const { View, Text } = require('react-native');
     return () => <View><Text>CashReport Screen</Text></View>;
 });
-
 jest.mock('@react-navigation/bottom-tabs', () => {
     const React = require('react');
     return {
@@ -50,43 +45,31 @@ jest.mock('@react-navigation/bottom-tabs', () => {
         })),
     };
 });
-
-// Since BottomTabs uses lucide icons, they are mocked in jest.setup.ts
-// @/store is already available
-
 describe('BottomTabs Navigator', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
-
   it('renders correctly for regular staff (no Cashier role)', () => {
     (useSelector as unknown as jest.Mock).mockReturnValue({ role: 'Staff' });
-    
     const { getByText, queryByText } = render(
       <NavigationContainer>
         <BottomTabs />
       </NavigationContainer>
     );
-    
     expect(getByText('KDS Screen')).toBeTruthy();
     expect(getByText('Foods Screen')).toBeTruthy();
     expect(getByText('Orders Screen')).toBeTruthy();
     expect(getByText('Menu Screen')).toBeTruthy();
-    
-    // Cashier specific screens should not be in the hierarchy
     expect(queryByText('CheckIn Screen')).toBeNull();
     expect(queryByText('CashReport Screen')).toBeNull();
   });
-
   it('renders correctly for Cashier role', () => {
     (useSelector as unknown as jest.Mock).mockReturnValue({ role: 'Cashier' });
-    
     const { getByText } = render(
       <NavigationContainer>
         <BottomTabs />
       </NavigationContainer>
     );
-    
     expect(getByText('KDS Screen')).toBeTruthy();
     expect(getByText('CheckIn Screen')).toBeTruthy();
     expect(getByText('CashReport Screen')).toBeTruthy();

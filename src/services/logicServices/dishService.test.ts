@@ -1,19 +1,15 @@
 import { dishService } from './dishService';
 import { dishApi } from '@/services/apiEndpoints/dishApi';
-
-// Mock dishApi
 jest.mock('@/services/apiEndpoints/dishApi', () => ({
   dishApi: {
     getRestaurantMenu: jest.fn(),
     toggleSoldOut: jest.fn(),
   },
 }));
-
 describe('dishService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
-
   describe('getBranchDishes', () => {
     it('should return flattened list of dishes on success', async () => {
       const mockApiData = [
@@ -50,16 +46,13 @@ describe('dishService', () => {
           ],
         },
       ];
-
       (dishApi.getRestaurantMenu as jest.Mock).mockResolvedValue({
         data: {
           isSuccess: true,
           data: mockApiData,
         },
       });
-
       const result = await dishService.getBranchDishes(1);
-
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
         id: 1,
@@ -77,7 +70,6 @@ describe('dishService', () => {
       expect(result[1].id).toBe(2);
       expect(result[1].isSelling).toBe(false);
     });
-
     it('should throw error when API returns failure', async () => {
       (dishApi.getRestaurantMenu as jest.Mock).mockResolvedValue({
         data: {
@@ -85,10 +77,8 @@ describe('dishService', () => {
           message: 'Error message',
         },
       });
-
       await expect(dishService.getBranchDishes(1)).rejects.toThrow('Error message');
     });
-
     it('should handle empty data', async () => {
       (dishApi.getRestaurantMenu as jest.Mock).mockResolvedValue({
         data: {
@@ -96,19 +86,15 @@ describe('dishService', () => {
           data: [],
         },
       });
-
       const result = await dishService.getBranchDishes(1);
       expect(result).toEqual([]);
     });
   });
-
   describe('toggleSoldOut', () => {
     it('should call API and return data', async () => {
       const mockResponse = { data: { success: true } };
       (dishApi.toggleSoldOut as jest.Mock).mockResolvedValue(mockResponse);
-
       const result = await dishService.toggleSoldOut(1, 101, true, 0);
-
       expect(dishApi.toggleSoldOut).toHaveBeenCalledWith(1, 101, true, 0);
       expect(result).toEqual(mockResponse.data);
     });

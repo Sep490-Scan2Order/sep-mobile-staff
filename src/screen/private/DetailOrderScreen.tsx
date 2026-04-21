@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
-  Alert,
+  Image,
 } from 'react-native';
 import { HeaderDetail } from '@/components/HeaderDetail';
 import { CustomerDetailBorder } from '@/components/CustomerDetailBorder';
@@ -15,12 +15,10 @@ import {
   useNavigation,
   useRoute,
   RouteProp,
-  NavigatorScreenParams,
   CommonActions,
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
-
 import {
   confirmCashOrder,
   fetchActiveOrders,
@@ -28,31 +26,30 @@ import {
 } from '@/store/slices/orderSlice';
 import { RootState, AppDispatch } from '@/store';
 import { RootStackParamList } from '@/type';
-
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { AppModal } from '@/components/AppModal';
+import { useSnackbar } from '@/hooks/useSnackbar';
+import { useAppModal } from '@/hooks/useAppModal';
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'DetailOrderScreen'
 >;
-
 type RouteProps = RouteProp<RootStackParamList, 'DetailOrderScreen'>;
-
 export default function DetailOrderScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const dispatch = useDispatch<AppDispatch>();
-
   const { orders, loading } = useSelector((state: RootState) => state.order);
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
-
+  const snackbar = useSnackbar();
+  const modal = useAppModal();
   useEffect(() => {
     if (!restaurantId) return;
     dispatch(fetchActiveOrders(restaurantId));
   }, [restaurantId, dispatch]);
-
   const order = orders.find(o => o.id === route.params.orderId);
-
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -60,7 +57,6 @@ export default function DetailOrderScreen() {
       </View>
     );
   }
-
   if (!order) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -68,51 +64,83 @@ export default function DetailOrderScreen() {
       </View>
     );
   }
-
-  const handlePayment = async () => {
-    try {
-      await dispatch(confirmCashOrder(order.id)).unwrap();
-
-      Alert.alert(
-        'Thanh toán thành công',
-        `Đơn hàng #${order.orderCode} đã được thanh toán`,
-      );
-
-      // Refresh UI - SignalR sẽ gửi OrderConfirmed event để update danh sách
-      dispatch(forceRefresh());
-
-      // Quay lại KDS screen
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert('Lỗi', 'Thanh toán thất bại');
-    }
+  const handlePayment = () => {
+    modal.showConfirm(
+      'Xác nhận thanh toán',
+      `Xác nhận thanh toán đơn hàng #${order.orderCode}?`,
+      async () => {
+        try {
+          await dispatch(confirmCashOrder(order.id)).unwrap();
+          dispatch(forceRefresh());
+          snackbar.showSuccess(
+            `Đơn hàng #${order.orderCode} đã thanh toán thành công`,
+          );
+          navigation.goBack();
+        } catch (error: any) {
+          snackbar.showError(error?.message || 'Thanh toán thất bại');
+        }
+      },
+      'Thanh toán',
+    );
   };
-
   return (
     <View className="flex-1 bg-gray-100">
       <HeaderDetail onBack={() => navigation.goBack()} />
-
-      <ScrollView className="px-7 -mt-90" style={{ marginTop: -165 }}>
+      <View className="px-7" style={{ marginTop: -165 }}>
         <CustomerDetailBorder order={order} />
-
-        <Border className="mt-5">
+      </View>
+      <ScrollView className="px-7 mt-5">
+        <Border>
           <FlatList
             data={order.items}
             keyExtractor={item => item.id}
             scrollEnabled={false}
             renderItem={({ item }) => <ListFood item={item} />}
           />
-
-          <View className="flex-row justify-between items-center mt-4 pt-4 border-t border-gray-200">
-            <Text className="text-gray-600 text-sm">Tổng tiền đơn hàng</Text>
-
-            <Text className="text-[#226B5D] text-lg font-semibold">
-              {order.amount.toLocaleString()} đ
-            </Text>
+          <View className="mt-4 pt-4 border-t border-gray-200">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-gray-500 text-sm">Tạm tính</Text>
+              <Text className="text-gray-800 text-sm font-medium">
+                {order.amount.toLocaleString()} đ
+              </Text>
+            </View>
+            {order.promotionDiscount ? (
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-red-500 text-sm">
+                  {order.promotionName || 'Khuyến mãi đơn hàng'}
+                </Text>
+                <Text className="text-red-500 text-sm font-medium">
+                  - {order.promotionDiscount.toLocaleString()} đ
+                </Text>
+              </View>
+            ) : null}
+            <View className="flex-row justify-between items-center mt-1">
+              <Text className="text-gray-900 text-base font-bold">Tổng thanh toán</Text>
+              <Text className="text-[#226B5D] text-xl font-bold">
+                {order.finalAmount?.toLocaleString()} đ
+              </Text>
+            </View>
           </View>
         </Border>
+        {order.note ? (
+          <Border className="mt-5">
+            <Text className="text-gray-700 font-bold mb-1">Ghi chú</Text>
+            <Text className="text-gray-600">{order.note}</Text>
+          </Border>
+        ) : null}
+        {order.paymentProofUrl && (
+          <Border className="mt-5">
+            <Text className="text-gray-700 font-bold mb-3">
+              Ảnh bằng chứng (Hoàn tiền/Thanh toán)
+            </Text>
+            <Image
+              source={{ uri: order.paymentProofUrl }}
+              className="w-full h-64 rounded-xl bg-gray-200"
+              resizeMode="contain"
+            />
+          </Border>
+        )}
       </ScrollView>
-
       <View className="px-4 pb-6 bg-gray-100">
         {order.status === 0 && order.type === 'Cash' && (
           <TouchableOpacity
@@ -123,6 +151,8 @@ export default function DetailOrderScreen() {
           </TouchableOpacity>
         )}
       </View>
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </View>
   );
 }

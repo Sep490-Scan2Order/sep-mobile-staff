@@ -15,7 +15,6 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-
 const rootReducer = combineReducers({
   auth: authReducer,
   dish: dishReducer,
@@ -23,15 +22,12 @@ const rootReducer = combineReducers({
   shift: shiftReducer,
   order: orderReducer
 });
-
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: ['auth', 'shift'],
 };
-
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -48,8 +44,6 @@ export const store = configureStore({
       },
     }),
 });
-
 export const persistor = persistStore(store);
-
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

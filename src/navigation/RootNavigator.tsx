@@ -1,32 +1,28 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
-
+import { fetchCurrentShift } from '@/store/slices/shiftSlice';
 import BottomTabs from '@/navigation/BottomTabs';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import ProfileScreen from '@/screen/private/ProfileScreen';
 import DetailOrderScreen from '@/screen/private/DetailOrderScreen';
-// import DetailPaymentScreen from '@/screen/private/DetailPaymentScreen';
 import ChangePasswordScreen from '@/screen/private/ChangePasswordScreen';
 import ScanDeliveryScreen from '@/screen/private/ScanDeliveryScreen';
+import FoodDetailScreen from '@/screen/private/FoodDetailScreen';
 import { RootStackParamList } from '@/type';
-
+import { GlobalCheckInModal } from '@/components/GlobalCheckInModal';
 import {
   initSignalR,
   stopSignalR,
 } from '@/services/logicServices/globalSignalR';
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
 export default function RootNavigator() {
+  const dispatch = useDispatch<any>();
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.accessToken,
   );
-
   const user = useSelector((state: RootState) => state.auth.userInfo);
-
-  // 🔥 SIGNALR GLOBAL
   useEffect(() => {
     const init = async () => {
       try {
@@ -34,15 +30,16 @@ export default function RootNavigator() {
           await stopSignalR();
           return;
         }
+        dispatch(fetchCurrentShift());
         await initSignalR(user.restaurantId, user.id);
       } catch (err) {
-        console.log('⚠️ SignalR init error', err);
       }
     };
     init();
-  }, [user]);
+  }, [user, dispatch]);
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
         <Stack.Group>
           <Stack.Screen name="MainApp" component={BottomTabs} />
@@ -51,10 +48,7 @@ export default function RootNavigator() {
             name="DetailOrderScreen"
             component={DetailOrderScreen}
           />
-          {/* <Stack.Screen
-            name="DetailPaymentScreen"
-            component={DetailPaymentScreen}
-          /> */}
+          {}
           <Stack.Screen
             name="ChangePasswordScreen"
             component={ChangePasswordScreen}
@@ -63,10 +57,16 @@ export default function RootNavigator() {
             name="ScanDeliveryScreen"
             component={ScanDeliveryScreen}
           />
+          <Stack.Screen
+            name="FoodDetailScreen"
+            component={FoodDetailScreen}
+          />
         </Stack.Group>
       ) : (
         <Stack.Screen name="Auth" component={AuthNavigator} />
       )}
     </Stack.Navigator>
+      <GlobalCheckInModal />
+    </>
   );
 }

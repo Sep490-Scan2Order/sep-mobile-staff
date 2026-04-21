@@ -1,5 +1,4 @@
 import axiosPrivate from '@/services/axios/privateClient';
-
 export const orderApi = {
   getActiveOrders: (restaurantId: number) => {
     return axiosPrivate.get(
@@ -33,6 +32,9 @@ readyForPickup: (orderCode: number) => {
       confirmedPickupAt,
     });
   },
+  getAvailablePromotions: (cartId: string, phone: string) => {
+    return axiosPrivate.get(`/Order/available-promotions?cartId=${cartId}&phone=${phone}`);
+  },
 };
 export const scanQrApi = async (
   qrContent: string,
@@ -42,6 +44,5 @@ export const scanQrApi = async (
     qrContent,
     orderNumber,
   });
-
-  return res.data.data; // ✅ lấy audioUrl
+  return res.data.data; 
 };

@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Calendar, Phone, MoreVertical } from 'lucide-react-native';
+import { Calendar, Phone, MoreVertical, RotateCcw } from 'lucide-react-native';
 import { Order } from '@/type';
-
 interface Props {
   item: Order;
   activeMenuId: string | null;
@@ -12,8 +11,7 @@ interface Props {
   onUpdateStatus: (order: Order) => void;
   onOpenPickup: (order: Order) => void;
 }
-
-export const OrderItemCard: React.FC<Props> = ({
+export const OrderItemCard: React.FC<Props> = React.memo(({
   item,
   activeMenuId,
   setActiveMenuId,
@@ -23,16 +21,9 @@ export const OrderItemCard: React.FC<Props> = ({
   onOpenPickup,
 }) => {
   const isPreOrder = item.isPreOrder === true;
-
-  // 👇 NEW: check unpaid
   const isUnpaid = item.status === 0;
-
   const needsPickupConfirm =
     isPreOrder && item.status === 1 && !item.confirmedPickupAt;
-
-  /**
-   * FORMAT
-   */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.toLocaleDateString('vi-VN')} - ${date.toLocaleTimeString(
@@ -40,7 +31,6 @@ export const OrderItemCard: React.FC<Props> = ({
       { hour: '2-digit', minute: '2-digit' },
     )}`;
   };
-
   const formatTime = (dateString?: string | null) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -49,10 +39,6 @@ export const OrderItemCard: React.FC<Props> = ({
       minute: '2-digit',
     });
   };
-
-  /**
-   * STATUS LABEL
-   */
   const ORDER_STATUS_LABEL: Record<number, string> = {
     0: 'Thanh toán',
     1: 'Đã nhận',
@@ -61,32 +47,33 @@ export const OrderItemCard: React.FC<Props> = ({
     4: 'Đã giao',
     5: 'Đã hủy',
   };
-
-  /**
-   * ACTION LABEL
-   */
   const ACTION_LABEL: Record<number, string> = {
+    0: 'Thanh toán',
     1: 'Nhận đơn',
     2: 'Làm xong',
     3: 'Giao hàng',
   };
-
-  // 👇 NEW: logic hiển thị refund
-  const canRefund = isUnpaid || [1, 2, 3].includes(item.status);
-
+  const isRefund = item.typeOrder === 1;
+  const canRefund = !isRefund && (isUnpaid || [1, 2, 3].includes(item.status));
+  const REFUND_TYPE_LABEL: Record<number, string> = {
+    0: 'Khách quan / Đổi món',
+    1: 'Lỗi nhân viên',
+    2: 'Lỗi hệ thống',
+  };
+  const mainColor = isRefund ? '#dc2626' : '#226B5D';
+  const bgColor = isRefund ? 'bg-red-50' : 'bg-gray-100';
+  const borderColor = isRefund ? 'border-red-500' : 'border-[#226B5D]';
   return (
-    <View className="bg-gray-100 rounded-xl border-2 border-[#226B5D] overflow-hidden mb-6">
-      {/* PREORDER */}
-      {isPreOrder && (
-        <View className="flex-row items-center px-4 py-1.5 bg-[#E8F3F0] border-b border-[#226B5D]">
-          <Text className="text-xs font-bold text-[#226B5D]">PRE-ORDER</Text>
-
+    <View className={`${bgColor} rounded-xl border-2 ${borderColor} overflow-hidden mb-6`}>
+      {}
+      {isPreOrder && !isRefund && (
+        <View className={`flex-row items-center px-4 py-1.5 ${isRefund ? 'bg-red-100' : 'bg-[#E8F3F0]'} border-b ${borderColor}`}>
+          <Text className={`text-xs font-bold ${isRefund ? 'text-red-700' : 'text-[#226B5D]'}`}>PRE-ORDER</Text>
           {item.requestedPickupAt && (
-            <Text className="ml-2 text-xs text-[#226B5D]">
+            <Text className={`ml-2 text-xs ${isRefund ? 'text-red-700' : 'text-[#226B5D]'}`}>
               · Nhận lúc: {formatTime(item.requestedPickupAt)}
             </Text>
           )}
-
           {item.confirmedPickupAt && (
             <Text className="ml-2 text-xs text-green-700 font-semibold">
               Đã xác nhận: {formatTime(item.confirmedPickupAt)}
@@ -94,27 +81,31 @@ export const OrderItemCard: React.FC<Props> = ({
           )}
         </View>
       )}
-
-      {/* HEADER */}
+      {}
       <View className="flex-row items-center px-4 py-4 border-b border-dashed border-gray-400">
-        <Phone size={20} color="#226B5D" />
-
-        <Text className="flex-1 ml-3 text-base text-gray-700">
-          {item.phone || 'Không có SĐT'}
+        {isRefund ? (
+          <RotateCcw size={20} color="#dc2626" />
+        ) : (
+          <Phone size={20} color="#226B5D" />
+        )}
+        <Text className={`flex-1 ml-3 text-base font-bold ${isRefund ? 'text-red-600' : 'text-gray-700'}`}>
+          {isRefund
+            ? item.originalOrderCode
+              ? `HOÀN TIỀN CHO ORD-${item.originalOrderCode}`
+              : 'ĐƠN HOÀN TIỀN'
+            : item.phone || 'Không có SĐT'}
         </Text>
-
         <View className="relative">
           <TouchableOpacity
             onPress={() =>
               setActiveMenuId(activeMenuId === item.id ? null : item.id)
             }
           >
-            <MoreVertical size={18} color="#226B5D" />
+            <MoreVertical size={18} color={mainColor} />
           </TouchableOpacity>
-
           {activeMenuId === item.id && (
             <View className="absolute right-0 top-8 bg-white border rounded-lg shadow-xl z-50 w-40 py-1">
-              {/* VIEW DETAIL */}
+              {}
               <TouchableOpacity
                 className="px-4 py-2 border-b"
                 onPress={() => {
@@ -124,8 +115,7 @@ export const OrderItemCard: React.FC<Props> = ({
               >
                 <Text>Chi tiết</Text>
               </TouchableOpacity>
-
-              {/* REFUND */}
+              {}
               {canRefund && (
                 <TouchableOpacity
                   className="px-4 py-2"
@@ -143,13 +133,18 @@ export const OrderItemCard: React.FC<Props> = ({
           )}
         </View>
       </View>
-
-      {/* BODY */}
+      {}
       <View className="flex-row">
         <View className="flex-1 px-3 py-4 border-r">
-          <Text className="text-lg font-semibold">ORD-{item.orderCode}</Text>
+          <Text className={`text-lg font-semibold ${isRefund ? 'text-red-700' : 'text-black'}`}>ORD-{item.orderCode}</Text>
+          {isRefund && (
+            <View className="mt-2 bg-red-200 self-start px-2 py-1 rounded">
+              <Text className="text-red-800 text-[10px] font-bold">
+                LÝ DO: {REFUND_TYPE_LABEL[item.refundType ?? 0]?.toUpperCase()}
+              </Text>
+            </View>
+          )}
         </View>
-
         <View className="flex-1 px-3 py-4">
           <View className="flex-row items-center mb-3">
             <Calendar size={16} color="#777" />
@@ -157,17 +152,14 @@ export const OrderItemCard: React.FC<Props> = ({
               {formatDate(item.createdAt)}
             </Text>
           </View>
-
           <Text className="text-sm text-gray-600">
-            {item.amount.toLocaleString()} đ
+            {(item.finalAmount ?? item.amount).toLocaleString()} đ
           </Text>
-
-          {/* STATUS */}
+          {}
           <Text className="mt-2 text-xs text-gray-500">
             {ORDER_STATUS_LABEL[item.status]}
           </Text>
-
-          {/* 👇 NEW: hiển thị payment status */}
+          {}
           <Text
             className={`mt-1 text-xs font-semibold ${
               isUnpaid ? 'text-red-500' : 'text-green-600'
@@ -177,8 +169,7 @@ export const OrderItemCard: React.FC<Props> = ({
           </Text>
         </View>
       </View>
-
-      {/* PICKUP */}
+      {}
       {needsPickupConfirm && (
         <TouchableOpacity
           className="py-3 items-center border-t bg-[#E8F3F0]"
@@ -189,9 +180,8 @@ export const OrderItemCard: React.FC<Props> = ({
           </Text>
         </TouchableOpacity>
       )}
-
-      {/* ACTION */}
-      {[0, 1, 2, 3].includes(item.status) && (
+      {}
+      {!isRefund && [0, 1, 2, 3].includes(item.status) && (
         <TouchableOpacity
           className="py-4 items-center border-t border-dashed"
           onPress={() => onUpdateStatus(item)}
@@ -203,4 +193,4 @@ export const OrderItemCard: React.FC<Props> = ({
       )}
     </View>
   );
-};
+});

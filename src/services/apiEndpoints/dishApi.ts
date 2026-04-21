@@ -1,5 +1,4 @@
 import axiosPrivate from '@/services/axios/privateClient';
-
 export const dishApi = {
   getBranchDishesByRestaurant: (restaurantId: number) => {
     return axiosPrivate.get(
@@ -21,5 +20,4 @@ toggleSoldOut: (
       `/BranchDishConfig/toggle-sold-out/${restaurantId}/${id}?isSoldOut=${isSoldOut}&quantity=${quantity}`
     );
   },
-  
 };

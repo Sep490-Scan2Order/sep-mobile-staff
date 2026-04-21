@@ -5,8 +5,9 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  Alert,
 } from 'react-native';
+import { AppSnackbar } from '@/components/AppSnackbar';
+import { useSnackbar } from '@/hooks/useSnackbar';
 import { Search, X } from 'lucide-react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store';
@@ -14,13 +15,18 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import {
   updateOrderStatus,
   confirmPickupTime,
+  confirmCashOrder,
+  forceRefresh,
 } from '@/store/slices/orderSlice';
+import { useAppModal } from '@/hooks/useAppModal';
+import { AppModal } from '@/components/AppModal';
 import { Order } from '@/type';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { RefundModal } from '@/components/RefundModal';
 import { isToday } from '@/utils/dateUtils';
 import { TimePickerModal } from '@/components/TimePickerModal';
 import { OrderItemCard } from '@/components/OrderItemCard';
+import { PaymentDetailModal } from '@/components/PaymentDetailModal';
 import { orderService } from '@/services/logicServices/orderService';
 import { playAudioUrl } from '@/services/logicServices/playAudioUrl';
 
@@ -36,24 +42,25 @@ type RootStackParamList = {
 export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
-
+  const snackbar = useSnackbar();
+  const modal = useAppModal();
   const orders = useSelector((state: RootState) => state.order.orders);
-
   const [searchText, setSearchText] = useState('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
-
   const [orderTypeFilter, setOrderTypeFilter] = useState<
     'all' | 'preorder' | 'dinein'
   >('all');
-
   const [showConfirmPickupModal, setShowConfirmPickupModal] = useState(false);
   const [pickupOrderId, setPickupOrderId] = useState<string | null>(null);
   const [confirmingPickup, setConfirmingPickup] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] =
+    useState<Order | null>(null);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
 
   const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-
   const initNow = new Date();
   const [selectedHour, setSelectedHour] = useState(initNow.getHours());
   const [selectedMinute, setSelectedMinute] = useState(
@@ -84,15 +91,18 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
     }
   };
 
-  /**
-   * FILTER ORDERS
-   */
   const filteredOrders = useMemo(() => {
     return orders
       .filter(order => isToday(order.createdAt))
-      .filter(order =>
-        statusFilter === -1 ? true : order.status === statusFilter,
-      )
+      .filter(order => {
+        if (statusFilter === 5) {
+          return order.typeOrder === 1;
+        }
+        if (statusFilter !== -1 && order.typeOrder === 1) {
+          return false;
+        }
+        return statusFilter === -1 ? true : order.status === statusFilter;
+      })
       .filter(order => {
         if (orderTypeFilter === 'preorder') return order.isPreOrder === true;
         if (orderTypeFilter === 'dinein') return order.isPreOrder !== true;
@@ -100,10 +110,8 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       })
       .filter(order => {
         if (!searchText.trim()) return true;
-
         const keyword = searchText.toLowerCase();
         const orderCodeFull = `ord-${order.orderCode}`;
-
         return (
           order.phone?.toLowerCase().includes(keyword) ||
           order.orderCode?.toString().includes(keyword) ||
@@ -113,102 +121,100 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       })
       .sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [orders, statusFilter, searchText, orderTypeFilter]);
 
-  /**
-   * UPDATE STATUS
-   */
-  const handleUpdateStatus = async (order: Order) => {
-    const newStatus = getNextStatus(order.status);
+  const handleUpdateStatus = useCallback(async (order: Order) => {
+    if (order.status === 0) {
+      setSelectedOrderForPayment(order);
+      setShowPaymentModal(true);
+      return;
+    }
 
+    const newStatus = getNextStatus(order.status);
     try {
       if (order.status === 2) {
         const audio = await orderService.readyForPickup(order.orderCode);
         await playAudioUrl(audio.audioUrl);
-
         await dispatch(
           updateOrderStatus({
             orderId: order.id,
             newStatus: 3,
           }),
         );
-
         playNotificationSound();
         return;
       }
-
       if (newStatus === 4) {
         navigation.navigate('ScanDeliveryScreen', {
           orderNumber: order.orderCode,
         });
         return;
       }
-
       const result = await dispatch(
         updateOrderStatus({
           orderId: order.id,
           newStatus,
         }),
       );
-
       if (updateOrderStatus.rejected.match(result)) {
         const errorMsg =
           (result.payload as string) || 'Cập nhật trạng thái thất bại';
-        Alert.alert('Không thể cập nhật', errorMsg);
+        snackbar.showError(errorMsg);
         return;
       }
-
       if (newStatus === 2) {
         playNotificationSound();
       }
     } catch (err) {
-      console.log('Update status error:', err);
-      Alert.alert('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái');
+      snackbar.showError('Có lỗi xảy ra khi cập nhật trạng thái');
     }
-  };
+  }, [dispatch, navigation, snackbar]);
 
-  /**
-   * CONFIRM PICKUP
-   */
-  const handleConfirmPickup = async () => {
+  const handleConfirmPayment = useCallback(async (orderId: string) => {
+    try {
+      setConfirmingPayment(true);
+      await dispatch(confirmCashOrder(orderId)).unwrap();
+      dispatch(forceRefresh());
+      snackbar.showSuccess('Xác nhận thanh toán thành công');
+      setShowPaymentModal(false);
+      setSelectedOrderForPayment(null);
+    } catch (error: any) {
+      snackbar.showError(error?.message || 'Thanh toán thất bại');
+    } finally {
+      setConfirmingPayment(false);
+    }
+  }, [dispatch, snackbar]);
+
+  const handleConfirmPickup = useCallback(async () => {
     if (!pickupOrderId) return;
-
     const pickedDate = new Date();
     pickedDate.setHours(selectedHour, selectedMinute, 0, 0);
-
     if (pickedDate.getTime() < Date.now()) {
-      Alert.alert('Lỗi', 'Không thể chọn thời gian trong quá khứ');
+      snackbar.showWarning('Không thể chọn thời gian trong quá khứ');
       return;
     }
-
     const confirmedAt = pickedDate.toISOString();
-
     const result = await dispatch(
       confirmPickupTime({
         orderId: pickupOrderId,
         confirmedPickupAt: confirmedAt,
       }),
     );
-
     setConfirmingPickup(false);
     setShowConfirmPickupModal(false);
     setPickupOrderId(null);
-
     if (confirmPickupTime.rejected.match(result)) {
       const errorMsg =
         (result.payload as string) || 'Xác nhận giờ nhận hàng thất bại';
-      Alert.alert('Lỗi', errorMsg);
+      snackbar.showError(errorMsg);
     } else {
-      Alert.alert('Thành công', 'Đã xác nhận giờ nhận hàng');
+      snackbar.showSuccess('Đã xác nhận giờ nhận hàng thành công');
     }
-  };
+  }, [dispatch, pickupOrderId, selectedHour, selectedMinute, snackbar]);
 
-  /**
-   * RENDER ITEM
-   */
-  const renderItem = ({ item }: { item: Order }) => (
+  const renderItem = useCallback(({ item }: { item: Order }) => (
     <OrderItemCard
       item={item}
       activeMenuId={activeMenuId}
@@ -228,35 +234,30 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           0,
           MINUTES.indexOf(Math.floor(t.getMinutes() / 5) * 5),
         );
-
         setSelectedHour(h);
         setSelectedMinute(MINUTES[mIdx === -1 ? 0 : mIdx]);
         setPickupOrderId(order.id);
         setShowConfirmPickupModal(true);
-
         setTimeout(() => {
           scrollToHour(h);
           scrollToMinute(mIdx === -1 ? 0 : mIdx);
         }, 120);
       }}
     />
-  );
+  ), [activeMenuId, handleUpdateStatus, navigation, scrollToHour, scrollToMinute]);
 
   return (
-    <View className="flex-1">
-      {/* SEARCH */}
+    <View className="flex-1" style={{ position: 'relative' }}>
       <View className="px-4 pt-4">
         <View className="flex-row items-center bg-[#E8F3F0] border border-[#226B5D] rounded-xl px-3 py-2">
           <Search size={18} color="#226B5D" />
-
           <TextInput
-            placeholder="Tìm món ăn / SĐT / mã đơn..."
+            placeholder="SĐT / mã đơn..."
             placeholderTextColor="#6b7280"
             value={searchText}
             onChangeText={setSearchText}
             className="flex-1 ml-2 text-gray-700"
           />
-
           {searchText.length > 0 && (
             <TouchableOpacity onPress={() => setSearchText('')}>
               <X size={18} color="#226B5D" />
@@ -265,7 +266,6 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         </View>
       </View>
 
-      {/* FILTER */}
       <View className="flex-row px-4 pt-3 gap-2">
         {['all', 'preorder', 'dinein'].map(type => (
           <TouchableOpacity
@@ -292,7 +292,6 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         ))}
       </View>
 
-      {/* LIST */}
       <FlatList
         data={filteredOrders}
         keyExtractor={item => item.id}
@@ -303,9 +302,12 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
             <Text className="text-gray-400">Không tìm thấy kết quả</Text>
           </View>
         }
+        initialNumToRender={5}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
       />
 
-      {/* REFUND MODAL */}
       {selectedOrder && (
         <RefundModal
           isVisible={showRefundModal}
@@ -315,7 +317,10 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
           }}
           orderId={selectedOrder.id}
           orderCode={selectedOrder.orderCode.toString()}
-          isUnpaid={selectedOrder.status === 0} // 👈 QUAN TRỌNG
+          isUnpaid={selectedOrder.status === 0}
+          orderItems={selectedOrder.items}
+          orderTotalAmount={selectedOrder.totalAmount || 0}
+          orderFinalAmount={selectedOrder.finalAmount || 0}
         />
       )}
 
@@ -334,6 +339,22 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
         setSelectedHour={setSelectedHour}
         setSelectedMinute={setSelectedMinute}
       />
+
+      <PaymentDetailModal
+        visible={showPaymentModal}
+        order={selectedOrderForPayment}
+        onClose={() => {
+          if (!confirmingPayment) {
+            setShowPaymentModal(false);
+            setSelectedOrderForPayment(null);
+          }
+        }}
+        onConfirm={handleConfirmPayment}
+        loading={confirmingPayment}
+      />
+
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </View>
   );
 };

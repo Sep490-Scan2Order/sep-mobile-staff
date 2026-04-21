@@ -2,24 +2,20 @@ import { authApi } from '@/services/apiEndpoints/authApi';
 import { tokenStorage } from '@/utils/tokenStorage';
 import { store } from '@/store';
 import { setUser, logout } from '@/store/slices/authSlice';
-import { Alert } from 'react-native';
-
+import Toast from 'react-native-toast-message';
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
     try {
       const axiosResponse = await authApi.staffLogin(credentials);
       const response = axiosResponse.data;
-
       if (!response?.isSuccess) {
         return {
           success: false,
           message: response?.message || 'Sai tài khoản hoặc mật khẩu',
         };
       }
-
       const { accessToken, refreshToken, userInfo } = response.data;
       await tokenStorage.setTokens(accessToken, refreshToken);
-
       store.dispatch(
         setUser({
           accessToken,
@@ -27,7 +23,6 @@ export const authService = {
           userInfo,
         }),
       );
-
       return {
         success: true,
       };
@@ -41,7 +36,6 @@ export const authService = {
       };
     }
   },
-
   logout: async () => {
     try {
       await tokenStorage.clearTokens();
@@ -57,20 +51,18 @@ export const authService = {
       };
     }
   },
-
   forceLogout: async () => {
     try {
       await authService.logout();
-      Alert.alert(
-        'Phiên hết hạn',
-        'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.',
-        [{ text: 'OK' }],
-      );
+      Toast.show({
+        type: 'error',
+        text1: 'Phiên đăng nhập hết hạn',
+        text2: 'Vui lòng đăng nhập lại để tiếp tục.',
+        visibilityTime: 4000,
+      });
     } catch (error) {
     }
   },
-
-  // FORGOT PASSWORD FLOW
   sendForgotPasswordOtp: async (email: string) => {
     try {
       const { data: res } = await authApi.sendForgotPasswordOtp(email);
@@ -85,7 +77,6 @@ export const authService = {
       };
     }
   },
-
   verifyForgotPasswordOtp: async (email: string, otp: string) => {
     try {
       const { data: res } = await authApi.verifyForgotPasswordOtp(email, otp);
@@ -100,7 +91,6 @@ export const authService = {
       };
     }
   },
-
   completeForgotPassword: async (data: {
     email: string;
     newPassword: string;
@@ -119,8 +109,6 @@ export const authService = {
       };
     }
   },
-
-  // CHANGE PASSWORD (AUTHENTICATED)
   changePassword: async (data: {
     email: string;
     oldPassword: string;
@@ -128,11 +116,9 @@ export const authService = {
   }) => {
     try {
       const { data: res } = await authApi.changePasswordStaff(data);
-            console.log('Change password response:', res);
       if (!res?.isSuccess) {
         return { success: false, message: res?.message || 'Không thể đổi mật khẩu' };
       }
-
       return { success: true, message: 'Đổi mật khẩu thành công' };
     } catch (error: any) {
       return {

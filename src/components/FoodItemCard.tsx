@@ -1,5 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -7,12 +7,24 @@ import {
   Modal,
   TextInput,
   TouchableOpacity,
+  Alert,
+  Switch,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { AppDispatch, RootState } from '@/store';
 import { toggleSoldOutThunk } from '@/store/slices/dishSlice';
+import { RootStackParamList } from '@/type';
+
+interface ComboItemProp {
+  dishId: number;
+  dishName: string;
+  imageUrl?: string;
+  quantity: number;
+}
 
 interface Props {
+  index?: number;
   id: number;
   name: string;
   price: string;
@@ -22,9 +34,14 @@ interface Props {
   discountedPrice?: number;
   promotionName?: string | null;
   hasPromotion?: boolean;
+  quantity?: number;
+  isCombo?: boolean;
+  comboItems?: ComboItemProp[];
+  description?: string | null;
 }
 
-export const FoodItemCard: React.FC<Props> = ({
+export const FoodItemCard: React.FC<Props> = React.memo(({
+  index = 0,
   id,
   name,
   price,
@@ -34,16 +51,36 @@ export const FoodItemCard: React.FC<Props> = ({
   discountedPrice,
   promotionName,
   hasPromotion,
+  quantity: stockQuantity,
+  isCombo,
+  comboItems,
+  description,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-
-  // lấy restaurantId từ redux auth
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
-
   const [modalVisible, setModalVisible] = useState(false);
   const [quantity, setQuantity] = useState('');
+
+  const openDetail = () => {
+    navigation.navigate('FoodDetailScreen', {
+      id,
+      name,
+      price,
+      image,
+      active,
+      originalPrice,
+      discountedPrice,
+      promotionName,
+      hasPromotion,
+      stockQuantity,
+      isCombo,
+      comboItems,
+      description,
+    });
+  };
 
   const openModal = () => {
     setModalVisible(true);
@@ -51,7 +88,6 @@ export const FoodItemCard: React.FC<Props> = ({
 
   const handleSubmit = () => {
     const qty = Number(quantity);
-
     dispatch(
       toggleSoldOutThunk({
         restaurantId,
@@ -60,91 +96,137 @@ export const FoodItemCard: React.FC<Props> = ({
         quantity: qty,
       }),
     );
-
     setModalVisible(false);
     setQuantity('');
   };
 
   const handleSoldOut = () => {
+    Alert.alert(
+      'Xác nhận',
+      `Bạn có chắc chắn muốn chuyển món "${name}" sang báo hết hàng?`,
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Đồng ý',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(
+              toggleSoldOutThunk({
+                restaurantId,
+                id,
+                isSoldOut: true,
+                quantity: stockQuantity || 0,
+              }),
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleTurnOn = () => {
     dispatch(
       toggleSoldOutThunk({
         restaurantId,
         id,
-        isSoldOut: true,
-        quantity: 0,
+        isSoldOut: false,
+        quantity: stockQuantity || 0,
       }),
     );
   };
 
   return (
     <>
-      <View
+      {}
+      <Animated.View
+        entering={FadeInDown.delay(index * 50).duration(400)}
         className="mx-6 mt-4 rounded-xl overflow-hidden border"
         style={{
           backgroundColor: 'rgba(34, 107, 93, 0.3)',
           borderColor: 'rgba(34, 107, 93, 0.44)',
         }}
       >
-        <View className="flex-row items-center p-3">
-          <Image source={{ uri: image }} className="w-14 h-14 rounded-lg" />
-
-          <View className="flex-1 ml-3">
-            <Text className="font-medium text-gray-800">{name}</Text>
-
-            {hasPromotion && originalPrice && discountedPrice ? (
-              <View>
-                <View className="flex-row items-center">
-                  <Text className="text-xs text-gray-500 line-through mr-2">
-                    {originalPrice.toLocaleString()} đ
-                  </Text>
-                  <Text className="text-sm font-semibold text-red-600">
-                    {discountedPrice.toLocaleString()} đ
-                  </Text>
-                </View>
-
-                {promotionName && (
-                  <Text className="text-xs text-orange-600 mt-1">
-                    {promotionName}
-                  </Text>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={openDetail}
+        >
+          <View className="flex-row items-center p-3">
+            <Image source={{ uri: image }} className="w-14 h-14 rounded-lg" />
+            <View className="flex-1 ml-3 relative">
+              <View className="flex-row items-center flex-wrap mr-10">
+                <Text className="font-medium text-gray-800 flex-wrap mr-1">{name}</Text>
+                {isCombo && (
+                  <View style={{ backgroundColor: '#dbeafe', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 1 }}>
+                    <Text style={{ fontSize: 10, color: '#1d4ed8', fontWeight: '700' }}>COMBO</Text>
+                  </View>
                 )}
               </View>
-            ) : (
-              <Text className="text-sm text-gray-700">{price}</Text>
-            )}
+              {hasPromotion && originalPrice && discountedPrice ? (
+                <View className="mt-0.5">
+                  <View className="flex-row items-center">
+                    <Text className="text-xs text-gray-500 line-through mr-2">
+                      {originalPrice.toLocaleString()} đ
+                    </Text>
+                    <Text className="text-sm font-semibold text-red-600">
+                      {discountedPrice.toLocaleString()} đ
+                    </Text>
+                  </View>
+                  {promotionName && (
+                    <Text className="text-[10px] text-orange-600 mt-0.5">
+                      {promotionName}
+                    </Text>
+                  )}
+                </View>
+              ) : (
+                <Text className="text-sm text-gray-700 mt-0.5">{price}</Text>
+              )}
+              <View className="flex-row flex-wrap items-center mt-1">
+                <Text className={`text-[11px] font-semibold mr-2 ${active ? 'text-green-700' : 'text-red-600'}`}>
+                  {active ? '● Đang bán' : '● Hết hàng'}
+                </Text>
+                <Text className="text-[11px] text-emerald-700 font-medium mr-2">
+                  Kho: {stockQuantity ?? 0}
+                </Text>
+              </View>
+            </View>
+            <View className="items-end justify-center ml-1">
+              <Switch
+                trackColor={{ false: '#fca5a5', true: '#6ee7b7' }}
+                thumbColor={active ? '#059669' : '#dc2626'}
+                ios_backgroundColor="#fca5a5"
+                onValueChange={(val) => {
+                  if (!val) {
+                    handleSoldOut();
+                  } else {
+                    handleTurnOn();
+                  }
+                }}
+                value={active}
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+              />
+              <TouchableOpacity
+                onPress={openModal}
+                className="bg-teal-600 px-2 py-1 rounded-md mt-2"
+                activeOpacity={0.7}
+              >
+                <Text className="text-white text-[10px] font-medium">Nhập SL</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          {active ? (
-            <TouchableOpacity
-              onPress={handleSoldOut}
-              className="bg-green-600 px-3 py-1 rounded-lg"
-            >
-              <Text className="text-white text-xs">Đang bán</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={openModal}
-              className="bg-red-600 px-3 py-1 rounded-lg"
-            >
-              <Text className="text-white text-xs">Hết hàng</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        </TouchableOpacity>
 
         {!active && (
           <View
-            className="px-3 py-2 border-t"
-            style={{
-              borderTopColor: 'rgba(34, 107, 93, 0.44)',
-            }}
+            className="px-3 py-1.5 border-t bg-rose-50"
+            style={{ borderTopColor: 'rgba(34, 107, 93, 0.2)' }}
           >
-            <Text className="text-xs text-red-700">
-              Món ăn tạm hết - Nhấn "Hết hàng" để nhập lại số lượng
+            <Text className="text-[11px] text-red-600 italic">
+              Món ăn tạm ngưng phục vụ - Bạn có thể bật lại công tắc để bán tiếp.
             </Text>
           </View>
         )}
-      </View>
+      </Animated.View>
 
-      {/* Modal nhập số lượng */}
       <Modal transparent visible={modalVisible} animationType="fade">
         <View
           style={{
@@ -158,7 +240,6 @@ export const FoodItemCard: React.FC<Props> = ({
             <Text className="text-lg font-semibold mb-3">
               Nhập số lượng món
             </Text>
-
             <TextInput
               value={quantity}
               onChangeText={setQuantity}
@@ -166,7 +247,6 @@ export const FoodItemCard: React.FC<Props> = ({
               placeholder="Nhập số lượng"
               className="border p-2 rounded mb-4"
             />
-
             <View className="flex-row justify-end">
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
@@ -174,7 +254,6 @@ export const FoodItemCard: React.FC<Props> = ({
               >
                 <Text className="text-gray-600">Huỷ</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 onPress={handleSubmit}
                 className="bg-green-600 px-3 py-1 rounded"
@@ -187,4 +266,4 @@ export const FoodItemCard: React.FC<Props> = ({
       </Modal>
     </>
   );
-};
+});

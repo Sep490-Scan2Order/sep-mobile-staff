@@ -1,13 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Power } from 'lucide-react-native';
-
 interface Props {
   isOpen: boolean;
   isLoading?: boolean;
   onToggle?: () => void;
 }
-
 export const OrderStatusCard: React.FC<Props> = ({
   isOpen,
   isLoading = false,
@@ -16,7 +14,6 @@ export const OrderStatusCard: React.FC<Props> = ({
   const bgColor = isOpen ? 'bg-green-600' : 'bg-red-600';
   const buttonText = isOpen ? 'Tắt nhận đơn hàng' : 'Bật nhận đơn hàng';
   const textColor = isOpen ? 'text-green-700' : 'text-red-700';
-
   return (
     <View className={`mx-5 mt-6 ${bgColor} rounded-2xl p-6 items-center`}>
       <View className="items-center">
@@ -28,7 +25,6 @@ export const OrderStatusCard: React.FC<Props> = ({
           {isOpen ? 'Đang nhận đơn hàng' : 'Không nhận đơn hàng'}
         </Text>
       </View>
-
       <TouchableOpacity
         onPress={onToggle}
         disabled={isLoading}

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   StatusBar,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -15,18 +16,15 @@ import { shiftService } from '@/services/logicServices/shiftService';
 import { ShiftReportDto } from '@/type';
 import { HistoryCard } from '@/components/HistoryCard';
 import { Header } from '@/components/Header';
-import { AlertCircle, Clock, ChevronLeft, Calendar } from 'lucide-react-native';
-
+import { AlertCircle, Clock, ChevronLeft, Calendar, User } from 'lucide-react-native';
 const CashReportScreen = ({ route }: any) => {
   const paramShiftId = route?.params?.shiftId;
   const user = useSelector((state: RootState) => state.auth.userInfo);
-
   const [report, setReport] = useState<ShiftReportDto | null>(null);
   const [history, setHistory] = useState<ShiftReportDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-
   const fetchSingleReport = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
@@ -41,20 +39,17 @@ const CashReportScreen = ({ route }: any) => {
       setRefreshing(false);
     }
   }, []);
-
   const fetchStaffHistory = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
     try {
       const data = await shiftService.getReportsByStaff(user.id);
-      // Đảm bảo luôn là array dù API trả về object bọc hay array thẳng
       const list = Array.isArray(data)
         ? data
         : (data?.data ?? data?.items ?? []);
       setHistory(list);
       setReport(null);
-
     } catch (err: any) {
       setError(err.message || 'Không thể lấy lịch sử báo cáo.');
     } finally {
@@ -62,7 +57,6 @@ const CashReportScreen = ({ route }: any) => {
       setRefreshing(false);
     }
   }, [user?.id]);
-
   useEffect(() => {
     if (paramShiftId) {
       fetchSingleReport(paramShiftId);
@@ -70,7 +64,6 @@ const CashReportScreen = ({ route }: any) => {
       fetchStaffHistory();
     }
   }, [paramShiftId, fetchSingleReport, fetchStaffHistory]);
-
   const onRefresh = () => {
     setRefreshing(true);
     if (paramShiftId) {
@@ -81,13 +74,11 @@ const CashReportScreen = ({ route }: any) => {
       fetchStaffHistory();
     }
   };
-
   const formatCurrency = (value: any) => {
     if (value === undefined || value === null) return '0';
     const num = typeof value === 'string' ? parseFloat(value) : value;
     return isNaN(num) ? '0' : num.toLocaleString('vi-VN');
   };
-
   const renderDetail = () => (
     <View className="flex-1 bg-gray-50">
       <TouchableOpacity
@@ -99,7 +90,6 @@ const CashReportScreen = ({ route }: any) => {
           Quay lại lịch sử
         </Text>
       </TouchableOpacity>
-
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -123,11 +113,18 @@ const CashReportScreen = ({ route }: any) => {
               <View className="flex-row items-center mt-3">
                 <Calendar size={14} color="#9ca3af" />
                 <Text className="text-gray-400 text-sm ml-2">
-                  {new Date(report.reportDate).toLocaleString('vi-VN')}
+                  {report.reportDate ? new Date(report.reportDate).toLocaleString('vi-VN') : '---'}
                 </Text>
               </View>
+              {report.cashierName && (
+                <View className="flex-row items-center mt-2">
+                  <User size={14} color="#9ca3af" />
+                  <Text className="text-gray-400 text-sm ml-2">
+                    Thu ngân: {report.cashierName}
+                  </Text>
+                </View>
+              )}
             </View>
-
             <View className="gap-4">
               {[
                 { label: 'Tiền mặt doanh thu', value: report.totalCashOrder },
@@ -156,7 +153,6 @@ const CashReportScreen = ({ route }: any) => {
                   </Text>
                 </View>
               ))}
-
               <View className="mt-4 bg-teal-50/30 p-5 rounded-xl gap-3">
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600 font-semibold">
@@ -175,9 +171,8 @@ const CashReportScreen = ({ route }: any) => {
                   </Text>
                 </View>
               </View>
-
               <View
-                className={`mt-4 p-5 items-center ${
+                className={`mt-4 p-5 items-start ${
                   report.difference == 0
                     ? 'bg-emerald-50'
                     : Number(report.difference) > 0
@@ -208,6 +203,18 @@ const CashReportScreen = ({ route }: any) => {
       </ScrollView>
     </View>
   );
+  const renderHistoryItem = useCallback(({ item }: { item: ShiftReportDto }) => (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => setReport(item)}
+    >
+      <HistoryCard
+        employee={item.cashierName || user?.name || 'Nhân viên'}
+        restaurant={user?.restaurantName || 'Nhà hàng'}
+        {...item}
+      />
+    </TouchableOpacity>
+  ), [user]);
 
   const renderHistory = () => (
     <View className="flex-1 bg-white">
@@ -222,8 +229,10 @@ const CashReportScreen = ({ route }: any) => {
           {history.length} CA
         </Text>
       </View>
-
-      <ScrollView
+      <FlatList
+        data={history}
+        renderItem={renderHistoryItem}
+        keyExtractor={(_, index) => index.toString()}
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
@@ -234,39 +243,25 @@ const CashReportScreen = ({ route }: any) => {
             tintColor="#0f766e"
           />
         }
-      >
-        {history.length === 0 ? (
+        ListEmptyComponent={
           <View className="mt-20 items-center px-10">
             <Clock size={60} color="#e5e7eb" />
             <Text className="text-gray-400 text-center mt-4 text-base font-medium">
               Không có dữ liệu lịch sử ca làm.
             </Text>
           </View>
-        ) : (
-          history.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              activeOpacity={0.85}
-              onPress={() => setReport(item)}
-            >
-              <HistoryCard
-                employee={user?.name || 'Nhân viên'}
-                restaurant={user?.restaurantName || 'Nhà hàng'}
-                {...item}
-              />
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
+        }
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+      />
     </View>
   );
-
   return (
     <View className="flex-1 bg-teal-700">
       <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
-
         <View className="flex-1 bg-white">
           {loading && !refreshing ? (
             <View className="flex-1 justify-center items-center">
@@ -295,5 +290,4 @@ const CashReportScreen = ({ route }: any) => {
     </View>
   );
 };
-
 export default CashReportScreen;

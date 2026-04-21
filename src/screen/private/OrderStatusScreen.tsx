@@ -18,46 +18,59 @@ import {
 } from '@/store/slices/restaurantSlice';
 import { Header } from '@/components/Header';
 import { Clock, Store, ShoppingBag } from 'lucide-react-native';
-
+import { useSnackbar } from '@/hooks/useSnackbar';
+import { AppSnackbar } from '@/components/AppSnackbar';
 export const OrderStatusScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const restaurantId = userInfo?.restaurantId || 0;
-
   const { restaurant, loading, error } = useSelector(
     (state: RootState) => state.restaurant,
   );
+  const snackbar = useSnackbar();
+  const refreshCount = useSelector((state: RootState) => state.order.refreshCount);
 
   useEffect(() => {
     if (restaurantId > 0) {
       dispatch(fetchRestaurantById(restaurantId));
     }
-  }, [dispatch, restaurantId]);
-
-  const handleToggleReceiving = () => {
+  }, [dispatch, restaurantId, refreshCount]);
+  const handleToggleReceiving = async () => {
     if (restaurant && restaurantId > 0) {
       const newValue = !restaurant.isReceivingOrders;
-      dispatch(
-        toggleReceivingOrders({
-          restaurantId: restaurant.id,
-          isReceiving: newValue,
-        }),
-      );
+      try {
+        await dispatch(
+          toggleReceivingOrders({
+            restaurantId: restaurant.id,
+            isReceiving: newValue,
+          }),
+        ).unwrap();
+        snackbar.showSuccess(
+          newValue ? 'Đã bật nhận đơn hàng' : 'Đã tắt nhận đơn hàng'
+        );
+      } catch (err: any) {
+        snackbar.showError(err?.message || 'Không thể cập nhật trạng thái nhận đơn');
+      }
     }
   };
-
-  const handleToggleOpening = () => {
+  const handleToggleOpening = async () => {
     if (restaurant && restaurantId > 0) {
       const newValue = !restaurant.isOpened;
-      dispatch(
-        toggleOpeningStatus({
-          restaurantId: restaurant.id,
-          isOpened: newValue,
-        }),
-      );
+      try {
+        await dispatch(
+          toggleOpeningStatus({
+            restaurantId: restaurant.id,
+            isOpened: newValue,
+          }),
+        ).unwrap();
+        snackbar.showSuccess(
+          newValue ? 'Đã mở cửa hàng' : 'Đã đóng cửa hàng'
+        );
+      } catch (err: any) {
+        snackbar.showError(err?.message || 'Không thể cập nhật trạng thái cửa hàng');
+      }
     }
   };
-
   if (restaurantId === 0) {
     return (
       <View className="flex-1 bg-white justify-center items-center p-6">
@@ -68,7 +81,6 @@ export const OrderStatusScreen = () => {
       </View>
     );
   }
-
   if (error) {
     return (
       <View className="flex-1 bg-white justify-center items-center p-6">
@@ -83,14 +95,12 @@ export const OrderStatusScreen = () => {
       </View>
     );
   }
-
   return (
-    <View className="flex-1 bg-teal-900">
-      <StatusBar barStyle="light-content" backgroundColor="#134e4a" />
+    <View className="flex-1 bg-teal-700">
+      <StatusBar barStyle="light-content" backgroundColor="#0f766e" />
       <SafeAreaView className="flex-1" edges={['top']}>
         <Header />
-
-        <View className="flex-1 bg-slate-50 rounded-t-[40px] mt-4 overflow-hidden">
+        <View className="flex-1 bg-white">
           {loading && !restaurant ? (
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color="#0f766e" />
@@ -109,7 +119,7 @@ export const OrderStatusScreen = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 40 }}
             >
-              {/* Restaurant Header Card */}
+              {}
               <View className="mx-6 mt-8 bg-white rounded-3xl p-6 shadow-xl shadow-slate-200">
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1 mr-4">
@@ -133,13 +143,11 @@ export const OrderStatusScreen = () => {
                   {restaurant.address}
                 </Text>
               </View>
-
-              {/* Status Controls Section */}
+              {}
               <View className="px-6 mt-8">
                 <Text className="text-slate-800 text-lg font-black ml-1 mb-4">Trạng thái vận hành</Text>
-                
                 <View className="gap-y-4">
-                  {/* Opening Toggle */}
+                  {}
                   <View className="bg-white rounded-3xl p-5 flex-row items-center justify-between shadow-sm border border-slate-100">
                     <View className="flex-row items-center flex-1">
                       <View className={`w-12 h-12 rounded-2xl items-center justify-center ${restaurant.isOpened ? 'bg-teal-600' : 'bg-slate-200'}`}>
@@ -157,8 +165,7 @@ export const OrderStatusScreen = () => {
                       thumbColor="#fff"
                     />
                   </View>
-
-                  {/* Receiving Orders Toggle */}
+                  {}
                   <View className="bg-white rounded-3xl p-5 flex-row items-center justify-between shadow-sm border border-slate-100">
                     <View className="flex-row items-center flex-1">
                       <View className={`w-12 h-12 rounded-2xl items-center justify-center ${restaurant.isReceivingOrders ? 'bg-orange-500' : 'bg-slate-200'}`}>
@@ -178,8 +185,7 @@ export const OrderStatusScreen = () => {
                     />
                   </View>
                 </View>
-
-                {/* Display Only Operating Hours Card */}
+                {}
                 <View className="mt-8 bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex-row items-center">
                   <View className="w-12 h-12 rounded-2xl bg-slate-100 items-center justify-center">
                      <Clock size={24} color="#64748b" />
@@ -191,7 +197,6 @@ export const OrderStatusScreen = () => {
                     </Text>
                   </View>
                 </View>
-
                 <View className="mt-8 p-4 bg-teal-50 rounded-2xl border border-teal-100 flex-row items-center">
                   <Text className="text-teal-700 text-xs leading-4 flex-1 italic text-center">
                     Bạn có thể đóng cửa hàng hoặc dừng nhận đơn bằng các công tắc phía trên. Để thay đổi giờ hoạt động chính thức, vui lòng liên hệ quản lý.
@@ -202,8 +207,8 @@ export const OrderStatusScreen = () => {
           )}
         </View>
       </SafeAreaView>
+      <AppSnackbar {...snackbar.config} onDismiss={snackbar.hide} />
     </View>
   );
 };
-
 export default OrderStatusScreen;

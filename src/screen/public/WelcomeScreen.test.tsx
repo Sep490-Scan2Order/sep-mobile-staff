@@ -1,7 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import WelcomePage from './WelcomeScreen';
-
 describe('WelcomePage', () => {
   it('renders correctly', () => {
     const { UNSAFE_getByType } = render(<WelcomePage />);
