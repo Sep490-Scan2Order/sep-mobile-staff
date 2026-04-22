@@ -2,19 +2,60 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Calendar, Phone, MoreVertical, RotateCcw } from 'lucide-react-native';
 import { Order } from '@/type';
+
 interface Props {
   item: Order;
-  activeMenuId: string | null;
-  setActiveMenuId: (id: string | null) => void;
+  isActive: boolean;
+  onToggleMenu: (id: string | null) => void;
   onViewDetail: (id: string) => void;
   onRefund: (order: Order) => void;
   onUpdateStatus: (order: Order) => void;
   onOpenPickup: (order: Order) => void;
 }
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return `${date.toLocaleDateString('vi-VN')} - ${date.toLocaleTimeString(
+    [],
+    { hour: '2-digit', minute: '2-digit' },
+  )}`;
+};
+
+const formatTime = (dateString?: string | null) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const ORDER_STATUS_LABEL: Record<number, string> = {
+  0: 'Thanh toán',
+  1: 'Đã nhận',
+  2: 'Đang làm',
+  3: 'Đang giao',
+  4: 'Đã giao',
+  5: 'Đã hủy',
+};
+
+const ACTION_LABEL: Record<number, string> = {
+  0: 'Thanh toán',
+  1: 'Nhận đơn',
+  2: 'Làm xong',
+  3: 'Giao hàng',
+};
+
+const REFUND_TYPE_LABEL: Record<number, string> = {
+  0: 'Khách quan / Đổi món',
+  1: 'Lỗi nhân viên',
+  2: 'Lỗi hệ thống',
+};
+
 export const OrderItemCard: React.FC<Props> = React.memo(({
   item,
-  activeMenuId,
-  setActiveMenuId,
+  isActive,
+  onToggleMenu,
   onViewDetail,
   onRefund,
   onUpdateStatus,
@@ -24,45 +65,14 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
   const isUnpaid = item.status === 0;
   const needsPickupConfirm =
     isPreOrder && item.status === 1 && !item.confirmedPickupAt;
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.toLocaleDateString('vi-VN')} - ${date.toLocaleTimeString(
-      [],
-      { hour: '2-digit', minute: '2-digit' },
-    )}`;
-  };
-  const formatTime = (dateString?: string | null) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-  const ORDER_STATUS_LABEL: Record<number, string> = {
-    0: 'Thanh toán',
-    1: 'Đã nhận',
-    2: 'Đang làm',
-    3: 'Đang giao',
-    4: 'Đã giao',
-    5: 'Đã hủy',
-  };
-  const ACTION_LABEL: Record<number, string> = {
-    0: 'Thanh toán',
-    1: 'Nhận đơn',
-    2: 'Làm xong',
-    3: 'Giao hàng',
-  };
+  
   const isRefund = item.typeOrder === 1;
   const canRefund = !isRefund && ((isUnpaid && item.type === 'Cash') || [1, 2, 3].includes(item.status));
-  const REFUND_TYPE_LABEL: Record<number, string> = {
-    0: 'Khách quan / Đổi món',
-    1: 'Lỗi nhân viên',
-    2: 'Lỗi hệ thống',
-  };
+  
   const mainColor = isRefund ? '#dc2626' : '#226B5D';
   const bgColor = isRefund ? 'bg-red-50' : 'bg-gray-100';
   const borderColor = isRefund ? 'border-red-500' : 'border-[#226B5D]';
+
   return (
     <View className={`${bgColor} rounded-xl border-2 ${borderColor} overflow-hidden mb-6`}>
       {isPreOrder && !isRefund && (
@@ -95,18 +105,16 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
         </Text>
         <View className="relative">
           <TouchableOpacity
-            onPress={() =>
-              setActiveMenuId(activeMenuId === item.id ? null : item.id)
-            }
+            onPress={() => onToggleMenu(isActive ? null : item.id)}
           >
             <MoreVertical size={18} color={mainColor} />
           </TouchableOpacity>
-          {activeMenuId === item.id && (
+          {isActive && (
             <View className="absolute right-0 top-8 bg-white border rounded-lg shadow-xl z-50 w-40 py-1">
               <TouchableOpacity
                 className="px-4 py-2 border-b"
                 onPress={() => {
-                  setActiveMenuId(null);
+                  onToggleMenu(null);
                   onViewDetail(item.id);
                 }}
               >
@@ -116,7 +124,7 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
                 <TouchableOpacity
                   className="px-4 py-2"
                   onPress={() => {
-                    setActiveMenuId(null);
+                    onToggleMenu(null);
                     onRefund(item);
                   }}
                 >
@@ -183,5 +191,14 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
         </TouchableOpacity>
       )}
     </View>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison to further optimize
+  return (
+    prevProps.isActive === nextProps.isActive &&
+    prevProps.item.id === nextProps.item.id &&
+    prevProps.item.status === nextProps.item.status &&
+    prevProps.item.confirmedPickupAt === nextProps.item.confirmedPickupAt &&
+    prevProps.item.type === nextProps.item.type
   );
 });

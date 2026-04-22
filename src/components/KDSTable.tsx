@@ -22,7 +22,7 @@ import { useAppModal } from '@/hooks/useAppModal';
 import { AppModal } from '@/components/AppModal';
 import { Order } from '@/type';
 import { playNotificationSound } from '@/utils/notificationSound';
-import { RefundModal } from '@/components/RefundModal';
+import RefundModal from '@/components/RefundModal';
 import { isToday } from '@/utils/dateUtils';
 import { TimePickerModal } from '@/components/TimePickerModal';
 import { OrderItemCard } from '@/components/OrderItemCard';
@@ -92,32 +92,44 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   };
 
   const filteredOrders = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+
     return orders
-      .filter(order => isToday(order.createdAt))
       .filter(order => {
+        // 1. Date filter
+        if (!isToday(order.createdAt)) return false;
+
+        // 2. Status & Refund Filter
         if (statusFilter === 5) {
-          return order.typeOrder === 1;
+          // Refund tab
+          if (order.typeOrder !== 1) return false;
+        } else {
+          // Regular tabs
+          if (order.typeOrder === 1) return false;
+          if (statusFilter !== -1 && order.status !== statusFilter) return false;
         }
-        if (statusFilter !== -1 && order.typeOrder === 1) {
+
+        // 3. Type Filter
+        if (orderTypeFilter === 'preorder' && order.isPreOrder !== true)
           return false;
+        if (orderTypeFilter === 'dinein' && order.isPreOrder === true)
+          return false;
+
+        // 4. Search Filter
+        if (keyword) {
+          const orderCodeFull = `ord-${order.orderCode}`.toLowerCase();
+          const matchPhone = order.phone?.toLowerCase().includes(keyword);
+          const matchCode = order.orderCode?.toString().includes(keyword);
+          const matchFullCode = orderCodeFull.includes(keyword);
+          const matchItems = order.items?.some(item =>
+            item.name?.toLowerCase().includes(keyword),
+          );
+
+          if (!matchPhone && !matchCode && !matchFullCode && !matchItems)
+            return false;
         }
-        return statusFilter === -1 ? true : order.status === statusFilter;
-      })
-      .filter(order => {
-        if (orderTypeFilter === 'preorder') return order.isPreOrder === true;
-        if (orderTypeFilter === 'dinein') return order.isPreOrder !== true;
+
         return true;
-      })
-      .filter(order => {
-        if (!searchText.trim()) return true;
-        const keyword = searchText.toLowerCase();
-        const orderCodeFull = `ord-${order.orderCode}`;
-        return (
-          order.phone?.toLowerCase().includes(keyword) ||
-          order.orderCode?.toString().includes(keyword) ||
-          orderCodeFull.includes(keyword) ||
-          order.items?.some(item => item.name?.toLowerCase().includes(keyword))
-        );
       })
       .sort(
         (a, b) =>
@@ -219,8 +231,8 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const renderItem = useCallback(({ item }: { item: Order }) => (
     <OrderItemCard
       item={item}
-      activeMenuId={activeMenuId}
-      setActiveMenuId={setActiveMenuId}
+      isActive={activeMenuId === item.id}
+      onToggleMenu={setActiveMenuId}
       onViewDetail={id =>
         navigation.navigate('DetailOrderScreen', { orderId: id })
       }
@@ -304,10 +316,11 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
             <Text className="text-gray-400">Không tìm thấy kết quả</Text>
           </View>
         }
-        initialNumToRender={5}
-        maxToRenderPerBatch={10}
-        windowSize={5}
+        initialNumToRender={7}
+        maxToRenderPerBatch={15}
+        windowSize={11}
         removeClippedSubviews={true}
+        updateCellsBatchingPeriod={50}
       />
 
       {selectedOrder && (
@@ -318,11 +331,6 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
             setSelectedOrder(null);
           }}
           orderId={selectedOrder.id}
-          orderCode={selectedOrder.orderCode.toString()}
-          isUnpaid={selectedOrder.status === 0}
-          orderItems={selectedOrder.items}
-          orderTotalAmount={selectedOrder.totalAmount || 0}
-          orderFinalAmount={selectedOrder.finalAmount || 0}
         />
       )}
 

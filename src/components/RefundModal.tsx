@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,39 +17,49 @@ import {
   Minus,
   Plus,
 } from 'lucide-react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/store';
 import { OrderItem } from '@/type';
+import { fetchActiveOrders } from '@/store/slices/orderSlice';
 import { refundApi } from '@/services/apiEndpoints/refundApi';
 import { staffApi } from '@/services/apiEndpoints/staffApi';
 import Toast from 'react-native-toast-message';
 import { Camera, useCameraDevice, PhotoFile } from 'react-native-vision-camera';
 import ImageResizer from 'react-native-image-resizer';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useSnackbar } from '@/hooks/useSnackbar';
+
 interface Staff {
   id: string;
   name: string;
   email: string;
 }
-interface RefundModalProps {
+interface Props {
   isVisible: boolean;
   onClose: () => void;
   orderId: string;
-  orderCode: string;
-  isUnpaid: boolean;
-  orderItems: OrderItem[];
-  orderTotalAmount: number;
-  orderFinalAmount: number;
 }
-export const RefundModal: React.FC<RefundModalProps> = ({
+export default function RefundModal({
   isVisible,
   onClose,
   orderId,
-  orderCode,
-  isUnpaid,
-  orderItems,
-  orderTotalAmount,
-  orderFinalAmount,
-}) => {
+}: Props) {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation<NavigationProp<any>>();
+  const snackbar = useSnackbar();
+
+  // Get current order data direct from Redux Store to ensure consistency
+  const orderData = useSelector((state: RootState) => 
+    state.order.orders.find(o => o.id === orderId)
+  );
+
+  // Fallback if order is not found yet or data is settling
+  const orderItems = useMemo(() => orderData?.items || [], [orderData]);
+  const orderTotalAmount = orderData?.totalAmount || orderData?.amount || 0;
+  const orderFinalAmount = orderData?.finalAmount || orderData?.amount || 0;
+  const isUnpaid = orderData?.status === 0;
+  const orderCode = orderData?.orderCode?.toString() || '';
+
   const [refundType, setRefundType] = useState<number>(0);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,10 +77,27 @@ export const RefundModal: React.FC<RefundModalProps> = ({
   const cameraRef = React.useRef<Camera>(null);
   const device = useCameraDevice('back');
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-  const paymentRatio = orderTotalAmount > 0 ? orderFinalAmount / orderTotalAmount : 1;
-  const isDiscounted = paymentRatio < 0.999; 
-  React.useEffect(() => {
+
+  const paymentRatio = useMemo(() => 
+    (orderTotalAmount > 0 ? orderFinalAmount / orderTotalAmount : 1)
+  , [orderTotalAmount, orderFinalAmount]);
+  
+  const isDiscounted = useMemo(() => paymentRatio < 0.999, [paymentRatio]);
+
+  const refundTypes = useMemo(() => [
+    ...(isUnpaid
+      ? [{ label: 'Lỗi Hệ thống (System Error)', value: 2 }]
+      : [
+          { label: 'Lỗi Khách quan (Refund Cash)', value: 0 },
+          { label: 'Lỗi Nhân viên (Staff pay)', value: 1 },
+        ]),
+  ], [isUnpaid]);
+
+  useEffect(() => {
     if (isVisible && userInfo?.restaurantId) {
+      // Auto refresh order data when opening modal to ensure latest items/prices
+      dispatch(fetchActiveOrders(userInfo.restaurantId));
+      
       setSelectedStaffId(userInfo.id);
       if (staffCacheRef.current.length > 0) {
         setStaffList(staffCacheRef.current);
@@ -79,6 +106,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       }
     }
   }, [isVisible, userInfo]);
+
   const fetchStaff = async () => {
     try {
       const response = await staffApi.getStaffByRestaurant(
@@ -92,19 +120,29 @@ export const RefundModal: React.FC<RefundModalProps> = ({
       console.error('Fetch staff error:', error);
     }
   };
-  const filteredStaff = staffList.filter(
-    staff =>
-      staff.name?.toLowerCase().includes(staffSearchText.toLowerCase()) ||
-      staff.email?.toLowerCase().includes(staffSearchText.toLowerCase()),
-  );
-  const refundTypes = [
-    ...(isUnpaid
-      ? [{ label: 'Lỗi Hệ thống (System Error)', value: 2 }]
-      : [
-          { label: 'Lỗi Khách quan (Refund Cash)', value: 0 },
-          { label: 'Lỗi Nhân viên (Staff pay)', value: 1 },
-        ]),
-  ];
+
+  const filteredStaff = useMemo(() => {
+    return staffList.filter(
+      staff =>
+        staff.name?.toLowerCase().includes(staffSearchText.toLowerCase()) ||
+        staff.email?.toLowerCase().includes(staffSearchText.toLowerCase()),
+    );
+  }, [staffList, staffSearchText]);
+
+  const grossRefundAmount = useMemo(() => {
+    return Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
+      const item = orderItems.find(i => i.id === id);
+      return acc + (item?.originalPrice ?? 0) * qty;
+    }, 0);
+  }, [selectedRefundItems, orderItems]);
+
+  const totalRefundAmount = useMemo(() => {
+    return Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
+      const item = orderItems.find(i => i.id === id);
+      return acc + Math.round((item?.price ?? 0) * qty * paymentRatio);
+    }, 0);
+  }, [selectedRefundItems, orderItems, paymentRatio]);
+
   const handleTakePhoto = async () => {
     const permission = await Camera.requestCameraPermission();
     if (permission !== 'granted') {
@@ -425,6 +463,8 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                     const refundedQty = item.refundedQuantity || 0;
                     const availableQty = item.quantity - refundedQty;
                     const isFullyRefunded = availableQty <= 0;
+                    const itemDisplayPrice = Math.round((item.price ?? 0) * paymentRatio);
+                    
                     return (
                       <View
                         key={item.id}
@@ -461,7 +501,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                                 </Text>
                                 {(isDiscounted || (item.originalPrice && item.originalPrice > item.price)) && (
                                   <Text className="text-xs text-red-600 font-bold ml-2">
-                                    → {(Math.round((item.price ?? 0) * paymentRatio)).toLocaleString()}đ
+                                    → {itemDisplayPrice.toLocaleString()}đ
                                   </Text>
                                 )}
                                 <Text className={`text-xs ml-2 ${isFullyRefunded ? 'text-gray-400' : 'text-gray-500 font-bold'}`}>
@@ -549,22 +589,14 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 <View className="flex-row justify-between mb-1">
                   <Text className="text-gray-500">Tổng giá niêm yết:</Text>
                   <Text className="text-gray-700">
-                    {Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
-                      const item = orderItems.find(i => i.id === id);
-                      return acc + (item?.originalPrice ?? 0) * qty;
-                    }, 0).toLocaleString()}đ
+                    {grossRefundAmount.toLocaleString()}đ
                   </Text>
                 </View>
                 {isDiscounted && (
                   <View className="flex-row justify-between mb-1">
                     <Text className="text-red-500 text-xs italic">Khấu trừ khuyến mãi đơn hàng:</Text>
                     <Text className="text-red-500 text-xs italic">
-                      -{(Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
-                        const item = orderItems.find(i => i.id === id);
-                        const gross = (item?.originalPrice ?? 0) * qty;
-                        const net = Math.round((item?.price ?? 0) * qty * paymentRatio);
-                        return acc + (gross - net);
-                      }, 0)).toLocaleString()}đ
+                      -{(grossRefundAmount - totalRefundAmount).toLocaleString()}đ
                     </Text>
                   </View>
                 )}
@@ -572,10 +604,7 @@ export const RefundModal: React.FC<RefundModalProps> = ({
                 <View className="flex-row justify-between items-center">
                   <Text className="font-bold text-gray-800">TỔNG TIỀN HOÀN LẠI:</Text>
                   <Text className="text-[#226B5D] font-bold text-lg">
-                    {Object.entries(selectedRefundItems).reduce((acc, [id, qty]) => {
-                      const item = orderItems.find(i => i.id === id);
-                      return acc + Math.round((item?.price ?? 0) * qty * paymentRatio);
-                    }, 0).toLocaleString()}đ
+                    {totalRefundAmount.toLocaleString()}đ
                   </Text>
                 </View>
               </View>
