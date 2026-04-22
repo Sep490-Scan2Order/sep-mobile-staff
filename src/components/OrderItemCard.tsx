@@ -54,7 +54,7 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
     3: 'Giao hàng',
   };
   const isRefund = item.typeOrder === 1;
-  const canRefund = !isRefund && (isUnpaid || [1, 2, 3].includes(item.status));
+  const canRefund = !isRefund && ((isUnpaid && item.type === 'Cash') || [1, 2, 3].includes(item.status));
   const REFUND_TYPE_LABEL: Record<number, string> = {
     0: 'Khách quan / Đổi món',
     1: 'Lỗi nhân viên',
@@ -65,7 +65,6 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
   const borderColor = isRefund ? 'border-red-500' : 'border-[#226B5D]';
   return (
     <View className={`${bgColor} rounded-xl border-2 ${borderColor} overflow-hidden mb-6`}>
-      {}
       {isPreOrder && !isRefund && (
         <View className={`flex-row items-center px-4 py-1.5 ${isRefund ? 'bg-red-100' : 'bg-[#E8F3F0]'} border-b ${borderColor}`}>
           <Text className={`text-xs font-bold ${isRefund ? 'text-red-700' : 'text-[#226B5D]'}`}>PRE-ORDER</Text>
@@ -81,7 +80,6 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           )}
         </View>
       )}
-      {}
       <View className="flex-row items-center px-4 py-4 border-b border-dashed border-gray-400">
         {isRefund ? (
           <RotateCcw size={20} color="#dc2626" />
@@ -105,7 +103,6 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           </TouchableOpacity>
           {activeMenuId === item.id && (
             <View className="absolute right-0 top-8 bg-white border rounded-lg shadow-xl z-50 w-40 py-1">
-              {}
               <TouchableOpacity
                 className="px-4 py-2 border-b"
                 onPress={() => {
@@ -115,7 +112,6 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
               >
                 <Text>Chi tiết</Text>
               </TouchableOpacity>
-              {}
               {canRefund && (
                 <TouchableOpacity
                   className="px-4 py-2"
@@ -133,7 +129,6 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           )}
         </View>
       </View>
-      {}
       <View className="flex-row">
         <View className="flex-1 px-3 py-4 border-r">
           <Text className={`text-lg font-semibold ${isRefund ? 'text-red-700' : 'text-black'}`}>ORD-{item.orderCode}</Text>
@@ -155,11 +150,9 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           <Text className="text-sm text-gray-600">
             {(item.finalAmount ?? item.amount).toLocaleString()} đ
           </Text>
-          {}
           <Text className="mt-2 text-xs text-gray-500">
             {ORDER_STATUS_LABEL[item.status]}
           </Text>
-          {}
           <Text
             className={`mt-1 text-xs font-semibold ${
               isUnpaid ? 'text-red-500' : 'text-green-600'
@@ -169,7 +162,6 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           </Text>
         </View>
       </View>
-      {}
       {needsPickupConfirm && (
         <TouchableOpacity
           className="py-3 items-center border-t bg-[#E8F3F0]"
@@ -180,8 +172,7 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           </Text>
         </TouchableOpacity>
       )}
-      {}
-      {!isRefund && [0, 1, 2, 3].includes(item.status) && (
+      {!isRefund && ((item.status === 0 && item.type === 'Cash') || [1, 2, 3].includes(item.status)) && (
         <TouchableOpacity
           className="py-4 items-center border-t border-dashed"
           onPress={() => onUpdateStatus(item)}

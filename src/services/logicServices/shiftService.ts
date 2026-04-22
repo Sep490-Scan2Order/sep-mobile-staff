@@ -74,4 +74,28 @@ export const shiftService = {
       );
     }
   },
+  async getPendingReport() {
+    try {
+      const res = await shiftApi.getPendingReport();
+      return res.data?.data || res.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+        error?.message ||
+        'Không lấy được báo cáo chờ đối soát'
+      );
+    }
+  },
+  async getTransferQr(shiftId: number) {
+    try {
+      const res = await shiftApi.getTransferQr(shiftId);
+      return res.data?.data || res.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+        error?.message ||
+        'Không lấy được QR nộp tiền'
+      );
+    }
+  },
 };

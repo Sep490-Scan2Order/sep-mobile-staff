@@ -16,8 +16,14 @@ jest.mock('@/store/slices/shiftSlice', () => ({
 jest.mock('@/hooks/useSnackbar', () => ({
   useSnackbar: jest.fn(),
 }));
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+  useNavigationState: jest.fn(),
+}));
 jest.mock('lucide-react-native', () => ({
   LogOut: () => null,
+  CreditCard: () => null,
+  ArrowRight: () => null,
 }));
 jest.mock('@/components/AppSnackbar', () => {
   const { View, Text } = require('react-native');
@@ -42,10 +48,13 @@ describe('GlobalCheckInModal', () => {
     hide: jest.fn(),
     config: { visible: false, message: '', type: 'info' }
   };
+  const mockNavigation = { navigate: jest.fn() };
   beforeEach(() => {
     jest.clearAllMocks();
     (useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
     (useSnackbar as jest.Mock).mockReturnValue(mockSnackbar);
+    (require('@react-navigation/native').useNavigation as jest.Mock).mockReturnValue(mockNavigation);
+    (require('@react-navigation/native').useNavigationState as jest.Mock).mockReturnValue('CheckIn');
   });
   it('renders nothing when user is not logged in', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
@@ -78,7 +87,7 @@ describe('GlobalCheckInModal', () => {
     expect(getByText('Yêu cầu Check-in')).toBeTruthy();
     expect(getByText('Test Staff')).toBeTruthy();
   });
-  it('shows warning if cash is empty on check-in for Cashier', () => {
+  it('renders when user is logged in and has no active shift', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
@@ -86,9 +95,10 @@ describe('GlobalCheckInModal', () => {
       })
     );
     const { getByText } = render(<GlobalCheckInModal />);
-    fireEvent.press(getByText('Vào ca ngay'));
-    expect(mockSnackbar.showWarning).toHaveBeenCalledWith('Vui lòng nhập số tiền đầu ca');
+    expect(getByText('Yêu cầu Check-in')).toBeTruthy();
+    expect(getByText('Test Staff')).toBeTruthy();
   });
+
   it('handles successful check-in', async () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
@@ -100,19 +110,20 @@ describe('GlobalCheckInModal', () => {
     const unwrapMock = jest.fn().mockResolvedValue(mockResult);
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
     const { getByPlaceholderText, getByText } = render(<GlobalCheckInModal />);
-    fireEvent.changeText(getByPlaceholderText('Nhập số tiền...'), '500000');
+    
     fireEvent.changeText(getByPlaceholderText('Nhập ghi chú...'), 'Ghi chú test');
     fireEvent.press(getByText('Vào ca ngay'));
+    
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(checkInShift({
         restaurantId: mockUser.restaurantId,
         staffId: mockUser.id,
-        openingCashAmount: 500000,
         note: 'Ghi chú test',
       }));
       expect(mockDispatch).toHaveBeenCalledWith(setShift(mockResult));
     });
   });
+
   it('handles check-in failure and shows error snackbar', async () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
@@ -123,13 +134,15 @@ describe('GlobalCheckInModal', () => {
     const error = new Error('Lỗi check-in');
     const unwrapMock = jest.fn().mockRejectedValue(error);
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
-    const { getByPlaceholderText, getByText } = render(<GlobalCheckInModal />);
-    fireEvent.changeText(getByPlaceholderText('Nhập số tiền...'), '500000');
+    const { getByText } = render(<GlobalCheckInModal />);
+    
     fireEvent.press(getByText('Vào ca ngay'));
+    
     await waitFor(() => {
       expect(mockSnackbar.showError).toHaveBeenCalledWith('Lỗi check-in');
     });
   });
+
   it('handles check-in failure with fallback message', async () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
@@ -139,9 +152,10 @@ describe('GlobalCheckInModal', () => {
     );
     const unwrapMock = jest.fn().mockRejectedValue({});
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
-    const { getByPlaceholderText, getByText } = render(<GlobalCheckInModal />);
-    fireEvent.changeText(getByPlaceholderText('Nhập số tiền...'), '500000');
+    const { getByText } = render(<GlobalCheckInModal />);
+    
     fireEvent.press(getByText('Vào ca ngay'));
+    
     await waitFor(() => {
       expect(mockSnackbar.showError).toHaveBeenCalledWith('Check-in thất bại');
     });

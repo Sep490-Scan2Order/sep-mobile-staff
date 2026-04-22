@@ -5,12 +5,13 @@ import { persistor, store } from '@/store';
 import MainApp from '@/MainApp';
 import './global.css';
 import { PersistGate } from 'redux-persist/lib/integration/react';
+import { navigationRef } from '@/utils/navigationUtils';
 
 export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <MainApp />
         </NavigationContainer>
       </PersistGate>

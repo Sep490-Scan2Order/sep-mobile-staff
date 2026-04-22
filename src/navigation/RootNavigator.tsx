@@ -10,6 +10,7 @@ import DetailOrderScreen from '@/screen/private/DetailOrderScreen';
 import ChangePasswordScreen from '@/screen/private/ChangePasswordScreen';
 import ScanDeliveryScreen from '@/screen/private/ScanDeliveryScreen';
 import FoodDetailScreen from '@/screen/private/FoodDetailScreen';
+import ShiftTransferScreen from '@/screen/private/ShiftTransferScreen';
 import { RootStackParamList } from '@/type';
 import { GlobalCheckInModal } from '@/components/GlobalCheckInModal';
 import {
@@ -60,6 +61,10 @@ export default function RootNavigator() {
           <Stack.Screen
             name="FoodDetailScreen"
             component={FoodDetailScreen}
+          />
+          <Stack.Screen
+            name="ShiftTransferScreen"
+            component={ShiftTransferScreen}
           />
         </Stack.Group>
       ) : (

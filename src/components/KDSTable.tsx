@@ -127,8 +127,10 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
 
   const handleUpdateStatus = useCallback(async (order: Order) => {
     if (order.status === 0) {
-      setSelectedOrderForPayment(order);
-      setShowPaymentModal(true);
+      if (order.type === 'Cash') {
+        setSelectedOrderForPayment(order);
+        setShowPaymentModal(true);
+      }
       return;
     }
 

@@ -136,12 +136,12 @@ export interface OrderState {
 export interface CheckInRequest {
   restaurantId: number;
   staffId: string;
-  openingCashAmount: number;
+  openingCashAmount?: number;
   note: string | null;
 }
 export interface CheckOutRequest {
   shiftId: number;
-  cashAmount: number;
+  cashAmount?: number;
   note: string | null;
 }
 export interface ShiftReportDto {
@@ -170,6 +170,7 @@ export interface RefundRequest {
 export interface ShiftState {
   currentShift: any | null;
   currentShiftId: number | null;
+  pendingReport: ShiftReportDto | null;
   loading: boolean;
   error: string | null;
   hasFetchedStatus: boolean;
@@ -208,4 +209,5 @@ export type RootStackParamList = {
     comboItems?: ComboItem[];
     description?: string | null;
   };
+  ShiftTransferScreen: undefined;
 };

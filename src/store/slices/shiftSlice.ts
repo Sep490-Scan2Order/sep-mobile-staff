@@ -4,6 +4,7 @@ import { ShiftState } from '@/type';
 const initialState: ShiftState = {
   currentShift: null,
   currentShiftId: null,
+  pendingReport: null,
   loading: false,
   error: null,
   hasFetchedStatus: false,
@@ -30,6 +31,17 @@ export const fetchCurrentShift = createAsyncThunk(
     }
   }
 );
+export const fetchPendingReport = createAsyncThunk(
+  'shift/fetchPendingReport',
+  async (_, { rejectWithValue }) => {
+    try {
+      const report = await shiftService.getPendingReport();
+      return report;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 const shiftSlice = createSlice({
   name: 'shift',
   initialState,
@@ -38,6 +50,7 @@ const shiftSlice = createSlice({
       state.currentShift = null;
       state.currentShiftId = null;
       state.hasFetchedStatus = false;
+      state.pendingReport = null;
     },
     setShift: (state, action) => {
       state.currentShift = action.payload
@@ -76,6 +89,9 @@ const shiftSlice = createSlice({
         state.hasFetchedStatus = true;
         state.currentShift = null;
         state.currentShiftId = null;
+      })
+      .addCase(fetchPendingReport.fulfilled, (state, action) => {
+        state.pendingReport = action.payload;
       });
   },
 });
