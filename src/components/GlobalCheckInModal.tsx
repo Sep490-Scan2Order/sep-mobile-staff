@@ -56,7 +56,7 @@ export const GlobalCheckInModal = () => {
   }, [currentRoute]);
 
   const fetchPending = useCallback(async () => {
-    if (!user) return;
+    if (!user || user.role !== 'Cashier') return;
     try {
       const report = await shiftService.getPendingReport();
       setPendingReport(report);
@@ -96,7 +96,22 @@ export const GlobalCheckInModal = () => {
       dispatch(setShift(result));
       setNote('');
     } catch (error: any) {
-      snackbar.showError(error?.message || 'Check-in thất bại');
+      let errorMsg = error?.message || 'Check-in thất bại';
+      
+      // Nếu là Nhân viên và gặp lỗi check-in (thường do chưa có ca Thu ngân)
+      if (user?.role === 'Staff') {
+        const lowerMsg = errorMsg.toLowerCase();
+        if (
+          lowerMsg.includes('ca làm việc') || 
+          lowerMsg.includes('cashier') || 
+          lowerMsg.includes('thu ngân') ||
+          errorMsg === 'Check-in thất bại'
+        ) {
+          errorMsg = 'Không thể vào ca do hiện tại chưa có Thu ngân mở ca. Vui lòng liên hệ Thu ngân của quán.';
+        }
+      }
+      
+      snackbar.showError(errorMsg);
     } finally {
       setIsCheckingIn(false);
     }
@@ -130,7 +145,7 @@ export const GlobalCheckInModal = () => {
               <Text className="text-2xl font-black text-teal-800 text-center mb-2 uppercase">Bắt đầu ca làm việc</Text>
               <Text className="text-gray-500 text-center mb-8">Bạn cần check-in để truy cập các tính năng bên trong hệ thống.</Text>
 
-              {pendingReport && (
+              {pendingReport && user?.role === 'Cashier' && pendingReport.totalCashOrder > 0 && (
                 <TouchableOpacity 
                    onPress={handleNavigateToTransfer}
                    className="mb-8 bg-orange-100 p-4 rounded-2xl border border-orange-200 flex-row items-center"

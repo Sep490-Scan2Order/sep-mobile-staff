@@ -7,6 +7,8 @@ import { User, LogOut, ChevronRight, Lock } from 'lucide-react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { authService } from '@/services/logicServices/authService';
 import { RootStackParamList } from '@/type';
+import { useAppModal } from '@/hooks/useAppModal';
+import { AppModal } from '@/components/AppModal';
 const MenuItem = ({
   icon: Icon,
   title,
@@ -41,7 +43,25 @@ const MenuItem = ({
 export default function MenuScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const modal = useAppModal();
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+  const currentShift = useSelector((state: RootState) => state.shift.currentShift);
+
+  const handleLogout = () => {
+    if (currentShift) {
+      modal.showConfirm(
+        'Cảnh báo Đăng xuất',
+        'Bạn hiện đang trong ca làm việc. Bạn nên kết thúc ca (Check-out) trước khi đăng xuất để đảm bảo dữ liệu làm việc và đối soát chính xác. Bạn vẫn muốn đăng xuất chứ?',
+        () => {
+          dispatch(logout());
+        },
+        'Đăng xuất ngay'
+      );
+    } else {
+      dispatch(logout());
+    }
+  };
+
   if (!userInfo) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -93,13 +113,14 @@ export default function MenuScreen() {
         />
         {}
         <TouchableOpacity
-          onPress={() => dispatch(logout())}
+          onPress={handleLogout}
           className="bg-red-500 rounded-2xl p-4 flex-row items-center justify-center gap-2 mt-6"
         >
           <LogOut size={20} color="white" />
           <Text className="text-white font-semibold">Đăng xuất</Text>
         </TouchableOpacity>
       </ScrollView>
+      <AppModal {...modal.modalConfig} onDismiss={modal.hideModal} />
     </View>
   );
 }

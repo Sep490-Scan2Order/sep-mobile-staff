@@ -9,7 +9,7 @@ import {
 import {
   updateReceivingOrdersLocal,
 } from '@/store/slices/restaurantSlice';
-import { setShift, clearShift, fetchPendingReport } from '@/store/slices/shiftSlice';
+import { setShift, clearShift, fetchPendingReport, fetchStaffShifts } from '@/store/slices/shiftSlice';
 import {
   playNotificationSound,
   playAudioFromUrl,
@@ -93,10 +93,25 @@ export const initSignalR = async (
   });
   connection.on('ShiftChanged', (data: any) => {
     if (!data) return;
-    if (data.status === 1 || data.endDate) {
-      store.dispatch(clearShift());
+    
+    const incomingStaffId = data.staffId ?? data.StaffId;
+    
+    // If it's the current user's shift
+    if (incomingStaffId === staffId) {
+      if (data.status === 1 || data.endDate) {
+        store.dispatch(clearShift());
+      } else {
+        store.dispatch(setShift(data));
+      }
     } else {
-      store.dispatch(setShift(data));
+      // If it's someone else's shift and I am a Cashier, refresh my staff list
+      const state = store.getState();
+      const isCashier = state.auth.userInfo?.role === 'Cashier';
+      const cashierShiftId = state.shift.currentShiftId;
+
+      if (isCashier && cashierShiftId) {
+        store.dispatch(fetchStaffShifts(cashierShiftId));
+      }
     }
   });
   connection.on('ShiftTransferSuccess', (data: any) => {

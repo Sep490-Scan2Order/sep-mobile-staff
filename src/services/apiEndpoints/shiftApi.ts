@@ -25,4 +25,10 @@ export const shiftApi = {
   getTransferQr: (shiftId: number) => {
     return axiosPrivate.get(`/Shift/${shiftId}/transfer-qr`);
   },
+  getStaffShifts: (cashierShiftId: number) => {
+    return axiosPrivate.get(`/Shift/${cashierShiftId}/staff-shifts`);
+  },
+  blockShift: (shiftId: number) => {
+    return axiosPrivate.post(`/Shift/${shiftId}/block`, {});
+  },
 };

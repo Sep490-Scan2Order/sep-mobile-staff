@@ -19,14 +19,15 @@ import {
   clearShift,
   setShift,
   fetchCurrentShift,
+  fetchStaffShifts,
 } from '@/store/slices/shiftSlice';
 import { Header } from '@/components/Header';
 import { AppSnackbar } from '@/components/AppSnackbar';
 import { AppModal } from '@/components/AppModal';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useAppModal } from '@/hooks/useAppModal';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { CreditCard, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { CreditCard, Info, AlertTriangle, ArrowRight, User as UserIcon, Lock, Unlock } from 'lucide-react-native';
 import { ShiftReportDto } from '@/type';
 
 export default function CheckInScreen() {
@@ -36,10 +37,12 @@ export default function CheckInScreen() {
   const currentShift = useSelector(
     (state: RootState) => state.shift.currentShift,
   );
+  const staffShifts = useSelector((state: RootState) => state.shift.staffShifts) || [];
   
   const [pendingReport, setPendingReport] = useState<ShiftReportDto | null>(null);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   
   const snackbar = useSnackbar();
   const modal = useAppModal();
@@ -65,6 +68,12 @@ export default function CheckInScreen() {
     dispatch(fetchCurrentShift());
     fetchPendingReport();
   }, [user?.id, dispatch, fetchPendingReport]);
+
+  useEffect(() => {
+    if (user?.role === 'Cashier' && currentShift?.id) {
+      dispatch(fetchStaffShifts(currentShift.id));
+    }
+  }, [user?.role, currentShift?.id, dispatch]);
 
   const handleCheckIn = async () => {
     if (!user) {
@@ -130,8 +139,23 @@ export default function CheckInScreen() {
         'Xác nhận kết ca',
       );
     } catch (error: any) {
-      setLoading(false);
       snackbar.showError('Không thể tải báo cáo ca trước khi checkout.');
+    }
+  };
+
+  const handleToggleBlock = async (shift: any) => {
+    try {
+      setActionLoading(shift.id.toString());
+      await shiftService.blockShift(shift.id);
+      snackbar.showSuccess(`${shift.isBlocked ? 'Mở khóa' : 'Khóa'} nhân viên thành công`);
+      // SignalR will handle the refresh, but we can also re-fetch manually
+      if (currentShift?.id) {
+        dispatch(fetchStaffShifts(currentShift.id));
+      }
+    } catch (error: any) {
+      snackbar.showError(error?.message || 'Thao tác thất bại');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -149,7 +173,7 @@ export default function CheckInScreen() {
           </Text>
 
           {pendingReport && !isShiftOpen && (
-            <Animated.View entering={FadeInDown} className="mb-6">
+            <View className="mb-6">
               <TouchableOpacity 
                 onPress={() => navigation.navigate('ShiftTransferScreen')}
                 className="bg-orange-50 p-5 rounded-3xl border border-orange-100 flex-row items-center shadow-sm"
@@ -163,11 +187,10 @@ export default function CheckInScreen() {
                 </View>
                 <ArrowRight size={20} color="#f97316" />
               </TouchableOpacity>
-            </Animated.View>
+            </View>
           )}
 
-          <Animated.View 
-            entering={FadeInDown.duration(400)}
+          <View 
             className="bg-gray-50 rounded-3xl p-6 border border-gray-100 shadow-sm mb-10"
           >
             <View className="flex-row justify-between items-center mb-6">
@@ -245,7 +268,50 @@ export default function CheckInScreen() {
                 </TouchableOpacity>
               </View>
             )}
-          </Animated.View>
+          </View>
+
+          {isShiftOpen && user?.role === 'Cashier' && (
+             <View className="mb-10">
+                <Text className="text-lg font-black text-teal-800 mb-4 uppercase ml-1">Nhân viên trong ca</Text>
+                {staffShifts.length === 0 ? (
+                  <View className="bg-gray-50 rounded-2xl p-6 border border-dashed border-gray-300 items-center">
+                    <Text className="text-gray-400 italic text-sm">Chưa có nhân viên nào check-in</Text>
+                  </View>
+                ) : (
+                  staffShifts.map((staffShift, index) => (
+                    <View key={staffShift.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex-row items-center mb-3">
+                      <View className={`w-12 h-12 rounded-full items-center justify-center ${staffShift.isBlocked ? 'bg-red-50' : 'bg-teal-50'}`}>
+                        <UserIcon size={20} color={staffShift.isBlocked ? '#ef4444' : '#0d9488'} />
+                      </View>
+                      <View className="ml-3 flex-1">
+                        <Text className="font-bold text-gray-800" numberOfLines={1}>{staffShift.staffName}</Text>
+                        <Text className="text-[10px] text-gray-500 italic mt-0.5">Vào ca: {new Date(staffShift.startDate).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}</Text>
+                      </View>
+                      
+                      <View className="flex-row items-center">
+                        <View className={`px-2 py-1 rounded-full mr-3 ${staffShift.isBlocked ? 'bg-red-100' : 'bg-green-100'}`}>
+                          <Text className={`text-[9px] font-black uppercase ${staffShift.isBlocked ? 'text-red-700' : 'text-green-700'}`}>
+                            {staffShift.isBlocked ? 'Đã khóa' : 'Đang trực'}
+                          </Text>
+                        </View>
+                        
+                        <TouchableOpacity 
+                          onPress={() => handleToggleBlock(staffShift)}
+                          disabled={actionLoading === staffShift.id.toString()}
+                          className={`p-2 rounded-xl border ${staffShift.isBlocked ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}
+                        >
+                          {actionLoading === staffShift.id.toString() ? (
+                            <ActivityIndicator size="small" color={staffShift.isBlocked ? '#166534' : '#991b1b'} />
+                          ) : (
+                            staffShift.isBlocked ? <Unlock size={18} color="#166534" /> : <Lock size={18} color="#991b1b" />
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))
+                )}
+             </View>
+          )}
 
           {!isShiftOpen && (
             <View className="flex-row items-center p-4 bg-teal-50 rounded-2xl">

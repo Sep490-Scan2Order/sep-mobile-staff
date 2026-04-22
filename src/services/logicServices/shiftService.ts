@@ -98,4 +98,28 @@ export const shiftService = {
       );
     }
   },
+  async getStaffShifts(cashierShiftId: number) {
+    try {
+      const res = await shiftApi.getStaffShifts(cashierShiftId);
+      return res.data?.data || res.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+        error?.message ||
+        'Không lấy được danh sách nhân viên trong ca'
+      );
+    }
+  },
+  async blockShift(shiftId: number) {
+    try {
+      const res = await shiftApi.blockShift(shiftId);
+      return res.data?.data || res.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+        error?.message ||
+        'Thao tác khóa ca thất bại'
+      );
+    }
+  },
 };

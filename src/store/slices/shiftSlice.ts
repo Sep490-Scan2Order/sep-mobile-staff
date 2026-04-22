@@ -5,6 +5,7 @@ const initialState: ShiftState = {
   currentShift: null,
   currentShiftId: null,
   pendingReport: null,
+  staffShifts: [],
   loading: false,
   error: null,
   hasFetchedStatus: false,
@@ -42,6 +43,17 @@ export const fetchPendingReport = createAsyncThunk(
     }
   }
 );
+export const fetchStaffShifts = createAsyncThunk(
+  'shift/fetchStaffShifts',
+  async (cashierShiftId: number, { rejectWithValue }) => {
+    try {
+      const data = await shiftService.getStaffShifts(cashierShiftId);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 const shiftSlice = createSlice({
   name: 'shift',
   initialState,
@@ -51,6 +63,7 @@ const shiftSlice = createSlice({
       state.currentShiftId = null;
       state.hasFetchedStatus = false;
       state.pendingReport = null;
+      state.staffShifts = [];
     },
     setShift: (state, action) => {
       state.currentShift = action.payload
@@ -92,6 +105,10 @@ const shiftSlice = createSlice({
       })
       .addCase(fetchPendingReport.fulfilled, (state, action) => {
         state.pendingReport = action.payload;
+      })
+      .addCase(fetchStaffShifts.fulfilled, (state, action) => {
+        const raw = action.payload?.data ?? action.payload;
+        state.staffShifts = Array.isArray(raw) ? raw : (raw?.items ?? []);
       });
   },
 });

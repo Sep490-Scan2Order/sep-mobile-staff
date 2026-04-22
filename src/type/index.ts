@@ -171,6 +171,7 @@ export interface ShiftState {
   currentShift: any | null;
   currentShiftId: number | null;
   pendingReport: ShiftReportDto | null;
+  staffShifts: any[];
   loading: boolean;
   error: string | null;
   hasFetchedStatus: boolean;
