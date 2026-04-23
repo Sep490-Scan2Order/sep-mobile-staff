@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Calendar, Phone, MoreVertical, RotateCcw } from 'lucide-react-native';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { Order } from '@/type';
 
 interface Props {
@@ -61,13 +63,14 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
   onUpdateStatus,
   onOpenPickup,
 }) => {
+  const role = useSelector((state: RootState) => state.auth.userInfo?.role);
   const isPreOrder = item.isPreOrder === true;
   const isUnpaid = item.status === 0;
   const needsPickupConfirm =
     isPreOrder && item.status === 1 && !item.confirmedPickupAt;
   
   const isRefund = item.typeOrder === 1;
-  const canRefund = !isRefund && ((isUnpaid && item.type === 'Cash') || [1, 2, 3].includes(item.status));
+  const canRefund = !isRefund && ((isUnpaid && item.type !== 'Cash') || [1, 2, 3].includes(item.status));
   
   const mainColor = isRefund ? '#dc2626' : '#226B5D';
   const bgColor = isRefund ? 'bg-red-50' : 'bg-gray-100';
@@ -128,7 +131,7 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
                     onRefund(item);
                   }}
                 >
-                  <Text className="text-red-500">
+                  <Text className={isUnpaid ? 'text-[#226B5D]' : 'text-red-500'}>
                     {isUnpaid ? 'Xác nhận thanh toán' : 'Hoàn tiền'}
                   </Text>
                 </TouchableOpacity>
@@ -180,7 +183,10 @@ export const OrderItemCard: React.FC<Props> = React.memo(({
           </Text>
         </TouchableOpacity>
       )}
-      {!isRefund && ((item.status === 0 && item.type === 'Cash') || [1, 2, 3].includes(item.status)) && (
+      {!isRefund &&
+        ((item.status === 0 && item.type === 'Cash') ||
+          [1, 2, 3].includes(item.status)) &&
+        !(item.status === 3 && role === 'Staff') && (
         <TouchableOpacity
           className="py-4 items-center border-t border-dashed"
           onPress={() => onUpdateStatus(item)}

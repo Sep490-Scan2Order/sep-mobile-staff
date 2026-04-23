@@ -49,7 +49,7 @@ export default function BottomTabs() {
     >
       <Tab.Screen name="KDS" component={KDSScreen} />
       <Tab.Screen name="Foods" component={FoodManagementScreen} />
-      {role === 'Cashier' ? (
+      {(role === 'Cashier' || role === 'Staff') ? (
         <Tab.Screen name="CheckIn" component={CheckInScreen} />
       ) : null}
       {role === 'Cashier' ? (

@@ -61,6 +61,9 @@ export const FoodItemCard: React.FC<Props> = React.memo(({
   const restaurantId = useSelector(
     (state: RootState) => state.auth.userInfo?.restaurantId,
   );
+  const role = useSelector((state: RootState) => state.auth.userInfo?.role);
+  const isStaff = role === 'Staff';
+
   const [modalVisible, setModalVisible] = useState(false);
   const [quantity, setQuantity] = useState('');
 
@@ -146,74 +149,78 @@ export const FoodItemCard: React.FC<Props> = React.memo(({
           borderColor: 'rgba(34, 107, 93, 0.44)',
         }}
       >
-        <TouchableOpacity
-          activeOpacity={0.75}
-          onPress={openDetail}
-        >
-          <View className="flex-row items-center p-3">
-            <Image source={{ uri: image }} className="w-14 h-14 rounded-lg" />
-            <View className="flex-1 ml-3 relative">
-              <View className="flex-row items-center flex-wrap mr-10">
-                <Text className="font-medium text-gray-800 flex-wrap mr-1">{name}</Text>
-                {isCombo && (
-                  <View style={{ backgroundColor: '#dbeafe', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 1 }}>
-                    <Text style={{ fontSize: 10, color: '#1d4ed8', fontWeight: '700' }}>COMBO</Text>
-                  </View>
-                )}
-              </View>
-              {hasPromotion && originalPrice && discountedPrice ? (
-                <View className="mt-0.5">
-                  <View className="flex-row items-center">
-                    <Text className="text-xs text-gray-500 line-through mr-2">
-                      {originalPrice.toLocaleString()} đ
-                    </Text>
-                    <Text className="text-sm font-semibold text-red-600">
-                      {discountedPrice.toLocaleString()} đ
-                    </Text>
-                  </View>
-                  {promotionName && (
-                    <Text className="text-[10px] text-orange-600 mt-0.5">
-                      {promotionName}
-                    </Text>
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={openDetail}
+          >
+            <View className="flex-row items-center p-3">
+              <Image source={{ uri: image }} className="w-14 h-14 rounded-lg" />
+              <View className="flex-1 ml-3 relative">
+                <View className="flex-row items-center flex-wrap mr-10">
+                  <Text className="font-medium text-gray-800 flex-wrap mr-1">{name}</Text>
+                  {isCombo && (
+                    <View style={{ backgroundColor: '#dbeafe', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 1 }}>
+                      <Text style={{ fontSize: 10, color: '#1d4ed8', fontWeight: '700' }}>COMBO</Text>
+                    </View>
                   )}
                 </View>
-              ) : (
-                <Text className="text-sm text-gray-700 mt-0.5">{price}</Text>
-              )}
-              <View className="flex-row flex-wrap items-center mt-1">
-                <Text className={`text-[11px] font-semibold mr-2 ${active ? 'text-green-700' : 'text-red-600'}`}>
-                  {active ? '● Đang bán' : '● Hết hàng'}
-                </Text>
-                <Text className="text-[11px] text-emerald-700 font-medium mr-2">
-                  Kho: {stockQuantity ?? 0}
-                </Text>
+                {hasPromotion && originalPrice && discountedPrice ? (
+                  <View className="mt-0.5">
+                    <View className="flex-row items-center">
+                      <Text className="text-xs text-gray-500 line-through mr-2">
+                        {originalPrice.toLocaleString()} đ
+                      </Text>
+                      <Text className="text-sm font-semibold text-red-600">
+                        {discountedPrice.toLocaleString()} đ
+                      </Text>
+                    </View>
+                    {promotionName && (
+                      <Text className="text-[10px] text-orange-600 mt-0.5">
+                        {promotionName}
+                      </Text>
+                    )}
+                  </View>
+                ) : (
+                  <Text className="text-sm text-gray-700 mt-0.5">{price}</Text>
+                )}
+                <View className="flex-row flex-wrap items-center mt-1">
+                  <Text className={`text-[11px] font-semibold mr-2 ${active ? 'text-green-700' : 'text-red-600'}`}>
+                    {active ? '● Đang bán' : '● Hết hàng'}
+                  </Text>
+                  <Text className="text-[11px] text-emerald-700 font-medium mr-2">
+                    Kho: {stockQuantity ?? 0}
+                  </Text>
+                </View>
+              </View>
+              <View className="items-end justify-center ml-1">
+                {!isStaff && (
+                  <Switch
+                    trackColor={{ false: '#fca5a5', true: '#6ee7b7' }}
+                    thumbColor={active ? '#059669' : '#dc2626'}
+                    ios_backgroundColor="#fca5a5"
+                    onValueChange={(val) => {
+                      if (!val) {
+                        handleSoldOut();
+                      } else {
+                        handleTurnOn();
+                      }
+                    }}
+                    value={active}
+                    style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                  />
+                )}
+                {!isStaff && (
+                  <TouchableOpacity
+                    onPress={openModal}
+                    className="bg-teal-600 px-2 py-1 rounded-md mt-2"
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-white text-[10px] font-medium">Nhập SL</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
-            <View className="items-end justify-center ml-1">
-              <Switch
-                trackColor={{ false: '#fca5a5', true: '#6ee7b7' }}
-                thumbColor={active ? '#059669' : '#dc2626'}
-                ios_backgroundColor="#fca5a5"
-                onValueChange={(val) => {
-                  if (!val) {
-                    handleSoldOut();
-                  } else {
-                    handleTurnOn();
-                  }
-                }}
-                value={active}
-                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
-              />
-              <TouchableOpacity
-                onPress={openModal}
-                className="bg-teal-600 px-2 py-1 rounded-md mt-2"
-                activeOpacity={0.7}
-              >
-                <Text className="text-white text-[10px] font-medium">Nhập SL</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
         {!active && (
           <View

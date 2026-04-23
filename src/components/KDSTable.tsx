@@ -45,6 +45,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
   const snackbar = useSnackbar();
   const modal = useAppModal();
   const orders = useSelector((state: RootState) => state.order.orders);
+  const refreshCount = useSelector((state: RootState) => state.order.refreshCount);
   const [searchText, setSearchText] = useState('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -225,6 +226,7 @@ export const SDKTable: React.FC<SDKTableProps> = ({ statusFilter }) => {
       snackbar.showError(errorMsg);
     } else {
       snackbar.showSuccess('Đã xác nhận giờ nhận hàng thành công');
+      dispatch(forceRefresh());
     }
   }, [dispatch, pickupOrderId, selectedHour, selectedMinute, snackbar]);
 

@@ -39,6 +39,9 @@ export const initSignalR = async (
         status,
       })
     );
+    if (restaurantId) {
+      store.dispatch(fetchActiveOrders(restaurantId));
+    }
   });
   connection.on('ReceiveOrder', (order: any) => {
     if (!order) return;
@@ -67,18 +70,26 @@ export const initSignalR = async (
         order.finalAmount ??
         0,
       status: order.status ?? order.Status ?? 0,
-      type: order.type ?? order.Type ?? null,
+      type: (() => {
+        const t = order.type ?? order.Type;
+        if (t === 0 || t === '0' || t === 'Cash') return 'Cash';
+        if (t === 1 || t === '1' || t === 'Banking') return 'Banking';
+        return t?.toString() || null;
+      })(),
       items,
       note: order.note ?? order.Note ?? '',
       tableName: order.tableName ?? order.TableName ?? '',
       paymentProofUrl: order.paymentProofUrl ?? order.PaymentProofUrl ?? '',
-      isPreOrder: order.isPreOrder ?? order.IsPreOrder ?? false,
+      isPreOrder: !!(order.isPreOrder ?? order.IsPreOrder),
       requestedPickupAt:
         order.requestedPickupAt ?? order.RequestedPickupAt ?? null,
       confirmedPickupAt:
         order.confirmedPickupAt ?? order.ConfirmedPickupAt ?? null,
     };
     store.dispatch(addOrder(mappedOrder));
+    if (restaurantId) {
+      store.dispatch(fetchActiveOrders(restaurantId));
+    }
   });
   connection.on('PaymentReceived', (data: any) => {
     const audioUrl = data.audioUrl ?? data.AudioUrl ?? null;

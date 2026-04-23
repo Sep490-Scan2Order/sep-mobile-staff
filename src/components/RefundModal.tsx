@@ -282,7 +282,7 @@ export default function RefundModal({
         <View className="bg-white rounded-t-3xl p-6 h-[70%]">
           <View className="flex-row justify-between items-center mb-6">
             <Text className="text-xl font-bold text-gray-800">
-              Hoàn tiền đơn hàng
+              {isUnpaid ? 'Xác nhận khách đã thanh toán' : 'Hoàn tiền đơn hàng'}
             </Text>
             <TouchableOpacity onPress={onClose}>
               <X size={24} color="#333" />
@@ -379,7 +379,7 @@ export default function RefundModal({
             </View>
             <View className="mb-6">
               <Text className="text-gray-700 font-medium mb-3">
-                Loại hoàn tiền
+                {isUnpaid ? 'Kiểu lỗi' : 'Loại hoàn tiền'}
               </Text>
               <View className="flex-row flex-wrap gap-2">
                 {refundTypes.map(type => (
@@ -546,7 +546,7 @@ export default function RefundModal({
               <Text className="text-gray-700 font-medium mb-2">Ghi chú</Text>
               <TextInput
                 className="bg-gray-100 rounded-xl p-4 text-gray-800 h-32"
-                placeholder="Nhập lý do hoàn tiền..."
+                placeholder={isUnpaid ? 'Nhập ghi chú xác nhận thanh toán (ví dụ: khách đã gửi tiền mặt)...' : 'Nhập lý do hoàn tiền...'}
                 multiline
                 textAlignVertical="top"
                 value={note}
@@ -617,7 +617,7 @@ export default function RefundModal({
               }`}
             >
               <Text className="text-white text-lg font-bold">
-                {loading ? 'Đang nén & Gửi...' : 'Xác nhận hoàn tiền'}
+                {loading ? 'Đang nén & Gửi...' : isUnpaid ? 'Xác nhận thanh toán' : 'Xác nhận hoàn tiền'}
               </Text>
             </TouchableOpacity>
             <View className="h-10" />

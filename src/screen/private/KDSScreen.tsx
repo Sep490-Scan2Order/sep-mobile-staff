@@ -24,8 +24,13 @@ const KDSScreen: React.FC = () => {
     useCallback(() => {
       if (!restaurantId) return;
       dispatch(fetchActiveOrders(restaurantId));
-    }, [restaurantId, dispatch, refreshCount]),
+    }, [restaurantId, dispatch]),
   );
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    dispatch(fetchActiveOrders(restaurantId));
+  }, [restaurantId, dispatch, refreshCount]);
   const handleSidebarPress = useCallback(
     (status: number) => {
       setActiveSidebarIndex(status);

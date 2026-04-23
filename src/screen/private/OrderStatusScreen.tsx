@@ -24,6 +24,7 @@ export const OrderStatusScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const restaurantId = userInfo?.restaurantId || 0;
+  const isStaff = userInfo?.role === 'Staff';
   const { restaurant, loading, error } = useSelector(
     (state: RootState) => state.restaurant,
   );
@@ -158,12 +159,14 @@ export const OrderStatusScreen = () => {
                         <Text className="text-slate-400 text-xs mt-0.5">Bật để khách hàng có thể xem menu</Text>
                       </View>
                     </View>
-                    <Switch
-                      value={restaurant.isOpened || false}
-                      onValueChange={handleToggleOpening}
-                      trackColor={{ false: '#e2e8f0', true: '#14b8a6' }}
-                      thumbColor="#fff"
-                    />
+                    {!isStaff && (
+                      <Switch
+                        value={restaurant.isOpened || false}
+                        onValueChange={handleToggleOpening}
+                        trackColor={{ false: '#e2e8f0', true: '#14b8a6' }}
+                        thumbColor="#fff"
+                      />
+                    )}
                   </View>
                   {}
                   <View className="bg-white rounded-3xl p-5 flex-row items-center justify-between shadow-sm border border-slate-100">
@@ -176,13 +179,15 @@ export const OrderStatusScreen = () => {
                         <Text className="text-slate-400 text-xs mt-0.5">Khách có thể đặt món ngay bây giờ</Text>
                       </View>
                     </View>
-                    <Switch
-                      value={restaurant.isReceivingOrders || false}
-                      onValueChange={handleToggleReceiving}
-                      trackColor={{ false: '#e2e8f0', true: '#f97316' }}
-                      thumbColor="#fff"
-                      disabled={!restaurant.isOpened}
-                    />
+                    {!isStaff && (
+                      <Switch
+                        value={restaurant.isReceivingOrders || false}
+                        onValueChange={handleToggleReceiving}
+                        trackColor={{ false: '#e2e8f0', true: '#f97316' }}
+                        thumbColor="#fff"
+                        disabled={!restaurant.isOpened}
+                      />
+                    )}
                   </View>
                 </View>
                 {}

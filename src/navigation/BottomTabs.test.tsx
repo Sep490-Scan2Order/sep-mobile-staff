@@ -60,7 +60,7 @@ describe('BottomTabs Navigator', () => {
     expect(getByText('Foods Screen')).toBeTruthy();
     expect(getByText('Orders Screen')).toBeTruthy();
     expect(getByText('Menu Screen')).toBeTruthy();
-    expect(queryByText('CheckIn Screen')).toBeNull();
+    expect(getByText('CheckIn Screen')).toBeTruthy();
     expect(queryByText('CashReport Screen')).toBeNull();
   });
   it('renders correctly for Cashier role', () => {

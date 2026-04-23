@@ -54,7 +54,7 @@ export default function CheckInScreen() {
   };
 
   const fetchPendingReport = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id || user.role !== 'Cashier') return;
     try {
       const report = await shiftService.getPendingReport();
       setPendingReport(report);
@@ -104,6 +104,34 @@ export default function CheckInScreen() {
       snackbar.showError('Không tìm thấy ca làm hiện tại');
       return;
     }
+    if (user?.role === 'Staff') {
+      modal.showConfirm(
+        'BÁO CÁO KẾT CA',
+        'Bạn có chắc chắn muốn kết thúc ca làm việc của mình?',
+        async () => {
+          try {
+            setLoading(true);
+            await shiftService.checkOut({
+              shiftId: currentShift.id,
+              note: note,
+            });
+            dispatch(clearShift());
+            setNote('');
+            modal.showSuccess(
+              'Checkout thành công',
+              'Ca làm việc của bạn đã kết thúc thành công.'
+            );
+          } catch (error: any) {
+            snackbar.showError(error?.message || 'Checkout thất bại');
+          } finally {
+            setLoading(false);
+          }
+        },
+        'Xác nhận kết ca',
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       const report = await shiftService.getPreview(currentShift.id);
