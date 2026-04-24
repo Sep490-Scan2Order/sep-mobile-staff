@@ -170,7 +170,7 @@ export interface RefundRequest {
 export interface ShiftState {
   currentShift: any | null;
   currentShiftId: number | null;
-  pendingReport: ShiftReportDto | null;
+  pendingReports: ShiftReportDto[];
   staffShifts: any[];
   loading: boolean;
   error: string | null;

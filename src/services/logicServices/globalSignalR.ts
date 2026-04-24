@@ -9,7 +9,7 @@ import {
 import {
   updateReceivingOrdersLocal,
 } from '@/store/slices/restaurantSlice';
-import { setShift, clearShift, fetchPendingReport, fetchStaffShifts } from '@/store/slices/shiftSlice';
+import { setShift, clearShift, fetchPendingReports, fetchStaffShifts } from '@/store/slices/shiftSlice';
 import {
   playNotificationSound,
   playAudioFromUrl,
@@ -126,7 +126,7 @@ export const initSignalR = async (
     }
   });
   connection.on('ShiftTransferSuccess', (data: any) => {
-    store.dispatch(fetchPendingReport());
+    store.dispatch(fetchPendingReports());
   });
   connection.on('ListChanged', () => {
     if (restaurantId) {

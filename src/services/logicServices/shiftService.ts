@@ -74,15 +74,15 @@ export const shiftService = {
       );
     }
   },
-  async getPendingReport() {
+  async getPendingReports() {
     try {
-      const res = await shiftApi.getPendingReport();
+      const res = await shiftApi.getPendingReports();
       return res.data?.data || res.data;
     } catch (error: any) {
       throw new Error(
         error?.response?.data?.message ||
         error?.message ||
-        'Không lấy được báo cáo chờ đối soát'
+        'Không lấy được danh sách báo cáo chờ đối soát'
       );
     }
   },

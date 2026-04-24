@@ -20,6 +20,7 @@ import {
   setShift,
   fetchCurrentShift,
   fetchStaffShifts,
+  fetchPendingReports,
 } from '@/store/slices/shiftSlice';
 import { Header } from '@/components/Header';
 import { AppSnackbar } from '@/components/AppSnackbar';
@@ -39,7 +40,7 @@ export default function CheckInScreen() {
   );
   const staffShifts = useSelector((state: RootState) => state.shift.staffShifts) || [];
   
-  const [pendingReport, setPendingReport] = useState<ShiftReportDto | null>(null);
+  const pendingReports = useSelector((state: RootState) => state.shift.pendingReports) || [];
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -53,21 +54,16 @@ export default function CheckInScreen() {
     return isNaN(num) ? '0' : num.toLocaleString('vi-VN');
   };
 
-  const fetchPendingReport = useCallback(async () => {
+  const fetchPendingReportsLocal = useCallback(async () => {
     if (!user?.id || user.role !== 'Cashier') return;
-    try {
-      const report = await shiftService.getPendingReport();
-      setPendingReport(report);
-    } catch (error) {
-      console.log('Error fetching pending report:', error);
-    }
-  }, [user?.id]);
+    dispatch(fetchPendingReports());
+  }, [user?.id, dispatch]);
 
   useEffect(() => {
     if (!user?.id) return;
     dispatch(fetchCurrentShift());
-    fetchPendingReport();
-  }, [user?.id, dispatch, fetchPendingReport]);
+    fetchPendingReportsLocal();
+  }, [user?.id, dispatch, fetchPendingReportsLocal]);
 
   useEffect(() => {
     if (user?.role === 'Cashier' && currentShift?.id) {
@@ -200,7 +196,7 @@ export default function CheckInScreen() {
             Quản lý ca làm việc
           </Text>
 
-          {pendingReport && !isShiftOpen && (
+          {pendingReports.length > 0 && !isShiftOpen && (
             <View className="mb-6">
               <TouchableOpacity 
                 onPress={() => navigation.navigate('ShiftTransferScreen')}
@@ -210,8 +206,8 @@ export default function CheckInScreen() {
                   <CreditCard size={20} color="#fff" />
                 </View>
                 <View className="ml-4 flex-1">
-                  <Text className="text-orange-900 font-black">Nộp tiền doanh thu ca trước</Text>
-                  <Text className="text-orange-700 text-xs mt-1">Số tiền: {formatCurrency(pendingReport.totalCashOrder)} đ</Text>
+                  <Text className="text-orange-900 font-black">Bạn có {pendingReports.length} ca chưa nộp tiền</Text>
+                  <Text className="text-orange-700 text-xs mt-1">Vui lòng nộp doanh thu trước khi bắt đầu ca mới (Khuyên dùng)</Text>
                 </View>
                 <ArrowRight size={20} color="#f97316" />
               </TouchableOpacity>

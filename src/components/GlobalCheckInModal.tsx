@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
-import { checkInShift, setShift, fetchCurrentShift } from '@/store/slices/shiftSlice';
+import { checkInShift, setShift, fetchCurrentShift, fetchPendingReports } from '@/store/slices/shiftSlice';
 import { logout } from '@/store/slices/authSlice';
 import { shiftService } from '@/services/logicServices/shiftService';
 import { AppSnackbar } from '@/components/AppSnackbar';
@@ -28,13 +28,13 @@ export const GlobalCheckInModal = () => {
   const [currentRoute, setCurrentRoute] = useState<string | null>(null);
 
   const user = useSelector((state: RootState) => state.auth.userInfo);
-  const currentShift = useSelector((state: RootState) => state.shift?.currentShift);
+  const pendingReports = useSelector((state: RootState) => state.shift?.pendingReports) || [];
   const loading = useSelector((state: RootState) => state.shift?.loading);
   const hasFetchedStatus = useSelector((state: RootState) => state.shift?.hasFetchedStatus);
   
+  const currentShift = useSelector((state: RootState) => state.shift?.currentShift);
   const [note, setNote] = useState('');
   const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [pendingReport, setPendingReport] = useState<ShiftReportDto | null>(null);
   const snackbar = useSnackbar();
 
   // Polling hoặc listener để cập nhật route name vì modal nằm ngoài navigator
@@ -57,11 +57,8 @@ export const GlobalCheckInModal = () => {
 
   const fetchPending = useCallback(async () => {
     if (!user || user.role !== 'Cashier') return;
-    try {
-      const report = await shiftService.getPendingReport();
-      setPendingReport(report);
-    } catch (e) {}
-  }, [user]);
+    dispatch(fetchPendingReports());
+  }, [user, dispatch]);
 
   useEffect(() => {
     if (!!user && !hasFetchedStatus) {
@@ -145,7 +142,7 @@ export const GlobalCheckInModal = () => {
               <Text className="text-2xl font-black text-teal-800 text-center mb-2 uppercase">Bắt đầu ca làm việc</Text>
               <Text className="text-gray-500 text-center mb-8">Bạn cần check-in để truy cập các tính năng bên trong hệ thống.</Text>
 
-              {pendingReport && user?.role === 'Cashier' && pendingReport.totalCashOrder > 0 && (
+              {pendingReports.length > 0 && user?.role === 'Cashier' && (
                 <TouchableOpacity 
                    onPress={handleNavigateToTransfer}
                    className="mb-8 bg-orange-100 p-4 rounded-2xl border border-orange-200 flex-row items-center"
@@ -154,7 +151,7 @@ export const GlobalCheckInModal = () => {
                         <CreditCard size={18} color="#fff" />
                     </View>
                     <View className="ml-3 flex-1">
-                        <Text className="text-orange-900 font-bold text-sm">Bạn có ca chưa nộp tiền</Text>
+                        <Text className="text-orange-900 font-bold text-sm">Bạn có {pendingReports.length} ca chưa nộp tiền</Text>
                         <Text className="text-orange-700 text-xs">Đi tới trang nộp tiền ngay</Text>
                     </View>
                     <ArrowRight size={18} color="#f97316" />

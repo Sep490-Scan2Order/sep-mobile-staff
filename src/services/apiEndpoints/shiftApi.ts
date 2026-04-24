@@ -19,8 +19,8 @@ export const shiftApi = {
     getCurrentShift: () => {
     return axiosPrivate.get('/Shift/current');
   },
-  getPendingReport: () => {
-    return axiosPrivate.get('/Shift/current/pending-report');
+  getPendingReports: () => {
+    return axiosPrivate.get('/Shift/current/pending-reports');
   },
   getTransferQr: (shiftId: number) => {
     return axiosPrivate.get(`/Shift/${shiftId}/transfer-qr`);
