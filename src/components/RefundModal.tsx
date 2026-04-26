@@ -225,6 +225,14 @@ export default function RefundModal({
       formData.append('Note', note.trim());
       formData.append('IsFullRefund', String(isFullRefund));
       if (!isFullRefund) {
+        if (Object.keys(selectedRefundItems).length === 0) {
+          Toast.show({
+            type: 'error',
+            text1: 'Lỗi',
+            text2: 'Vui lòng chọn ít nhất một sản phẩm để hoàn tiền một phần',
+          });
+          return;
+        }
         const refundItemsArray = Object.entries(selectedRefundItems).map(
           ([id, qty]) => ({
             orderDetailId: parseInt(id),

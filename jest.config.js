@@ -23,6 +23,22 @@ module.exports = {
 
   // Hỗ trợ TypeScript qua babel-jest (đi kèm với RN preset)
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|nativewind|react-native-reanimated|react-redux|@reduxjs/toolkit|redux-persist|react-native-sound|immer|react-native-config|react-native-dotenv|react-native-toast-message|lucide-react-native|react-native-svg|react-native-vision-camera|react-native-worklets-core)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|nativewind|react-native-reanimated|react-redux|@reduxjs/toolkit|redux-persist|react-native-sound|immer|react-native-config|react-native-dotenv|react-native-toast-message|lucide-react-native|react-native-svg|react-native-vision-camera|react-native-worklets-core|react-native-worklets|react-native-css-interop|react-native-safe-area-context)/)',
+  ],
+
+  reporters: [
+    'default',
+    [
+      'jest-html-reporter',
+      {
+        pageTitle: 'SEP490 - Mobile Staff Unit Test Report',
+        outputPath: './test-report.html',
+        includeFailureMsg: true,
+        includeConsoleLog: true,
+        styleOverridePath: './test-report-style.css',
+        dateFormat: 'dd-mm-yyyy HH:MM:ss',
+        executionTimeWarningThreshold: 5,
+      },
+    ],
   ],
 };

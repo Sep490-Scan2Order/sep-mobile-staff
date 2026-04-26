@@ -45,6 +45,7 @@ describe('KDSScreen Component', () => {
     (useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector({
       auth: { userInfo: { restaurantId: mockRestaurantId } },
+      order: { refreshCount: 0 },
     }));
   });
   it('fetches active orders on mount/focus', () => {

@@ -1,5 +1,8 @@
 module.exports = {
-  presets: ['module:@react-native/babel-preset', 'nativewind/babel'],
+  presets: [
+    'module:@react-native/babel-preset',
+    ...(process.env.NODE_ENV === 'test' ? [] : ['nativewind/babel']),
+  ],
   plugins: [
     [
       'module-resolver',
@@ -7,7 +10,7 @@ module.exports = {
         root: ['./src'],
         cwd: 'babelrc',
         alias: {
-            '@': './src',
+          '@': './src',
         },
         extensions: [
           '.ios.js',

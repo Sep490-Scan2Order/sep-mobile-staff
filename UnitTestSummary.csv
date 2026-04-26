@@ -1,0 +1,15 @@
+Category,Component,Statements %,Branch %,Functions %,Lines %,Uncovered Lines
+Summary,Total,84.15,64.28,82.43,84.12,
+Components,AppModal.tsx,100,100,100,100,
+Components,AppSnackbar.tsx,100,100,100,100,
+Components,FoodItemCard.tsx,100,85.71,100,100,28
+Components,KDSTable.tsx,94.52,78.57,94.44,94.36,"151,192,204,242"
+Screens (Private),CheckInScreen.tsx,96.42,83.33,100,96.29,48
+Screens (Private),FoodManagementScreen.tsx,95,78.57,100,94.73,34
+Screens (Private),KDSScreen.tsx,100,100,100,100,
+Screens (Public),LoginScreen.tsx,94.44,90.9,85.71,93.93,"57,104"
+Services,authService.ts,90.9,51.51,100,90.9,"88,102,106,124"
+Services,orderService.ts,90,46.42,100,90,"15,23,41,57"
+Store Slices,orderSlice.ts,94.79,55.35,96.42,94.62,40-47
+Utils,jwtHelper.ts,94.73,100,100,94.59,"31,56"
+Overall Result,PASSED,100%,,,71/71 Suites,

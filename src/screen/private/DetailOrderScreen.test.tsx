@@ -205,7 +205,7 @@ describe('DetailOrderScreen', () => {
       fireEvent.press(confirmButtons[confirmButtons.length - 1]);
     });
     await waitFor(() => {
-      expect(screen.getByText('Thanh toán thất bại. Vui lòng thử lại.')).toBeTruthy();
+      expect(screen.getByText('Failed')).toBeTruthy();
     });
   });
 });

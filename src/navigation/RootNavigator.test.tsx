@@ -41,7 +41,7 @@ describe('RootNavigator', () => {
   it('renders Auth flow when not authenticated', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector({
       auth: { accessToken: null, userInfo: null },
-      shift: { currentShift: null, loading: false, hasFetchedStatus: false },
+      shift: { currentShift: null, loading: false, hasFetchedStatus: false, pendingReports: [] },
     }));
     const { getByText } = render(
       <NavigationContainer>
@@ -55,7 +55,7 @@ describe('RootNavigator', () => {
     const mockUser = { id: 'u1', restaurantId: 'r1' };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector({
       auth: { accessToken: 'valid-token', userInfo: mockUser },
-      shift: { currentShift: null, loading: false, hasFetchedStatus: false },
+      shift: { currentShift: null, loading: false, hasFetchedStatus: false, pendingReports: [] },
     }));
     const { getByText } = render(
       <NavigationContainer>
@@ -71,7 +71,7 @@ describe('RootNavigator', () => {
     const mockUser = { id: 'u1', restaurantId: 'r1' };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector({
       auth: { accessToken: 'valid-token', userInfo: mockUser },
-      shift: { currentShift: null, loading: false, hasFetchedStatus: false },
+      shift: { currentShift: null, loading: false, hasFetchedStatus: false, pendingReports: [] },
     }));
     (initSignalR as jest.Mock).mockRejectedValueOnce(new Error('SignalR Fail'));
     render(

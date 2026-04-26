@@ -7,6 +7,11 @@ jest.mock('@/services/apiEndpoints/shiftApi', () => ({
     getReport: jest.fn(),
     getReportsByStaff: jest.fn(),
     getCurrentShift: jest.fn(),
+    getPreview: jest.fn(),
+    getPendingReports: jest.fn(),
+    getTransferQr: jest.fn(),
+    getStaffShifts: jest.fn(),
+    blockShift: jest.fn(),
   },
 }));
 describe('shiftService', () => {
@@ -136,6 +141,77 @@ describe('shiftService', () => {
     it('should throw default message if no message found', async () => {
       (shiftApi.getCurrentShift as jest.Mock).mockRejectedValue({});
       await expect(shiftService.getCurrentShift()).rejects.toThrow('Không lấy được ca hiện tại');
+    });
+  });
+
+  describe('getPreview', () => {
+    it('should return preview data on success', async () => {
+      const mockResponse = { data: { data: { id: 1 } } };
+      (shiftApi.getPreview as jest.Mock).mockResolvedValue(mockResponse);
+      const result = await shiftService.getPreview(1);
+      expect(result).toEqual(mockResponse.data.data);
+    });
+
+    it('should throw error on failure', async () => {
+      const error = { response: { data: { message: 'Preview Fail' } } };
+      (shiftApi.getPreview as jest.Mock).mockRejectedValue(error);
+      await expect(shiftService.getPreview(1)).rejects.toThrow('Preview Fail');
+    });
+  });
+
+  describe('getPendingReports', () => {
+    it('should return pending reports on success', async () => {
+      const mockResponse = { data: [{ id: 1 }] };
+      (shiftApi.getPendingReports as jest.Mock).mockResolvedValue(mockResponse);
+      const result = await shiftService.getPendingReports();
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should throw error on failure', async () => {
+      (shiftApi.getPendingReports as jest.Mock).mockRejectedValue(new Error('Pending Error'));
+      await expect(shiftService.getPendingReports()).rejects.toThrow('Pending Error');
+    });
+  });
+
+  describe('getTransferQr', () => {
+    it('should return qr data on success', async () => {
+      const mockResponse = { data: { qrCode: 'abc' } };
+      (shiftApi.getTransferQr as jest.Mock).mockResolvedValue(mockResponse);
+      const result = await shiftService.getTransferQr(1);
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should throw error on failure', async () => {
+      (shiftApi.getTransferQr as jest.Mock).mockRejectedValue(new Error('QR Error'));
+      await expect(shiftService.getTransferQr(1)).rejects.toThrow('QR Error');
+    });
+  });
+
+  describe('getStaffShifts', () => {
+    it('should return staff shifts on success', async () => {
+      const mockResponse = { data: { data: [1, 2] } };
+      (shiftApi.getStaffShifts as jest.Mock).mockResolvedValue(mockResponse);
+      const result = await shiftService.getStaffShifts(1);
+      expect(result).toEqual(mockResponse.data.data);
+    });
+
+    it('should throw error on failure', async () => {
+      (shiftApi.getStaffShifts as jest.Mock).mockRejectedValue(new Error('Staff Error'));
+      await expect(shiftService.getStaffShifts(1)).rejects.toThrow('Staff Error');
+    });
+  });
+
+  describe('blockShift', () => {
+    it('should return data on success', async () => {
+      const mockResponse = { data: { success: true } };
+      (shiftApi.blockShift as jest.Mock).mockResolvedValue(mockResponse);
+      const result = await shiftService.blockShift(1);
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should throw error on failure', async () => {
+      (shiftApi.blockShift as jest.Mock).mockRejectedValue(new Error('Block Error'));
+      await expect(shiftService.blockShift(1)).rejects.toThrow('Block Error');
     });
   });
 });

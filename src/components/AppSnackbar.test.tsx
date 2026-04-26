@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
-import { AppSnackbar } from './AppSnackbar';
+const { AppSnackbar } = jest.requireActual('./AppSnackbar');
 jest.useFakeTimers();
 describe('AppSnackbar', () => {
   const mockOnDismiss = jest.fn();

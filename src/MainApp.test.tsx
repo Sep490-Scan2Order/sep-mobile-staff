@@ -4,6 +4,10 @@ import MainApp from './MainApp';
 jest.mock('@react-navigation/native', () => ({
   NavigationContainer: ({ children }: any) => children,
 }));
+jest.mock('react-redux', () => ({
+  useDispatch: () => jest.fn(),
+  useSelector: (selector: any) => selector({}),
+}));
 jest.mock('@/navigation/RootNavigator', () => {
     const { View, Text } = require('react-native');
     return () => <View><Text>Root Navigator</Text></View>;

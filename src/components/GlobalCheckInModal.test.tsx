@@ -12,14 +12,12 @@ jest.mock('@/store/slices/shiftSlice', () => ({
   checkInShift: jest.fn(),
   setShift: jest.fn(),
   fetchCurrentShift: jest.fn(),
+  fetchPendingReports: jest.fn(),
 }));
 jest.mock('@/hooks/useSnackbar', () => ({
   useSnackbar: jest.fn(),
 }));
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-  useNavigationState: jest.fn(),
-}));
+// Removed local mock to use global mock from jest.setup.ts
 jest.mock('lucide-react-native', () => ({
   LogOut: () => null,
   CreditCard: () => null,
@@ -60,7 +58,7 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: null },
-        shift: { currentShift: null, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: null, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const { queryByText } = render(<GlobalCheckInModal />);
@@ -70,7 +68,7 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
-        shift: { currentShift: { id: 1 }, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: { id: 1 }, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const { queryByText } = render(<GlobalCheckInModal />);
@@ -80,7 +78,7 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
-        shift: { currentShift: null, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: null, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const { getByText } = render(<GlobalCheckInModal />);
@@ -91,7 +89,7 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
-        shift: { currentShift: null, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: null, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const { getByText } = render(<GlobalCheckInModal />);
@@ -103,7 +101,7 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
-        shift: { currentShift: null, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: null, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const mockResult = { id: 100, status: 0 };
@@ -111,8 +109,8 @@ describe('GlobalCheckInModal', () => {
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
     const { getByPlaceholderText, getByText } = render(<GlobalCheckInModal />);
     
-    fireEvent.changeText(getByPlaceholderText('Nhập ghi chú...'), 'Ghi chú test');
-    fireEvent.press(getByText('Vào ca ngay'));
+    fireEvent.changeText(getByPlaceholderText(/Nhập ghi chú/i), 'Ghi chú test');
+    fireEvent.press(getByText(/VÀO CA NGAY/i));
     
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(checkInShift({
@@ -128,7 +126,7 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
-        shift: { currentShift: null, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: null, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const error = new Error('Lỗi check-in');
@@ -136,7 +134,7 @@ describe('GlobalCheckInModal', () => {
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
     const { getByText } = render(<GlobalCheckInModal />);
     
-    fireEvent.press(getByText('Vào ca ngay'));
+    fireEvent.press(getByText(/VÀO CA NGAY/i));
     
     await waitFor(() => {
       expect(mockSnackbar.showError).toHaveBeenCalledWith('Lỗi check-in');
@@ -147,14 +145,14 @@ describe('GlobalCheckInModal', () => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector) =>
       selector({
         auth: { userInfo: mockUser },
-        shift: { currentShift: null, loading: false, hasFetchedStatus: true },
+        shift: { currentShift: null, loading: false, hasFetchedStatus: true, pendingReports: [] },
       })
     );
     const unwrapMock = jest.fn().mockRejectedValue({});
     mockDispatch.mockReturnValue({ unwrap: unwrapMock });
     const { getByText } = render(<GlobalCheckInModal />);
     
-    fireEvent.press(getByText('Vào ca ngay'));
+    fireEvent.press(getByText(/VÀO CA NGAY/i));
     
     await waitFor(() => {
       expect(mockSnackbar.showError).toHaveBeenCalledWith('Check-in thất bại');

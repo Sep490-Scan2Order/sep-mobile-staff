@@ -2,6 +2,28 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { OrderItemCard } from './OrderItemCard';
 import { Order } from '@/type';
+import { useSelector } from 'react-redux';
+
+jest.mock('react-redux', () => ({
+  useSelector: jest.fn(),
+  useDispatch: () => jest.fn(),
+}));
+
+jest.mock('lucide-react-native', () => {
+  return {
+    MoreVertical: () => null,
+    RotateCcw: () => null,
+    CheckCircle2: () => null,
+    Truck: () => null,
+    CookingPot: () => null,
+    Power: () => null,
+    CreditCard: () => null,
+    Info: () => null,
+    Clock: () => null,
+    Phone: () => null,
+    Calendar: () => null,
+  };
+});
 describe('OrderItemCard Component', () => {
   const mockOrder: Order = {
     id: 'ord-123',
@@ -15,8 +37,8 @@ describe('OrderItemCard Component', () => {
   };
   const mockProps = {
     item: mockOrder,
-    activeMenuId: null,
-    setActiveMenuId: jest.fn(),
+    isActive: false,
+    onToggleMenu: jest.fn(),
     onViewDetail: jest.fn(),
     onRefund: jest.fn(),
     onUpdateStatus: jest.fn(),
@@ -24,6 +46,9 @@ describe('OrderItemCard Component', () => {
   };
   beforeEach(() => {
     jest.clearAllMocks();
+    (useSelector as jest.Mock).mockImplementation((selector) => selector({
+        auth: { userInfo: { role: 'Staff' } }
+    }));
   });
   it('renders order details correctly', () => {
     const { getByText } = render(<OrderItemCard {...mockProps} />);
@@ -44,6 +69,9 @@ describe('OrderItemCard Component', () => {
     expect(getByText('Làm xong')).toBeTruthy();
   });
   it('shows action button "Giao hàng" for status 3', () => {
+    (useSelector as jest.Mock).mockImplementation((selector) => selector({
+        auth: { userInfo: { role: 'Cashier' } }
+    }));
     const orderShipping = { ...mockOrder, status: 3 };
     const { getByText } = render(<OrderItemCard {...mockProps} item={orderShipping} />);
     expect(getByText('Giao hàng')).toBeTruthy();
@@ -76,16 +104,16 @@ describe('OrderItemCard Component', () => {
     expect(mockProps.onOpenPickup).toHaveBeenCalledWith(preOrder);
   });
   it('opens options menu and shows "Hoàn tiền" for paid orders', () => {
-    const { getByText } = render(<OrderItemCard {...mockProps} activeMenuId="ord-123" />);
+    const { getByText } = render(<OrderItemCard {...mockProps} isActive={true} />);
     expect(getByText('Chi tiết')).toBeTruthy();
     expect(getByText('Hoàn tiền')).toBeTruthy();
     fireEvent.press(getByText('Hoàn tiền'));
     expect(mockProps.onRefund).toHaveBeenCalledWith(mockOrder);
-    expect(mockProps.setActiveMenuId).toHaveBeenCalledWith(null);
+    expect(mockProps.onToggleMenu).toHaveBeenCalledWith(null);
   });
   it('opens options menu and shows "Xác nhận thanh toán" for unpaid orders', () => {
     const unpaidOrder = { ...mockOrder, status: 0 };
-    const { getByText } = render(<OrderItemCard {...mockProps} item={unpaidOrder} activeMenuId="ord-123" />);
+    const { getByText } = render(<OrderItemCard {...mockProps} item={unpaidOrder} isActive={true} />);
     expect(getByText('Xác nhận thanh toán')).toBeTruthy();
     fireEvent.press(getByText('Xác nhận thanh toán'));
     expect(mockProps.onRefund).toHaveBeenCalledWith(unpaidOrder);

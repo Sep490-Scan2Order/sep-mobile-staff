@@ -37,7 +37,7 @@ export default function QRScanner({ onScan }: Props) {
   useEffect(() => {
     (async () => {
       const permission = await Camera.requestCameraPermission();
-      setHasPermission(permission === 'granted');
+        setHasPermission(permission === 'granted');
     })();
     
     // Start laser animation

@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #2563eb;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+}
+
+body {
+    background-color: var(--bg) !important;
+    color: var(--text-main) !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.5 !important;
+}
+
+.jesthtml-content {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 48px 24px !important;
+}
+
+/* Title & Header */
+header h1#title {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    color: var(--primary) !important;
+    text-align: center !important;
+    margin: 0 0 40px 0 !important;
+    letter-spacing: -0.025em !important;
+}
+
+/* Metadata Container */
+#metadata-container {
+    background: var(--card-bg) !important;
+    border-radius: 20px !important;
+    padding: 32px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid var(--border) !important;
+    margin-bottom: 40px !important;
+}
+
+#timestamp {
+    font-size: 0.875rem !important;
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+    margin-bottom: 24px !important;
+    display: block !important;
+}
+
+/* Summary Grid */
+#summary {
+    display: flex !important;
+    gap: 24px !important;
+    flex-wrap: wrap !important;
+}
+
+#suite-summary, #test-summary {
+    flex: 1 !important;
+    min-width: 300px !important;
+    background: #f1f5f9 !important;
+    padding: 24px !important;
+    border-radius: 16px !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    gap: 16px !important;
+}
+
+.summary-total {
+    grid-column: 1 / -1 !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+    margin-bottom: 8px !important;
+}
+
+.summary-passed {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    border: 1px solid #bbf7d0 !important;
+}
+
+.summary-failed {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    border: 1px solid #fecaca !important;
+}
+
+.summary-failed.summary-empty {
+    background: #f8fafc !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border) !important;
+    opacity: 0.5 !important;
+}
+
+/* Test Suites List */
+.suite-container {
+    background: var(--card-bg) !important;
+    border-radius: 16px !important;
+    margin-bottom: 20px !important;
+    border: 1px solid var(--border) !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.suite-info {
+    padding: 20px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: var(--card-bg) !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+}
+
+.suite-info:hover {
+    background: #f8fafc !important;
+}
+
+.suite-path {
+    font-weight: 600 !important;
+    color: var(--text-main) !important;
+    font-size: 0.95rem !important;
+    word-break: break-all !important;
+}
+
+.suite-time {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    background: #eff6ff !important;
+    color: var(--primary) !important;
+    padding: 4px 12px !important;
+    border-radius: 9999px !important;
+    white-space: nowrap !important;
+}
+
+/* Individual Tests */
+.suite-tests {
+    padding: 0 !important;
+    background: #fafafa !important;
+}
+
+.test-result {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f1f5f9 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+}
+
+.test-info {
+    display: flex !important;
+    flex: 1 !important;
+    align-items: center !important;
+    gap: 20px !important;
+}
+
+.test-suitename {
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    color: var(--text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    width: 140px !important;
+}
+
+.test-title {
+    font-weight: 500 !important;
+    color: var(--text-main) !important;
+    flex: 1 !important;
+}
+
+.test-status {
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.025em !important;
+}
+
+.test-result.passed .test-status {
+    background: var(--success) !important;
+    color: white !important;
+}
+
+.test-result.failed .test-status {
+    background: var(--danger) !important;
+    color: white !important;
+}
+
+.test-duration {
+    font-size: 0.75rem !important;
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+}
+
+/* Code Blocks & Failures */
+.failureMsg {
+    margin: 0 24px 24px 24px !important;
+    padding: 20px !important;
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border-radius: 12px !important;
+    font-family: 'Fira Code', 'Courier New', monospace !important;
+    font-size: 0.85rem !important;
+    line-height: 1.6 !important;
+    white-space: pre-wrap !important;
+    border-left: 4px solid var(--danger) !important;
+}

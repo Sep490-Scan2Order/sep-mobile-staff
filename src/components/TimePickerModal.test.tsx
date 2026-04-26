@@ -50,14 +50,20 @@ describe('TimePickerModal Component', () => {
         expect(getByText('10')).toBeTruthy();
         expect(getByText('30')).toBeTruthy();
     });
-    it('calls setSelectedHour when an hour item is pressed', () => {
-        const { getByText } = render(<TimePickerModal {...mockProps} />);
-        fireEvent.press(getByText('03'));
+    it('calls setSelectedHour when an hour item is scrolled', () => {
+        const { UNSAFE_getAllByType } = render(<TimePickerModal {...mockProps} />);
+        const lists = UNSAFE_getAllByType(FlatList);
+        fireEvent(lists[0], 'onMomentumScrollEnd', {
+            nativeEvent: { contentOffset: { y: 48 * 3 } },
+        });
         expect(mockProps.setSelectedHour).toHaveBeenCalledWith(3);
     });
-    it('calls setSelectedMinute when a minute item is pressed', () => {
-        const { getByText } = render(<TimePickerModal {...mockProps} />);
-        fireEvent.press(getByText('45'));
+    it('calls setSelectedMinute when a minute item is scrolled', () => {
+        const { UNSAFE_getAllByType } = render(<TimePickerModal {...mockProps} />);
+        const lists = UNSAFE_getAllByType(FlatList);
+        fireEvent(lists[1], 'onMomentumScrollEnd', {
+            nativeEvent: { contentOffset: { y: 48 * 9 } },
+        });
         expect(mockProps.setSelectedMinute).toHaveBeenCalledWith(45);
     });
     it('handles scroll events for hours', () => {

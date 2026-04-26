@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { AppModal, AppModalButton } from './AppModal';
+const { AppModal } = jest.requireActual('./AppModal');
 describe('AppModal', () => {
   const mockOnDismiss = jest.fn();
   beforeEach(() => {

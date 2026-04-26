@@ -61,6 +61,7 @@ describe('OrderStatusScreen', () => {
         loading: false,
         error: null,
       },
+      order: { refreshCount: 0 },
     };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector(mockState));
   });
@@ -117,6 +118,7 @@ describe('OrderStatusScreen', () => {
     const mockLoadingState = {
         auth: { userInfo: { restaurantId: mockRestaurantId } },
         restaurant: { restaurant: null, loading: true, error: null },
+        order: { refreshCount: 0 },
     };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector(mockLoadingState));
     render(<OrderStatusScreen />);
@@ -126,6 +128,7 @@ describe('OrderStatusScreen', () => {
     const mockErrorState = {
         auth: { userInfo: { restaurantId: mockRestaurantId } },
         restaurant: { restaurant: null, loading: false, error: 'Load Error' },
+        order: { refreshCount: 0 },
     };
     (useSelector as unknown as jest.Mock).mockImplementation((selector) => selector(mockErrorState));
     render(<OrderStatusScreen />);

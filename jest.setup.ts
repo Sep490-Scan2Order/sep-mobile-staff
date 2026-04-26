@@ -5,13 +5,17 @@ import '@testing-library/jest-native/extend-expect'
 
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
-  const inset = { top: 0, right: 0, bottom: 0, left: 0 }
+  const React = require('react');
+  const { View } = require('react-native');
+  const MockComponent = ({ children }: any) => React.createElement(View, {}, children);
+  MockComponent.displayName = 'SafeAreaProvider';
   return {
-    SafeAreaProvider: ({ children }: any) => children,
-    SafeAreaView: ({ children }: any) => children,
-    useSafeAreaInsets: () => inset,
-  }
-})
+    SafeAreaProvider: MockComponent,
+    SafeAreaView: ({ children }: any) => React.createElement(View, {}, children),
+    useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+  };
+});
 
 // Mock lucide-react-native using mock-prefixed variables to avoid hoisting issues
 // This allows icons to be rendered as valid components with testIDs without Babel transformation errors
@@ -66,27 +70,135 @@ const mockLucide = {
 
 jest.mock('lucide-react-native', () => mockLucide);
 
-// Mock các thư viện Native phổ biến để tránh lỗi môi trường Node
+// Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock')
-  Reanimated.default.call = () => {}
-  return Reanimated
-})
+  const React = require('react');
+  const RN = require('react-native');
+  
+  const Animated = {
+    View: RN.View,
+    Text: RN.Text,
+    Image: RN.Image,
+    ScrollView: RN.ScrollView,
+    FlatList: RN.FlatList,
+    createAnimatedComponent: (c: any) => c,
+    timing: () => ({ start: () => {} }),
+    spring: () => ({ start: () => {} }),
+    Value: jest.fn(() => ({ setValue: jest.fn() })),
+    event: jest.fn(),
+    add: jest.fn(),
+    divide: jest.fn(),
+    multiply: jest.fn(),
+    sub: jest.fn(),
+    interpolate: jest.fn(),
+    Node: jest.fn(),
+    Extrapolate: { CLAMP: 'clamp' },
+  };
+
+  return {
+    __esModule: true,
+    default: {
+      ...Animated,
+      call: () => {},
+    },
+    ...Animated,
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: (cb: any) => cb(),
+    withTiming: (v: any) => v,
+    withSpring: (v: any) => v,
+    withRepeat: (v: any) => v,
+    withSequence: (v: any) => v,
+    withDelay: (v: any, anim: any) => anim,
+    runOnJS: (fn: any) => fn,
+    runOnUI: (fn: any) => fn,
+    makeMutable: (v: any) => ({ value: v }),
+    FadeIn: { duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    FadeOut: { duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    FadeInDown: { delay: () => ({ duration: () => ({ springify: () => {} }) }), duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    FadeInUp: { delay: () => ({ duration: () => ({ springify: () => {} }) }), duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    FadeOutUp: { delay: () => ({ duration: () => ({ springify: () => {} }) }), duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    SlideInRight: { duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    SlideOutLeft: { duration: () => ({ delay: () => ({ springify: () => {} }) }) },
+    Layout: { springify: () => ({ duration: () => {} }) },
+    Easing: {
+      linear: (v: any) => v,
+      ease: (v: any) => v,
+      quad: (v: any) => v,
+      cubic: (v: any) => v,
+      bezier: () => ({ factory: () => {} }),
+      in: (v: any) => v,
+      out: (v: any) => v,
+      inOut: (v: any) => v,
+    },
+    useAnimatedGestureHandler: () => ({}),
+    useAnimatedScrollHandler: () => ({}),
+    useDerivedValue: (cb: any) => ({ value: cb() }),
+  };
+});
+
+// Mock react-native-worklets
+jest.mock('react-native-worklets', () => {
+  const mock = {
+    Worklets: {
+      createRunOnJS: (fn: any) => fn,
+      createRunOnContext: (fn: any) => fn,
+    },
+    createSerializable: (v: any) => v,
+    createSynchronizable: (v: any) => v,
+    set: (v: any) => v,
+    get: (v: any) => v,
+  };
+  return {
+    ...mock,
+    __esModule: true,
+    default: mock,
+  };
+});
+
+jest.mock('react-native-worklets-core', () => {
+  const mock = {
+    Worklets: {
+      createRunOnJS: (fn: any) => fn,
+      createRunOnContext: (fn: any) => fn,
+    },
+    createSerializable: (v: any) => v,
+    createSynchronizable: (v: any) => v,
+    set: (v: any) => v,
+    get: (v: any) => v,
+  };
+  return {
+    ...mock,
+    __esModule: true,
+    default: mock,
+  };
+});
 
 // Mock React Navigation
 jest.mock('@react-navigation/native', () => {
   return {
-    NavigationContainer: ({ children }: any) => children,
-    useNavigation: () => ({
+    useNavigation: jest.fn(() => ({
       navigate: jest.fn(),
       goBack: jest.fn(),
-    }),
-    useRoute: () => ({
+      dispatch: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn(),
+      isFocused: jest.fn(() => true),
+    })),
+    useRoute: jest.fn(() => ({
       params: {},
-    }),
-    useFocusEffect: (cb: any) => cb(),
-  }
-})
+    })),
+    createNavigationContainerRef: jest.fn(() => ({
+      isReady: jest.fn(() => true),
+      navigate: jest.fn(),
+      addListener: jest.fn(() => () => {}),
+      removeListener: jest.fn(),
+      getCurrentRoute: jest.fn(() => ({ name: 'Home' })),
+    })),
+    NavigationContainer: ({ children }: any) => children,
+    useNavigationState: jest.fn(() => 'Home'),
+    useFocusEffect: jest.fn((cb: any) => cb()),
+  };
+});
 
 // Mock Async Storage
 const mockAsyncStorage = {
@@ -175,6 +287,48 @@ jest.mock('redux-persist', () => {
 jest.mock('redux-persist/lib/integration/react', () => ({
   PersistGate: ({ children }: any) => children,
 }))
+
+// Mock react-native-css-interop
+jest.mock('react-native-css-interop', () => ({
+  cssInterop: (c: any) => c,
+  remapProps: (c: any) => c,
+  verify: () => {},
+}));
+
+// Mock common components and hooks
+// Mock common components
+jest.mock('@/components/AppModal', () => {
+  const React = require('react');
+  const { View, Text, TouchableOpacity } = require('react-native');
+  return {
+    AppModal: (props: any) => {
+      if (!props.visible && !props.modalConfig?.visible) return null;
+      const config = props.modalConfig || props;
+      return React.createElement(View, { testID: "app-modal" },
+        React.createElement(Text, {}, config.title),
+        React.createElement(Text, {}, config.message || config.content),
+        ...(config.buttons || []).map((btn: any, idx: number) => 
+          React.createElement(TouchableOpacity, { key: idx, onPress: btn.onPress },
+            React.createElement(Text, {}, btn.label)
+          )
+        )
+      );
+    }
+  };
+});
+jest.mock('@/components/AppSnackbar', () => {
+  const React = require('react');
+  const { View, Text } = require('react-native');
+  return {
+    AppSnackbar: (props: any) => {
+      if (!props.visible && !props.config?.visible) return null;
+      const config = props.config || props;
+      return React.createElement(View, { testID: "app-snackbar" },
+        React.createElement(Text, {}, config.message)
+      );
+    }
+  };
+});
 
 // Tắt các log không cần thiết khi chạy test
 console.error = jest.fn()

@@ -1,0 +1,27 @@
+jest.setTimeout(15000)
+
+// Author: Dựa trên phong cách TrungQuanDev
+import '@testing-library/jest-native/extend-expect'
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const MockComponent = ({ children }: any) => <View>{children}</View>;
+  MockComponent.displayName = 'SafeAreaProvider';
+  return {
+    SafeAreaProvider: MockComponent,
+    SafeAreaView: ({ children }: any) => <View>{children}</View>,
+    useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+  };
+});
+
+// Mock lucide-react-native using mock-prefixed variables to avoid hoisting issues
+// This allows icons to be rendered as valid components with testIDs without Babel transformation errors
+const mockReact = require('react');
+const mockReactNative = require('react-native');
+
+const mockIcon = (name: string) => {
+  return (props: any) => mockReact.createElement(mockReactNative.View, { ...props, testID: `icon-${name}` });
+};

@@ -27,6 +27,7 @@ describe('MenuManagementScreen', () => {
     accountId: '123',
     name: 'Test User',
     email: 'test@example.com',
+    role: 'Staff',
     avatar: 'https://example.com/avatar.jpg',
   };
   beforeEach(() => {
@@ -36,7 +37,10 @@ describe('MenuManagementScreen', () => {
   });
   const setupSelector = (userInfo: any) => {
     (useSelector as unknown as jest.Mock).mockImplementation((selector: any) => 
-      selector({ auth: { userInfo } })
+      selector({ 
+        auth: { userInfo },
+        shift: { currentShift: null }
+      })
     );
   };
   it('shows logged out message when userInfo is null', () => {
@@ -48,7 +52,8 @@ describe('MenuManagementScreen', () => {
     setupSelector(mockUserInfo);
     render(<MenuScreen />);
     expect(screen.getByText('Test User')).toBeTruthy();
-    expect(screen.getByText('ID: 123')).toBeTruthy();
+    expect(screen.getByText(/Staff/)).toBeTruthy();
+    expect(screen.getByText(/test@example.com/)).toBeTruthy();
     const avatar = screen.UNSAFE_getByType(require('react-native').Image);
     expect(avatar.props.source).toEqual({ uri: mockUserInfo.avatar });
   });

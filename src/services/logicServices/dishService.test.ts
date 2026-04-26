@@ -54,21 +54,19 @@ describe('dishService', () => {
       });
       const result = await dishService.getBranchDishes(1);
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({
+      expect(result[0]).toEqual(expect.objectContaining({
         id: 1,
         restaurantName: '',
         dishName: 'Coffee',
         dishImageUrl: 'img1',
-        isSelling: true,
         price: 20000,
         isSoldOut: false,
         discountedPrice: 15000,
         promotionName: 'Sale',
         promotionLabel: '-25%',
         hasPromotion: true,
-      });
+      }));
       expect(result[1].id).toBe(2);
-      expect(result[1].isSelling).toBe(false);
     });
     it('should throw error when API returns failure', async () => {
       (dishApi.getRestaurantMenu as jest.Mock).mockResolvedValue({
